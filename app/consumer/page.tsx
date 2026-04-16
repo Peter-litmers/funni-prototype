@@ -641,12 +641,12 @@ export default function ConsumerApp() {
                         <span className="text-[10px] text-amber-700">취소 정책 미확정</span>
                       </div>
                     )}
-                    {bookingFilter === "완료" && "canReview" in b && b.canReview && (
+                    {bookingFilter === "완료" && "canReview" in b && (b as { canReview?: boolean }).canReview && (
                       <button onClick={() => { setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); navigate("reviewWrite"); }}
                         className="text-xs text-primary font-medium">리뷰 작성 →</button>
                     )}
                     {bookingFilter === "취소" && "reason" in b && (
-                      <span className="text-[10px] text-gray-400">{b.reason}</span>
+                      <span className="text-[10px] text-gray-400">{(b as { reason?: string }).reason}</span>
                     )}
                   </div>
                 </div>
