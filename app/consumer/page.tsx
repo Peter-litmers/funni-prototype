@@ -354,17 +354,6 @@ export default function ConsumerApp() {
           {/* ===== CATEGORY (IA-011) ===== */}
           {screen === "category" && (
             <div className="p-4">
-              {/* 광고 배너 (REQ-113: 카테고리 페이지 상단 배너) */}
-              <div className="mb-4 overflow-hidden rounded-xl">
-                <div className="bg-gradient-to-r from-violet-100 to-purple-200 rounded-xl p-4 flex items-center gap-3 relative">
-                  <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
-                  <div className="w-14 h-14 bg-white/60 rounded-lg flex items-center justify-center shrink-0 text-gray-400"><ImageIcon size={22} strokeWidth={1.5} /></div>
-                  <div>
-                    <p className="text-xs font-bold text-gray-900">카테고리별 추천 배너</p>
-                    <p className="text-[10px] text-gray-600 mt-0.5">관리자가 등록한 광고 배너 영역</p>
-                  </div>
-                </div>
-              </div>
               <h2 className="text-base font-bold mb-4">카테고리</h2>
               <div className="policy-area p-2 mb-4">
                 <PolicyBadge label="카테고리 목록 미확정" />
@@ -391,18 +380,33 @@ export default function ConsumerApp() {
               </div>
 
               <p className="text-sm font-bold mb-3">&lsquo;{categoryCat}&rsquo; 스튜디오 {catFiltered.length}곳</p>
-              {catFiltered.map(s => (
-                <div key={s.id} onClick={() => openDetail(s, categoryCat)}
-                  className="flex gap-3 py-3 border-b border-gray-50 cursor-pointer">
-                  <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={22} strokeWidth={1.5} /></div>
-                  <div>
-                    <p className="text-sm font-medium">{s.name}</p>
-                    <p className="text-xs text-gray-400">{s.cats.join(", ")} · {s.area}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-sm font-bold">₩{s.price.toLocaleString()}</span>
-                      <span className="text-xs text-yellow-500">★ {s.rating}</span>
+              {catFiltered.map((s, idx) => (
+                <div key={`wrap-${s.id}`}>
+                  <div onClick={() => openDetail(s, categoryCat)}
+                    className="flex gap-3 py-3 border-b border-gray-50 cursor-pointer">
+                    <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={22} strokeWidth={1.5} /></div>
+                    <div>
+                      <p className="text-sm font-medium">{s.name}</p>
+                      <p className="text-xs text-gray-400">{s.cats.join(", ")} · {s.area}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-sm font-bold">₩{s.price.toLocaleString()}</span>
+                        <span className="text-xs text-yellow-500">★ {s.rating}</span>
+                      </div>
                     </div>
                   </div>
+                  {/* 1번째 스튜디오 다음에 광고 배너 (REQ-113) */}
+                  {idx === 0 && (
+                    <div className="my-2 overflow-hidden rounded-xl">
+                      <div className="bg-gradient-to-r from-violet-100 to-purple-200 rounded-xl p-4 flex items-center gap-3 relative">
+                        <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
+                        <div className="w-14 h-14 bg-white/60 rounded-lg flex items-center justify-center shrink-0 text-gray-400"><ImageIcon size={22} strokeWidth={1.5} /></div>
+                        <div>
+                          <p className="text-xs font-bold text-gray-900">카테고리별 추천 배너</p>
+                          <p className="text-[10px] text-gray-600 mt-0.5">관리자가 등록한 광고 배너 영역</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -518,10 +522,10 @@ export default function ConsumerApp() {
                         {Array.from({ length: 5 }).map((_, i) => <div key={`e${i}`} />)}
                         {Array.from({ length: 31 }).map((_, i) => {
                           const day = i + 1;
-                          const hasBooking = [5, 10, 11, 13, 15, 18, 20, 25].includes(day);
+                          const isAvailable = [5, 10, 11, 13, 15, 18, 20, 25].includes(day);
                           return (
                             <button key={day} onClick={() => setSelectedDate(day)}
-                              className={`py-1 rounded text-[11px] transition-all ${selectedDate === day ? "bg-primary text-white font-bold" : hasBooking ? "bg-primary/10 text-primary font-medium" : "text-gray-600 hover:bg-gray-100"}`}>
+                              className={`py-1 rounded text-[11px] transition-all ${selectedDate === day ? (isAvailable ? "bg-primary text-white font-bold" : "bg-gray-300 text-gray-500 font-bold") : isAvailable ? "bg-primary/10 text-primary font-medium" : "text-gray-400 hover:bg-gray-100"}`}>
                               {day}
                             </button>
                           );
@@ -529,19 +533,30 @@ export default function ConsumerApp() {
                       </div>
                       <div className="flex gap-3 mt-2 text-[9px] text-gray-400">
                         <span className="flex items-center gap-1"><span className="w-2 h-2 bg-primary rounded-full" /> 선택됨</span>
-                        <span className="flex items-center gap-1"><span className="w-2 h-2 bg-primary/20 rounded-full" /> 예약 있음</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 bg-primary/20 rounded-full" /> 예약 가능</span>
                       </div>
                     </div>
                     <p className="text-sm font-medium mb-2 mt-3">시간 선택</p>
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {TIMES.map(t => {
-                        const booked = BOOKED_TIMES.includes(t);
-                        return (
-                          <button key={t} onClick={() => !booked && setSelectedTime(t)} disabled={booked}
-                            className={`rounded-lg py-2 text-center text-xs transition-all ${booked ? "bg-gray-200 text-gray-300 line-through cursor-not-allowed" : selectedTime === t ? "bg-primary text-white font-bold" : "bg-gray-100 text-gray-600"}`}>{t}</button>
-                        );
-                      })}
-                    </div>
+                    {(() => {
+                      const isDateAvailable = [5, 10, 11, 13, 15, 18, 20, 25].includes(selectedDate);
+                      return (
+                        <>
+                          {!isDateAvailable && (
+                            <p className="text-[10px] text-red-500 mb-1.5">⚠ 선택한 날짜는 예약 불가입니다. 다른 날짜를 선택해주세요.</p>
+                          )}
+                          <div className="grid grid-cols-4 gap-1.5">
+                            {TIMES.map(t => {
+                              const booked = BOOKED_TIMES.includes(t);
+                              const disabled = !isDateAvailable || booked;
+                              return (
+                                <button key={t} onClick={() => !disabled && setSelectedTime(t)} disabled={disabled}
+                                  className={`rounded-lg py-2 text-center text-xs transition-all ${disabled ? "bg-gray-200 text-gray-300 line-through cursor-not-allowed" : selectedTime === t ? "bg-primary text-white font-bold" : "bg-gray-100 text-gray-600"}`}>{t}</button>
+                              );
+                            })}
+                          </div>
+                        </>
+                      );
+                    })()}
                     <p className="text-[10px] text-amber-600 mt-2">최소 예약 단위 · 예약 가능 기간 · 당일 예약 · 버퍼 시간 → 미확정</p>
                     <PolicyForm question="최소 예약 단위는? (1시간 / 30분 / 업체 자유)" screen="소비자" area="최소 예약 단위" />
                     <PolicyForm question="예약 가능 기간은? (며칠 전부터 예약 가능?)" screen="소비자" area="예약 가능 기간" />
