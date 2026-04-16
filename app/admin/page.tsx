@@ -189,19 +189,26 @@ export default function AdminWeb() {
                             <div key={y} className="absolute left-0 right-0 border-t border-gray-100" style={{ top: `${(i / (yRevenue.length - 1)) * 100}%`, height: 1 }} />
                           ))}
                           <div className="flex items-end gap-1.5 relative" style={{ height: chartH }}>
-                            {MONTHLY.map((m, i) => (
-                              <div key={i} className="flex-1 flex flex-col items-center justify-end group h-full">
-                                {/* 값 레이블 (막대 위) */}
-                                <div className="flex flex-col items-center mb-0.5 leading-tight">
-                                  <span className="text-[10px] font-bold text-green-600">₩{m.rev}M</span>
-                                  <span className="text-[9px] text-amber-600">+₩{(m.rev * 0.1).toFixed(2)}M</span>
+                            {MONTHLY.map((m, i) => {
+                              const revH = (m.rev / maxR) * chartH * 0.8;
+                              const feeH = (m.rev * 0.1 / maxR) * chartH * 0.8;
+                              return (
+                                <div key={i} className="flex-1 flex items-end group h-full">
+                                  <div className="flex gap-0.5 items-end w-full">
+                                    {/* 매출 막대 + 레이블 */}
+                                    <div className="flex-1 flex flex-col items-center justify-end">
+                                      <span className="text-[9px] font-bold text-green-600 mb-0.5">₩{m.rev}M</span>
+                                      <div className="w-full bg-green-400 rounded-t transition-all group-hover:bg-green-500" style={{ height: `${revH}px` }} title={`매출 ₩${m.rev}M`} />
+                                    </div>
+                                    {/* 수수료 막대 + 레이블 */}
+                                    <div className="flex-1 flex flex-col items-center justify-end">
+                                      <span className="text-[9px] font-bold text-amber-600 mb-0.5">₩{(m.rev * 0.1).toFixed(2)}M</span>
+                                      <div className="w-full bg-amber-400 rounded-t transition-all group-hover:bg-amber-500" style={{ height: `${feeH}px` }} title={`수수료 ₩${(m.rev * 0.1).toFixed(2)}M`} />
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="flex gap-0.5 items-end w-full justify-center">
-                                  <div className="flex-1 bg-green-400 rounded-t transition-all group-hover:bg-green-500" style={{ height: `${(m.rev / maxR) * chartH * 0.55}px` }} title={`매출 ₩${m.rev}M`} />
-                                  <div className="flex-1 bg-amber-400 rounded-t transition-all group-hover:bg-amber-500" style={{ height: `${(m.rev * 0.1 / maxR) * chartH * 0.55}px` }} title={`수수료 ₩${(m.rev * 0.1).toFixed(2)}M`} />
-                                </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
                       </div>
