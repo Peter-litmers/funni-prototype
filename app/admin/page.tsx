@@ -93,6 +93,26 @@ export default function AdminWeb() {
               ))}
             </div>
 
+            {/* Monthly Trend (REQ-122) */}
+            <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+              <h3 className="font-bold mb-4">월별 추이</h3>
+              <div className="grid grid-cols-4 gap-3">
+                {[
+                  { month: "1월", bookings: 82, revenue: "₩6.2M" },
+                  { month: "2월", bookings: 95, revenue: "₩7.8M" },
+                  { month: "3월", bookings: 118, revenue: "₩9.6M" },
+                  { month: "4월", bookings: 142, revenue: "₩12.4M" },
+                ].map((m, i) => (
+                  <div key={i} className="text-center">
+                    <p className="text-xs text-gray-400 mb-1">{m.month}</p>
+                    <div className="bg-primary/10 rounded-lg mx-auto mb-1" style={{ width: 24, height: `${20 + i * 15}px` }} />
+                    <p className="text-xs font-bold">{m.bookings}건</p>
+                    <p className="text-[10px] text-gray-400">{m.revenue}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Fee Rate */}
             <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
               <h3 className="font-bold mb-4">수수료율 설정</h3>
@@ -110,7 +130,7 @@ export default function AdminWeb() {
                 </div>
                 <button className="bg-primary text-white px-6 py-3 rounded-xl text-sm font-medium">저장</button>
               </div>
-              <p className="text-xs text-gray-400 mt-2">어드민에서 직접 수정 가능 (확정)</p>
+              <p className="text-xs text-gray-400 mt-2">어드민에서 직접 수정 가능 (확정) · 업체별 개별 수수료는 업체 상세에서 설정 (REQ-119)</p>
             </div>
 
             {/* Recent Activity */}
@@ -161,10 +181,11 @@ export default function AdminWeb() {
                 </thead>
                 <tbody>
                   {[
-                    { name: "루미에르 스튜디오", cats: "프로필, 바디프로필", area: "강남", status: "운영중" },
-                    { name: "선셋 포토랩", cats: "바디프로필", area: "성수", status: "승인대기" },
-                    { name: "블룸 웨딩홀", cats: "웨딩, 돌잔치", area: "잠실", status: "운영중" },
-                    { name: "프로덕트 랩", cats: "제품", area: "홍대", status: "운영중" },
+                    { name: "루미에르 스튜디오", cats: "프로필, 바디프로필", area: "강남", status: "운영중", photos: 24 },
+                    { name: "선셋 포토랩", cats: "바디프로필", area: "성수", status: "승인대기", photos: 12 },
+                    { name: "블룸 웨딩홀", cats: "웨딩, 돌잔치", area: "잠실", status: "운영중", photos: 30 },
+                    { name: "프로덕트 랩", cats: "제품", area: "홍대", status: "정지", photos: 18 },
+                    { name: "무브 필름랩", cats: "영상", area: "합정", status: "운영중", photos: 15 },
                   ].map((b, i) => (
                     <tr key={i} className="border-t border-gray-50">
                       <td className="p-4 font-medium">{b.name}</td>
@@ -172,17 +193,27 @@ export default function AdminWeb() {
                       <td className="p-4 text-gray-500 hidden md:table-cell">{b.area}</td>
                       <td className="p-4">
                         <span className={`text-xs px-2 py-1 rounded-full ${
-                          b.status === "운영중" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                          b.status === "운영중" ? "bg-green-100 text-green-700" : b.status === "정지" ? "bg-red-100 text-red-500" : "bg-yellow-100 text-yellow-700"
                         }`}>{b.status}</span>
                       </td>
                       <td className="p-4">
                         {b.status === "승인대기" ? (
-                          <div className="flex gap-1">
+                          <div className="flex gap-1 flex-wrap">
                             <button className="text-xs bg-primary text-white px-3 py-1 rounded-lg">승인</button>
                             <button className="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-lg">거절</button>
+                            <button className="text-xs text-primary px-2 py-1">📷 사진({b.photos})</button>
+                          </div>
+                        ) : b.status === "정지" ? (
+                          <div className="flex gap-1">
+                            <button className="text-xs text-green-600 px-2 py-1 bg-green-50 rounded">해제</button>
+                            <button className="text-xs text-gray-400 px-2 py-1">📅 달력</button>
                           </div>
                         ) : (
-                          <button className="text-xs text-gray-400">상세</button>
+                          <div className="flex gap-1">
+                            <button className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">상세</button>
+                            <button className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded">정지</button>
+                            <button className="text-xs text-gray-400 px-2 py-1">📅 달력</button>
+                          </div>
                         )}
                       </td>
                     </tr>
@@ -239,24 +270,30 @@ export default function AdminWeb() {
                       <th className="p-3 text-left"><input type="checkbox" /></th>
                       <th className="p-3 text-left font-medium text-gray-500">업체</th>
                       <th className="p-3 text-left font-medium text-gray-500">예약건수</th>
-                      <th className="p-3 text-left font-medium text-gray-500">총 금액</th>
-                      <th className="p-3 text-left font-medium text-gray-500">수수료</th>
+                      <th className="p-3 text-left font-medium text-gray-500">총액 (촬영+옵션)</th>
+                      <th className="p-3 text-left font-medium text-gray-500">수수료율</th>
                       <th className="p-3 text-left font-medium text-gray-500">정산액</th>
                     </tr>
                   </thead>
                   <tbody>
                     {[
-                      { name: "루미에르 스튜디오", count: 8, total: "₩680,000", fee: "?%", net: "?" },
-                      { name: "블룸 웨딩홀", count: 3, total: "₩520,000", fee: "?%", net: "?" },
-                      { name: "프로덕트 랩", count: 12, total: "₩340,000", fee: "?%", net: "?" },
+                      { name: "루미에르 스튜디오", count: 8, base: "₩580,000", options: "₩100,000", total: "₩680,000", customFee: "", fee: "10%", net: "₩612,000" },
+                      { name: "블룸 웨딩홀", count: 3, base: "₩450,000", options: "₩70,000", total: "₩520,000", customFee: "8%", fee: "8%", net: "₩478,400" },
+                      { name: "프로덕트 랩", count: 12, base: "₩340,000", options: "₩0", total: "₩340,000", customFee: "", fee: "10%", net: "₩306,000" },
                     ].map((s, i) => (
                       <tr key={i} className="border-t border-gray-50">
                         <td className="p-3"><input type="checkbox" /></td>
-                        <td className="p-3 font-medium">{s.name}</td>
+                        <td className="p-3">
+                          <p className="font-medium">{s.name}</p>
+                          {s.customFee && <span className="text-[9px] text-primary bg-primary/10 px-1.5 py-0.5 rounded">개별 {s.customFee}</span>}
+                        </td>
                         <td className="p-3">{s.count}건</td>
-                        <td className="p-3">{s.total}</td>
-                        <td className="p-3 text-amber-600">{s.fee}</td>
-                        <td className="p-3 font-bold text-amber-600">{s.net}</td>
+                        <td className="p-3">
+                          <p>{s.total}</p>
+                          <p className="text-[9px] text-gray-400">촬영 {s.base} + 옵션 {s.options}</p>
+                        </td>
+                        <td className="p-3 text-primary font-medium">{s.fee}</td>
+                        <td className="p-3 font-bold">{s.net}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -309,42 +346,40 @@ export default function AdminWeb() {
             <h2 className="text-xl font-bold mb-6">회원 관리</h2>
 
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <div className="p-4 border-b border-gray-100">
-                <input
-                  type="text"
-                  placeholder="이름, 이메일 검색..."
-                  className="w-full bg-gray-100 rounded-xl px-4 py-3 text-sm"
-                />
+              <div className="p-4 border-b border-gray-100 flex gap-2">
+                <input type="text" placeholder="이름, 닉네임, 이메일 검색..." className="flex-1 bg-gray-100 rounded-xl px-4 py-3 text-sm" />
+                {["전체", "소비자", "업체"].map(f => (
+                  <button key={f} className={`px-3 py-2 rounded-lg text-xs font-medium ${f === "전체" ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{f}</button>
+                ))}
               </div>
               <table className="w-full text-sm">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="text-left p-4 font-medium text-gray-500">이름</th>
+                    <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">닉네임</th>
+                    <th className="text-left p-4 font-medium text-gray-500">유형</th>
                     <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">가입일</th>
-                    <th className="text-left p-4 font-medium text-gray-500">로그인</th>
                     <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">예약 수</th>
                     <th className="text-left p-4 font-medium text-gray-500">상태</th>
+                    <th className="text-left p-4 font-medium text-gray-500">액션</th>
                   </tr>
                 </thead>
                 <tbody>
                   {[
-                    { name: "김퍼니", date: "2026.04.10", login: "카카오+네이버", bookings: 5, status: "활성" },
-                    { name: "이촬영", date: "2026.04.08", login: "카카오", bookings: 2, status: "활성" },
-                    { name: "박스튜", date: "2026.04.05", login: "네이버", bookings: 0, status: "활성" },
+                    { name: "김퍼니", nick: "퍼니유저", type: "소비자", date: "2026.04.10", bookings: 5, status: "활성" },
+                    { name: "이촬영", nick: "촬영러버", type: "소비자", date: "2026.04.08", bookings: 2, status: "활성" },
+                    { name: "박스튜", nick: "스튜디오박", type: "소비자", date: "2026.04.05", bookings: 0, status: "활성" },
+                    { name: "루미에르(주)", nick: "-", type: "업체", date: "2026.03.20", bookings: 0, status: "활성" },
+                    { name: "선셋포토(주)", nick: "-", type: "업체", date: "2026.04.01", bookings: 0, status: "차단" },
                   ].map((m, i) => (
                     <tr key={i} className="border-t border-gray-50">
                       <td className="p-4 font-medium">{m.name}</td>
-                      <td className="p-4 text-gray-500 hidden md:table-cell">{m.date}</td>
-                      <td className="p-4 text-xs">
-                        <div className="flex gap-1">
-                          {m.login.includes("카카오") && <span className="bg-yellow-100 px-2 py-0.5 rounded-full">카카오</span>}
-                          {m.login.includes("네이버") && <span className="bg-green-100 px-2 py-0.5 rounded-full">네이버</span>}
-                        </div>
-                      </td>
+                      <td className="p-4 text-gray-500 text-xs hidden md:table-cell">{m.nick}</td>
+                      <td className="p-4"><span className={`text-xs px-2 py-0.5 rounded-full ${m.type === "소비자" ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"}`}>{m.type}</span></td>
+                      <td className="p-4 text-gray-500 hidden md:table-cell text-xs">{m.date}</td>
                       <td className="p-4 text-gray-500 hidden md:table-cell">{m.bookings}건</td>
-                      <td className="p-4">
-                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">{m.status}</span>
-                      </td>
+                      <td className="p-4"><span className={`text-xs px-2 py-1 rounded-full ${m.status === "활성" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-500"}`}>{m.status}</span></td>
+                      <td className="p-4">{m.status === "활성" ? <button className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded">차단</button> : <button className="text-xs text-green-600 px-2 py-1 bg-green-50 rounded">해제</button>}</td>
                     </tr>
                   ))}
                 </tbody>
