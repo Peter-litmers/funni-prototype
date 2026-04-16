@@ -262,8 +262,7 @@ export default function ConsumerApp() {
           {screen === "home" && (
             <div>
               {/* 프리미엄 영역 — 광고 스튜디오 (REQ-112) */}
-              <div className="policy-area mx-4 mt-3 p-2">
-                <PolicyBadge label="광고 정책 미확정" />
+              <div className="mx-4 mt-3 p-2 bg-gray-50 rounded-xl">
                 <div className="mt-1 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
                   <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${adIdx * 100}%)` }}>
                     {STUDIOS.slice(0, 3).map((s, i) => (
@@ -289,7 +288,6 @@ export default function ConsumerApp() {
                     ))}
                   </div>
                 </div>
-                <PolicyForm question="광고 구좌 수, 기간 단위(주간/월간), 과금 방식(고정/입찰)은?" screen="소비자" area="광고 정책" />
               </div>
 
               {/* Filters + Sort (REQ-106) */}
@@ -366,7 +364,7 @@ export default function ConsumerApp() {
                     </button>
                   ))}
                 </div>
-                <PolicyForm question="카테고리 목록을 확정해주세요. (현재 예시: 추천/프로필/바디프로필/웨딩/돌잔치/제품/영상/기타)" screen="소비자" area="카테고리 목록" />
+                <PolicyForm question="상세 카테고리 목록을 확정해주세요. (웨딩/프로필/피아노 등 대략적 방향만 논의됨)" screen="소비자" area="카테고리 목록" />
               </div>
 
               {/* 지역 필터 */}
@@ -469,8 +467,7 @@ export default function ConsumerApp() {
                 </div>
 
                 {/* Reviews (IA-031) */}
-                <div className="policy-area mb-4 p-3">
-                  <PolicyBadge label="리뷰 정책 미확정" />
+                <div className="mb-4">
                   <div className="mt-2">
                     <p className="text-sm font-medium mb-2">리뷰 {selectedStudio.reviews}개</p>
                     <div className="space-y-2">
@@ -481,15 +478,12 @@ export default function ConsumerApp() {
                         </div>
                       ))}
                     </div>
-                    <p className="text-[10px] text-amber-600 mt-2">사진 첨부 · 작성 기간 · 업체 답글 → 미확정</p>
-                    <PolicyForm question="리뷰 정책을 어떻게 설정할까요? (사진 첨부 가능? 작성 가능 기간? 업체 답글 가능?)" screen="소비자" area="리뷰 정책" />
                   </div>
                 </div>
 
                 {/* 예약 단위 정책 미확정 */}
-                <div className="policy-area mb-4 p-3">
-                  <PolicyBadge label="예약 단위 미확정" />
-                  <div className="mt-2">
+                <div className="mb-4">
+                  <div>
                     <p className="text-sm font-medium mb-2">날짜 선택</p>
                     {/* 월간 캘린더 뷰 */}
                     <div className="bg-gray-50 rounded-xl p-3">
@@ -526,8 +520,6 @@ export default function ConsumerApp() {
                         );
                       })}
                     </div>
-                    <p className="text-[10px] text-amber-600 mt-2">1시간 단위? 반일/종일? 업체 자유설정? → 미확정</p>
-                    <PolicyForm question="예약 단위를 어떻게 설정할까요? (1시간 고정 / 반일·종일 / 업체 자유설정)" screen="소비자" area="예약 단위" />
                   </div>
                 </div>
 
@@ -572,10 +564,7 @@ export default function ConsumerApp() {
                     <span>노쇼</span><span className="text-amber-600 font-medium">→ ?</span>
                   </div>
                 </div>
-                <PolicyForm question="취소/환불 규칙: 7일전, 3일전, 당일, 노쇼 각각 환불률은?" screen="소비자" area="취소/환불 정책" />
-              </div>
-              <div className="policy-area mb-4 p-3"><PolicyBadge label="예약 확정 방식 미확정" /><p className="text-xs text-amber-700 mt-2">즉시 확정 vs 업체 수락 후 확정?</p>
-                <PolicyForm question="예약 확정 방식: 결제 즉시 확정 vs 업체 수락 후 확정?" screen="소비자" area="예약 확정 방식" />
+                <PolicyForm question="예약 취소/환불 정책을 확정해주세요. (취소 수수료, 환불 기준 등)" screen="소비자" area="취소/환불 정책" />
               </div>
               <button onClick={() => navigate("done")} className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm">결제하기 · 토스페이먼츠</button>
             </div>
