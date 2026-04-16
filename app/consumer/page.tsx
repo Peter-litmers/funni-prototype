@@ -259,8 +259,8 @@ export default function ConsumerApp() {
         {showHeader && (
           <div className="relative z-10 bg-white pt-10 pl-2 pr-4 pb-0">
             <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-1">
-                {screen !== "home" && <button onClick={goBack} className="text-gray-500 text-lg w-6 h-6 flex items-center justify-center">‹</button>}
+              <div className="flex items-center">
+                {screen !== "home" && <button onClick={goBack} className="text-gray-500 text-lg flex items-center justify-center -mr-1">‹</button>}
                 <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center">
                   <img src="/funni-logo.png" alt="퍼니" className="w-12 h-12" />
                   <span className="text-xl font-bold text-primary -ml-1.5">퍼니</span>
