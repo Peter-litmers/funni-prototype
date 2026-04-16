@@ -174,9 +174,9 @@ export default function ConsumerApp() {
       return s.area.toLowerCase().includes(kw);
     })
     .filter(s => {
-      // 커스텀 범위 우선
-      const cmin = customPriceMin ? parseInt(customPriceMin) * 1000 : null;
-      const cmax = customPriceMax ? parseInt(customPriceMax) * 1000 : null;
+      // 커스텀 범위 우선 (원 단위)
+      const cmin = customPriceMin ? parseInt(customPriceMin) : null;
+      const cmax = customPriceMax ? parseInt(customPriceMax) : null;
       if (cmin !== null || cmax !== null) {
         if (cmin !== null && s.price < cmin) return false;
         if (cmax !== null && s.price > cmax) return false;
@@ -338,29 +338,25 @@ export default function ConsumerApp() {
                     )}
                   </div>
                 </div>
-                {/* 가격대 필터 */}
-                <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+                {/* 가격대 필터 (칩 + 오른쪽에 커스텀 입력) */}
+                <div className="flex gap-1.5 overflow-x-auto items-center" style={{ scrollbarWidth: 'none' }}>
                   {PRICE_RANGES.map(p => (
                     <button key={p.key} onClick={() => { setSelectedPriceRange(p.key); setCustomPriceMin(""); setCustomPriceMax(""); }}
-                      className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] border transition-all ${selectedPriceRange === p.key && !customPriceMin && !customPriceMax ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-100 text-gray-400 bg-gray-50"}`}>💰 {p.label}</button>
+                      className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] border transition-all shrink-0 ${selectedPriceRange === p.key && !customPriceMin && !customPriceMax ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-100 text-gray-400 bg-gray-50"}`}>💰 {p.label}</button>
                   ))}
-                </div>
-                {/* 커스텀 가격 범위 */}
-                <div className="flex items-center gap-1 mt-1.5 text-[10px] text-gray-400">
-                  <div className="flex-1 flex items-center bg-gray-50 rounded-lg px-2 py-1 border border-gray-100">
+                  {/* 커스텀 범위 입력 */}
+                  <div className={`flex items-center gap-0.5 text-[10px] shrink-0 rounded-full border transition-all ${customPriceMin || customPriceMax ? "border-primary bg-primary/5 text-primary" : "border-gray-100 bg-gray-50 text-gray-400"} px-2 py-0.5`}>
                     <input type="number" placeholder="최소" value={customPriceMin} onChange={e => setCustomPriceMin(e.target.value)}
-                      className="w-full min-w-0 bg-transparent outline-none text-right" />
-                    <span className="shrink-0 ml-0.5">천원</span>
-                  </div>
-                  <span className="shrink-0">~</span>
-                  <div className="flex-1 flex items-center bg-gray-50 rounded-lg px-2 py-1 border border-gray-100">
+                      className="w-10 bg-transparent outline-none text-right" />
+                    <span>원</span>
+                    <span className="mx-0.5">~</span>
                     <input type="number" placeholder="최대" value={customPriceMax} onChange={e => setCustomPriceMax(e.target.value)}
-                      className="w-full min-w-0 bg-transparent outline-none text-right" />
-                    <span className="shrink-0 ml-0.5">천원</span>
+                      className="w-10 bg-transparent outline-none text-right" />
+                    <span>원</span>
+                    {(customPriceMin || customPriceMax) && (
+                      <button onClick={() => { setCustomPriceMin(""); setCustomPriceMax(""); }} className="ml-0.5">✕</button>
+                    )}
                   </div>
-                  {(customPriceMin || customPriceMax) && (
-                    <button onClick={() => { setCustomPriceMin(""); setCustomPriceMax(""); }} className="shrink-0 px-1">✕</button>
-                  )}
                 </div>
               </div>
 
