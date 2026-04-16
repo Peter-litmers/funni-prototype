@@ -6,7 +6,7 @@ function PolicyBadge({ label }: { label: string }) {
   return <span className="policy-badge">⚠️ {label}</span>;
 }
 
-type Tab = "dashboard" | "businesses" | "settlement" | "ads" | "members";
+type Tab = "dashboard" | "businesses" | "settlement" | "ads" | "members" | "categories" | "banners" | "bookings" | "payments" | "reviews";
 
 export default function AdminWeb() {
   const [tab, setTab] = useState<Tab>("dashboard");
@@ -24,6 +24,11 @@ export default function AdminWeb() {
               { key: "settlement" as Tab, label: "정산" },
               { key: "ads" as Tab, label: "광고" },
               { key: "members" as Tab, label: "회원" },
+              { key: "categories" as Tab, label: "카테고리" },
+              { key: "banners" as Tab, label: "배너" },
+              { key: "bookings" as Tab, label: "예약" },
+              { key: "payments" as Tab, label: "결제" },
+              { key: "reviews" as Tab, label: "리뷰" },
             ].map(t => (
               <button
                 key={t.key}
@@ -48,6 +53,11 @@ export default function AdminWeb() {
           { key: "settlement" as Tab, label: "정산" },
           { key: "ads" as Tab, label: "광고" },
           { key: "members" as Tab, label: "회원" },
+          { key: "categories" as Tab, label: "카테고리" },
+          { key: "banners" as Tab, label: "배너" },
+          { key: "bookings" as Tab, label: "예약" },
+          { key: "payments" as Tab, label: "결제" },
+          { key: "reviews" as Tab, label: "리뷰" },
         ].map(t => (
           <button
             key={t.key}
@@ -335,6 +345,226 @@ export default function AdminWeb() {
                       <td className="p-4">
                         <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">{m.status}</span>
                       </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ===== CATEGORIES (REQ-116) ===== */}
+        {tab === "categories" && (
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold">카테고리 관리</h2>
+              <button className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium">+ 카테고리 추가</button>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-xl shadow-sm p-4">
+                <h3 className="text-sm font-bold mb-3">종류별 카테고리</h3>
+                {["웨딩", "프로필", "바디프로필", "돌잔치", "제품", "영상", "기타"].map((c, i) => (
+                  <div key={c} className="flex items-center justify-between py-2.5 border-b border-gray-50">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-gray-400 w-5">{i + 1}</span>
+                      <span className="text-sm">{c}</span>
+                    </div>
+                    <div className="flex gap-1">
+                      <button className="text-[10px] text-gray-400 px-2 py-1">▲</button>
+                      <button className="text-[10px] text-gray-400 px-2 py-1">▼</button>
+                      <button className="text-[10px] text-gray-400 px-2 py-1">수정</button>
+                      <button className="text-[10px] text-red-400 px-2 py-1">삭제</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-white rounded-xl shadow-sm p-4">
+                <h3 className="text-sm font-bold mb-3">지역별 카테고리</h3>
+                {["서울 강남", "서울 성수", "서울 잠실", "서울 홍대", "서울 합정", "경기 판교", "경기 분당"].map((c, i) => (
+                  <div key={c} className="flex items-center justify-between py-2.5 border-b border-gray-50">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-gray-400 w-5">{i + 1}</span>
+                      <span className="text-sm">{c}</span>
+                    </div>
+                    <div className="flex gap-1">
+                      <button className="text-[10px] text-gray-400 px-2 py-1">수정</button>
+                      <button className="text-[10px] text-red-400 px-2 py-1">삭제</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== BANNERS (REQ-117) ===== */}
+        {tab === "banners" && (
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold">배너 관리</h2>
+              <button className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium">+ 배너 등록</button>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left p-4 font-medium text-gray-500">미리보기</th>
+                    <th className="text-left p-4 font-medium text-gray-500">제목</th>
+                    <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">위치</th>
+                    <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">기간</th>
+                    <th className="text-left p-4 font-medium text-gray-500">상태</th>
+                    <th className="text-left p-4 font-medium text-gray-500">액션</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { title: "프로필 촬영 특가", position: "메인 상단", period: "04.01~04.30", status: "노출중" },
+                    { title: "바디프로필 시즌", position: "카테고리", period: "04.15~05.15", status: "노출중" },
+                    { title: "웨딩 촬영 패키지", position: "메인 중간", period: "05.01~05.31", status: "대기" },
+                  ].map((b, i) => (
+                    <tr key={i} className="border-t border-gray-50">
+                      <td className="p-4"><div className="w-16 h-10 bg-gradient-to-r from-violet-200 to-purple-200 rounded" /></td>
+                      <td className="p-4 font-medium">{b.title}</td>
+                      <td className="p-4 text-gray-500 hidden md:table-cell">{b.position}</td>
+                      <td className="p-4 text-gray-500 hidden md:table-cell text-xs">{b.period}</td>
+                      <td className="p-4"><span className={`text-xs px-2 py-1 rounded-full ${b.status === "노출중" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{b.status}</span></td>
+                      <td className="p-4"><div className="flex gap-1"><button className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">수정</button><button className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded">삭제</button></div></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ===== BOOKINGS (REQ-118) ===== */}
+        {tab === "bookings" && (
+          <div>
+            <h2 className="text-xl font-bold mb-6">예약 관리</h2>
+
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="p-4 border-b border-gray-100 flex gap-2">
+                <input type="text" placeholder="소비자명, 업체명 검색..." className="flex-1 bg-gray-100 rounded-xl px-4 py-2.5 text-sm" />
+                {["전체", "예정", "완료", "취소"].map(f => (
+                  <button key={f} className={`px-3 py-2 rounded-lg text-xs font-medium ${f === "전체" ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{f}</button>
+                ))}
+              </div>
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left p-4 font-medium text-gray-500">예약번호</th>
+                    <th className="text-left p-4 font-medium text-gray-500">소비자</th>
+                    <th className="text-left p-4 font-medium text-gray-500">업체</th>
+                    <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">날짜</th>
+                    <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">금액</th>
+                    <th className="text-left p-4 font-medium text-gray-500">상태</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { id: "B-2026-0142", consumer: "김퍼니", studio: "루미에르", date: "05.10 14:00", amount: "₩100,000", status: "확정" },
+                    { id: "B-2026-0141", consumer: "이촬영", studio: "선셋 포토랩", date: "05.18 10:00", amount: "₩160,000", status: "확정" },
+                    { id: "B-2026-0140", consumer: "박스튜", studio: "블룸 웨딩", date: "05.25 10:00", amount: "₩800,000", status: "대기" },
+                    { id: "B-2026-0135", consumer: "최민지", studio: "프로덕트 랩", date: "04.20 13:00", amount: "₩80,000", status: "완료" },
+                    { id: "B-2026-0130", consumer: "한소희", studio: "무브 필름랩", date: "04.15 15:00", amount: "₩120,000", status: "취소" },
+                  ].map((b, i) => (
+                    <tr key={i} className="border-t border-gray-50">
+                      <td className="p-4 font-mono text-xs text-gray-400">{b.id}</td>
+                      <td className="p-4">{b.consumer}</td>
+                      <td className="p-4">{b.studio}</td>
+                      <td className="p-4 text-gray-500 hidden md:table-cell text-xs">{b.date}</td>
+                      <td className="p-4 font-medium hidden md:table-cell">{b.amount}</td>
+                      <td className="p-4"><span className={`text-xs px-2 py-1 rounded-full ${b.status === "확정" ? "bg-green-100 text-green-700" : b.status === "완료" ? "bg-gray-200 text-gray-500" : b.status === "취소" ? "bg-red-100 text-red-500" : "bg-amber-100 text-amber-700"}`}>{b.status}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ===== PAYMENTS (REQ-118) ===== */}
+        {tab === "payments" && (
+          <div>
+            <h2 className="text-xl font-bold mb-6">결제 관리</h2>
+
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="p-4 border-b border-gray-100 flex gap-2">
+                <input type="text" placeholder="소비자명, 업체명 검색..." className="flex-1 bg-gray-100 rounded-xl px-4 py-2.5 text-sm" />
+              </div>
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left p-4 font-medium text-gray-500">결제번호</th>
+                    <th className="text-left p-4 font-medium text-gray-500">소비자</th>
+                    <th className="text-left p-4 font-medium text-gray-500">업체</th>
+                    <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">결제일</th>
+                    <th className="text-left p-4 font-medium text-gray-500">금액</th>
+                    <th className="text-left p-4 font-medium text-gray-500">상태</th>
+                    <th className="text-left p-4 font-medium text-gray-500">액션</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { id: "P-0142", consumer: "김퍼니", studio: "루미에르", date: "05.08", amount: "₩100,000", status: "결제완료" },
+                    { id: "P-0141", consumer: "이촬영", studio: "선셋 포토랩", date: "05.05", amount: "₩160,000", status: "결제완료" },
+                    { id: "P-0140", consumer: "박스튜", studio: "블룸 웨딩", date: "04.03", amount: "₩800,000", status: "결제완료" },
+                    { id: "P-0135", consumer: "최민지", studio: "프로덕트 랩", date: "04.18", amount: "₩80,000", status: "결제완료" },
+                    { id: "P-0130", consumer: "한소희", studio: "무브 필름랩", date: "04.13", amount: "₩120,000", status: "환불완료" },
+                  ].map((p, i) => (
+                    <tr key={i} className="border-t border-gray-50">
+                      <td className="p-4 font-mono text-xs text-gray-400">{p.id}</td>
+                      <td className="p-4">{p.consumer}</td>
+                      <td className="p-4">{p.studio}</td>
+                      <td className="p-4 text-gray-500 hidden md:table-cell text-xs">{p.date}</td>
+                      <td className={`p-4 font-medium ${p.status === "환불완료" ? "text-red-500" : ""}`}>{p.status === "환불완료" ? "-" : ""}{p.amount}</td>
+                      <td className="p-4"><span className={`text-xs px-2 py-1 rounded-full ${p.status === "결제완료" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-500"}`}>{p.status}</span></td>
+                      <td className="p-4">{p.status === "결제완료" && <button className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded">환불</button>}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ===== REVIEWS (REQ-120) ===== */}
+        {tab === "reviews" && (
+          <div>
+            <h2 className="text-xl font-bold mb-6">리뷰 관리</h2>
+
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="p-4 border-b border-gray-100 flex gap-2">
+                <input type="text" placeholder="스튜디오명, 작성자 검색..." className="flex-1 bg-gray-100 rounded-xl px-4 py-2.5 text-sm" />
+              </div>
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left p-4 font-medium text-gray-500">스튜디오</th>
+                    <th className="text-left p-4 font-medium text-gray-500">작성자</th>
+                    <th className="text-left p-4 font-medium text-gray-500">별점</th>
+                    <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">내용</th>
+                    <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">작성일</th>
+                    <th className="text-left p-4 font-medium text-gray-500">액션</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { studio: "루미에르", author: "김**", rating: 5, text: "분위기 너무 좋아요! 사진 결과물도 만족합니다", date: "04.10" },
+                    { studio: "루미에르", author: "이**", rating: 4, text: "접근성이 좋고 시설이 깔끔해요", date: "04.08" },
+                    { studio: "선셋 포토랩", author: "박**", rating: 5, text: "바디프로필 전문! 조명이 정말 좋습니다", date: "04.05" },
+                    { studio: "블룸 웨딩", author: "최**", rating: 3, text: "가격 대비 보통이었어요", date: "04.02" },
+                    { studio: "프로덕트 랩", author: "한**", rating: 5, text: "제품 사진 퀄리티가 기대 이상이에요", date: "03.28" },
+                  ].map((r, i) => (
+                    <tr key={i} className="border-t border-gray-50">
+                      <td className="p-4 font-medium">{r.studio}</td>
+                      <td className="p-4">{r.author}</td>
+                      <td className="p-4 text-yellow-500 text-xs">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</td>
+                      <td className="p-4 text-gray-500 text-xs hidden md:table-cell max-w-[200px] truncate">{r.text}</td>
+                      <td className="p-4 text-gray-500 text-xs hidden md:table-cell">{r.date}</td>
+                      <td className="p-4"><div className="flex gap-1"><button className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">숨김</button><button className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded">삭제</button></div></td>
                     </tr>
                   ))}
                 </tbody>

@@ -253,6 +253,34 @@ export default function BusinessApp() {
                   <p className="text-[10px] text-gray-400 mt-1">6 / 30장</p>
                 </div>
 
+                {/* 헤어/메이크업 옵션 3종 (REQ-103) */}
+                <div className="bg-gray-50 rounded-xl p-3">
+                  <p className="text-xs text-gray-500 font-medium mb-2">헤어 / 메이크업 옵션 설정</p>
+                  {[
+                    { name: "헤어 메이크업", defaultPrice: "30,000" },
+                    { name: "얼굴 메이크업", defaultPrice: "50,000" },
+                    { name: "세트 (헤어+얼굴)", defaultPrice: "70,000" },
+                  ].map((opt, i) => (
+                    <div key={i} className="flex items-center gap-2 mb-2">
+                      <input type="checkbox" defaultChecked={i < 2} className="w-4 h-4 accent-[#7C3AED]" />
+                      <span className="text-xs flex-1">{opt.name}</span>
+                      <input type="text" defaultValue={`₩${opt.defaultPrice}`} className="w-24 bg-white rounded-lg px-2 py-1.5 text-xs border border-gray-200 text-right outline-none" />
+                    </div>
+                  ))}
+                </div>
+
+                {/* 출장 가능 + 부가세 (REQ-103) */}
+                <div className="flex gap-3">
+                  <label className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-3 flex-1 cursor-pointer">
+                    <input type="checkbox" className="w-4 h-4 accent-[#7C3AED]" />
+                    <span className="text-xs">🚗 출장 가능</span>
+                  </label>
+                  <label className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-3 flex-1 cursor-pointer">
+                    <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#7C3AED]" />
+                    <span className="text-xs">💰 VAT 포함</span>
+                  </label>
+                </div>
+
                 {/* Schedule */}
                 <div className="policy-area p-3">
                   <PolicyBadge label="예약 단위 미확정" />
@@ -338,7 +366,13 @@ export default function BusinessApp() {
           {/* ===== BOOKINGS ===== */}
           {screen === "bookings" && (
             <div className="p-4">
-              <h2 className="text-base font-bold mb-3">예약 관리</h2>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-base font-bold">예약 관리</h2>
+                <button onClick={() => {/* 수기 일정 추가 모달 - 프로토타입 */}}
+                  className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-[10px] font-medium">
+                  ✏️ 수기 일정 추가
+                </button>
+              </div>
 
               {/* Status Filter */}
               <div className="flex gap-2 mb-3">

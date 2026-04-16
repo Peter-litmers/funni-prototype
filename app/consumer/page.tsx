@@ -29,9 +29,21 @@ const STUDIOS = [
 ];
 
 const HAIR_MAKEUP_OPTIONS = [
-  { id: 1, name: "헤어 세팅", price: 30000 },
-  { id: 2, name: "메이크업", price: 50000 },
-  { id: 3, name: "헤어 + 메이크업 세트", price: 70000 },
+  { id: 1, name: "헤어 메이크업", price: 30000 },
+  { id: 2, name: "얼굴 메이크업", price: 50000 },
+  { id: 3, name: "세트 (헤어+얼굴)", price: 70000 },
+];
+
+const REGIONS = ["전체", "서울 강남", "서울 성수", "서울 잠실", "서울 홍대", "서울 합정", "경기 판교"];
+
+const BOOKED_TIMES = ["10:00", "11:00", "15:00"];
+
+const CONSUMER_NOTIFICATIONS = [
+  { id: 1, type: "booking", text: "루미에르 스튜디오 예약이 확정되었습니다", time: "10분 전", read: false },
+  { id: 2, type: "remind", text: "내일 선셋 포토랩 촬영이 있습니다", time: "1시간 전", read: false },
+  { id: 3, type: "review", text: "프로덕트 랩 촬영은 어떠셨나요? 리뷰를 남겨주세요", time: "3시간 전", read: true },
+  { id: 4, type: "booking", text: "블룸 웨딩 스튜디오 예약이 확정되었습니다", time: "1일 전", read: true },
+  { id: 5, type: "system", text: "퍼니 앱이 업데이트되었습니다", time: "3일 전", read: true },
 ];
 
 const AD_BANNERS = [
@@ -76,7 +88,7 @@ const ALL_MY_BOOKINGS_FOR_MYPAGE = [
   { studio: "블룸 웨딩 스튜디오", date: "2026.03.22 (토) 10:00~14:00", cat: "웨딩", status: "완료" },
 ];
 
-type Screen = "home" | "category" | "search" | "like" | "myBookings" | "detail" | "booking" | "done" | "mypage" | "reviewWrite" | "myReviews" | "paymentHistory" | "login" | "signup" | "bizSignup" | "forgotPassword";
+type Screen = "home" | "category" | "search" | "like" | "myBookings" | "detail" | "booking" | "done" | "mypage" | "reviewWrite" | "myReviews" | "paymentHistory" | "login" | "signup" | "bizSignup" | "forgotPassword" | "notifications";
 type Sort = "popular" | "nearby" | "reviews";
 type BookingFilter = "예정" | "완료" | "취소";
 type Tab = "home" | "category" | "mypage";
@@ -104,6 +116,7 @@ export default function ConsumerApp() {
   const [userName, setUserName] = useState("김퍼니");
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
   const [categoryCat, setCategoryCat] = useState("추천");
+  const [selectedRegion, setSelectedRegion] = useState("전체");
 
   const touchStartX = useRef(0);
 
@@ -116,12 +129,13 @@ export default function ConsumerApp() {
       booking: { s: "detail", t: tab }, done: { s: "home", t: "home" }, like: { s: "mypage", t: "mypage" },
       reviewWrite: { s: "myBookings", t: "mypage" }, myReviews: { s: "mypage", t: "mypage" }, paymentHistory: { s: "mypage", t: "mypage" },
       login: { s: "mypage", t: "mypage" }, signup: { s: "login", t: "mypage" }, bizSignup: { s: "login", t: "mypage" }, forgotPassword: { s: "login", t: "mypage" },
+      notifications: { s: "home", t: "home" },
     };
     const target = map[screen] || { s: "home" as Screen, t: "home" as Tab };
     setScreen(target.s); setTab(target.t);
   };
 
-  const filtered = selectedCat === "추천" ? STUDIOS : STUDIOS.filter(s => s.cat === selectedCat);
+  const filtered = (selectedCat === "추천" ? STUDIOS : STUDIOS.filter(s => s.cat === selectedCat)).filter(s => selectedRegion === "전체" || s.area.includes(selectedRegion.replace("서울 ", "").replace("경기 ", "")));
   const sorted = [...filtered].sort((a, b) => {
     if (sort === "popular") return b.rating * b.reviews - a.rating * a.reviews;
     if (sort === "reviews") return b.reviews - a.reviews;
@@ -178,7 +192,12 @@ export default function ConsumerApp() {
                 {screen !== "home" && <button onClick={goBack} className="text-gray-500 text-lg w-7 h-7 flex items-center justify-center">‹</button>}
                 <button onClick={() => { setScreen("home"); setTab("home"); }} className="text-xl font-bold text-primary">퍼니</button>
               </div>
-              <button onClick={() => { navigate("search"); }} className="text-gray-400 text-lg">🔍</button>
+              <div className="flex items-center gap-2">
+                <button onClick={() => navigate("notifications")} className="text-gray-400 text-lg relative">🔔
+                  {CONSUMER_NOTIFICATIONS.some(n => !n.read) && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
+                </button>
+                <button onClick={() => { navigate("search"); }} className="text-gray-400 text-lg">🔍</button>
+              </div>
             </div>
           </div>
         )}
@@ -217,6 +236,13 @@ export default function ConsumerApp() {
                   {([{ key: "popular" as Sort, icon: "🔄", label: "인기순" }, { key: "nearby" as Sort, icon: "📍", label: "내 주변" }, { key: "reviews" as Sort, icon: "💬", label: "리뷰많은순" }]).map(s => (
                     <button key={s.key} onClick={() => setSort(s.key)}
                       className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs border transition-all ${sort === s.key ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-200 text-gray-500"}`}>{s.icon} {s.label}</button>
+                  ))}
+                </div>
+                {/* Region Filter */}
+                <div className="flex gap-1.5 mt-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+                  {REGIONS.map(r => (
+                    <button key={r} onClick={() => setSelectedRegion(r)}
+                      className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] border transition-all ${selectedRegion === r ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-100 text-gray-400 bg-gray-50"}`}>{r}</button>
                   ))}
                 </div>
               </div>
@@ -423,9 +449,13 @@ export default function ConsumerApp() {
                     </div>
                     <p className="text-sm font-medium mb-2 mt-3">시간 선택</p>
                     <div className="grid grid-cols-4 gap-1.5">
-                      {TIMES.map(t => (
-                        <button key={t} onClick={() => setSelectedTime(t)} className={`rounded-lg py-2 text-center text-xs transition-all ${selectedTime === t ? "bg-primary text-white font-bold" : "bg-gray-100 text-gray-600"}`}>{t}</button>
-                      ))}
+                      {TIMES.map(t => {
+                        const booked = BOOKED_TIMES.includes(t);
+                        return (
+                          <button key={t} onClick={() => !booked && setSelectedTime(t)} disabled={booked}
+                            className={`rounded-lg py-2 text-center text-xs transition-all ${booked ? "bg-gray-200 text-gray-300 line-through cursor-not-allowed" : selectedTime === t ? "bg-primary text-white font-bold" : "bg-gray-100 text-gray-600"}`}>{t}{booked ? "" : ""}</button>
+                        );
+                      })}
                     </div>
                     <p className="text-[10px] text-amber-600 mt-2">1시간 단위? 반일/종일? 업체 자유설정? → 미확정</p>
                   </div>
@@ -716,7 +746,11 @@ export default function ConsumerApp() {
 
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                 <p className="text-xs font-bold text-amber-700 mb-1">📋 승인 안내</p>
-                <p className="text-[10px] text-amber-600">제출하신 정보와 포트폴리오를 검토 후 승인됩니다. 승인까지 영업일 기준 1~3일이 소요되며, 결과는 등록하신 이메일로 안내됩니다.</p>
+                <div className="space-y-1 text-[10px] text-amber-600">
+                  <p>• 심사는 2~3일 소요될 수 있습니다</p>
+                  <p>• 전화 확인이 진행될 수 있으니 전화를 받아주세요</p>
+                  <p>• 결과는 등록하신 이메일로 안내됩니다</p>
+                </div>
               </div>
             </div>
           )}
@@ -734,6 +768,25 @@ export default function ConsumerApp() {
 
               <button onClick={goBack} className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm mb-4">비밀번호 재설정 링크 발송</button>
               <p className="text-center text-[10px] text-gray-400">입력한 이메일로 비밀번호 재설정 링크가 전송됩니다</p>
+            </div>
+          )}
+
+          {/* ===== NOTIFICATIONS (REQ-114) ===== */}
+          {screen === "notifications" && (
+            <div className="p-4">
+              <h2 className="text-base font-bold mb-4">알림</h2>
+              {CONSUMER_NOTIFICATIONS.map(n => (
+                <div key={n.id} className={`flex gap-3 py-3.5 border-b border-gray-50 ${n.read ? "opacity-60" : ""}`}>
+                  <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-base shrink-0">
+                    {n.type === "booking" ? "📅" : n.type === "remind" ? "⏰" : n.type === "review" ? "⭐" : "📢"}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-800">{n.text}</p>
+                    <p className="text-[10px] text-gray-400 mt-1">{n.time}</p>
+                  </div>
+                  {!n.read && <span className="w-2 h-2 bg-primary rounded-full mt-2 shrink-0" />}
+                </div>
+              ))}
             </div>
           )}
         </div>
