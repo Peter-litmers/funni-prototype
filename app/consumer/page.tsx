@@ -244,7 +244,7 @@ export default function ConsumerApp() {
               <div className="flex items-center gap-2">
                 {screen !== "home" && <button onClick={goBack} className="text-gray-500 text-lg w-7 h-7 flex items-center justify-center">‹</button>}
                 <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center gap-1.5">
-                  <img src="/funni-logo.png" alt="퍼니" className="w-6 h-6" />
+                  <img src="/funni-logo.png" alt="퍼니" className="w-8 h-8" />
                   <span className="text-xl font-bold text-primary">퍼니</span>
                 </button>
               </div>
@@ -289,6 +289,7 @@ export default function ConsumerApp() {
                     ))}
                   </div>
                 </div>
+                <PolicyForm question="광고 구좌 수, 기간 단위(주간/월간), 과금 방식(고정/입찰)은?" screen="소비자" area="광고 정책" />
               </div>
 
               {/* Filters + Sort (REQ-106) */}
@@ -365,6 +366,7 @@ export default function ConsumerApp() {
                     </button>
                   ))}
                 </div>
+                <PolicyForm question="카테고리 목록을 확정해주세요. (현재 예시: 추천/프로필/바디프로필/웨딩/돌잔치/제품/영상/기타)" screen="소비자" area="카테고리 목록" />
               </div>
 
               {/* 지역 필터 */}
@@ -552,6 +554,7 @@ export default function ConsumerApp() {
                     <span>노쇼</span><span className="text-amber-600 font-medium">→ ?</span>
                   </div>
                 </div>
+                <PolicyForm question="취소/환불 규칙: 7일전, 3일전, 당일, 노쇼 각각 환불률은?" screen="소비자" area="취소/환불 정책" />
               </div>
               <div className="policy-area mb-4 p-3"><PolicyBadge label="예약 확정 방식 미확정" /><p className="text-xs text-amber-700 mt-2">즉시 확정 vs 업체 수락 후 확정?</p>
                 <PolicyForm question="예약 확정 방식: 결제 즉시 확정 vs 업체 수락 후 확정?" screen="소비자" area="예약 확정 방식" />
