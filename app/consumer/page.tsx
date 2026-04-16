@@ -17,15 +17,27 @@ const CATEGORIES = [
   { name: "기타", icon: "✨" },
 ];
 
-const KEYWORDS = ["강남 프로필", "성수 바디프로필", "웨딩 스냅", "증명사진", "제품 촬영", "유튜브 스튜디오"];
+// 카테고리별 포트폴리오 (REQ-106: 탐색 경로의 카테고리에 맞는 사진만 표시)
+type StudioCategoryPortfolio = Record<string, string[]>;
 
-const STUDIOS = [
-  { id: 1, name: "루미에르 스튜디오", cat: "프로필", desc: "프로필촬영, 증명사진, 프로필영상, 이력서사진", area: "서울 강남구", price: "50,000", rating: 4.8, reviews: 124, distance: 1.2, phone: "02-1234-5678" },
-  { id: 2, name: "선셋 포토랩", cat: "바디프로필", desc: "바디프로필, 커플촬영, 다이어트기록, 운동기록", area: "서울 성수동", price: "80,000", rating: 4.9, reviews: 89, distance: 3.5, phone: "02-2345-6789" },
-  { id: 3, name: "블룸 웨딩 스튜디오", cat: "웨딩", desc: "웨딩스냅, 본식촬영, 야외웨딩, 스몰웨딩", area: "서울 잠실", price: "200,000", rating: 4.7, reviews: 56, distance: 5.8, phone: "02-3456-7890" },
-  { id: 4, name: "미니미 키즈포토", cat: "돌잔치", desc: "돌잔치촬영, 백일사진, 가족사진, 만삭촬영", area: "경기 판교", price: "120,000", rating: 4.6, reviews: 34, distance: 15.2, phone: "031-456-7890" },
-  { id: 5, name: "프로덕트 랩", cat: "제품", desc: "제품촬영, 음식사진, 상세페이지, 스틸컷", area: "서울 홍대", price: "40,000", rating: 4.5, reviews: 67, distance: 2.1, phone: "02-4567-8901" },
-  { id: 6, name: "무브 필름랩", cat: "영상", desc: "유튜브촬영, 광고영상, 인터뷰, 브이로그", area: "서울 합정", price: "60,000", rating: 4.7, reviews: 45, distance: 2.8, phone: "02-5678-9012" },
+const STUDIOS: {
+  id: number; name: string; cats: string[]; desc: string; area: string;
+  price: number; rating: number; reviews: number; phone: string;
+  createdAt: string; location: string;
+  portfolios: StudioCategoryPortfolio;
+}[] = [
+  { id: 1, name: "루미에르 스튜디오", cats: ["프로필"], desc: "프로필촬영, 증명사진, 프로필영상, 이력서사진", area: "서울 강남구", price: 50000, rating: 4.8, reviews: 124, phone: "02-1234-5678", createdAt: "2026-04-10", location: "서울특별시 강남구 역삼동 123-4",
+    portfolios: { "프로필": ["👤","📷","✨","🎨","💫","🌟"] } },
+  { id: 2, name: "선셋 포토랩", cats: ["바디프로필"], desc: "바디프로필, 커플촬영, 다이어트기록", area: "서울 성수동", price: 80000, rating: 4.9, reviews: 89, phone: "02-2345-6789", createdAt: "2026-03-28", location: "서울특별시 성동구 성수동 45-6",
+    portfolios: { "바디프로필": ["💪","🏋️","🔥","⚡","🎯","✨"] } },
+  { id: 3, name: "블룸 웨딩 스튜디오", cats: ["웨딩"], desc: "웨딩스냅, 본식촬영, 야외웨딩", area: "서울 잠실", price: 200000, rating: 4.7, reviews: 56, phone: "02-3456-7890", createdAt: "2026-04-05", location: "서울특별시 송파구 잠실동 78-9",
+    portfolios: { "웨딩": ["💍","👰","🤵","💐","💒","💕"] } },
+  { id: 4, name: "미니미 키즈포토", cats: ["돌잔치"], desc: "돌잔치촬영, 백일사진, 가족사진", area: "경기 판교", price: 120000, rating: 4.6, reviews: 34, phone: "031-456-7890", createdAt: "2026-03-15", location: "경기도 성남시 분당구 판교동 12-3",
+    portfolios: { "돌잔치": ["🎂","👶","🎈","🎀","🍼","🧸"] } },
+  { id: 5, name: "프로덕트 랩", cats: ["제품"], desc: "제품촬영, 음식사진, 상세페이지, 스틸컷", area: "서울 홍대", price: 40000, rating: 4.5, reviews: 67, phone: "02-4567-8901", createdAt: "2026-04-12", location: "서울특별시 마포구 홍대입구 45-6",
+    portfolios: { "제품": ["📦","🍔","🎁","☕","💄","⌚"] } },
+  { id: 6, name: "무브 필름랩", cats: ["영상"], desc: "유튜브촬영, 광고영상, 인터뷰", area: "서울 합정", price: 60000, rating: 4.7, reviews: 45, phone: "02-5678-9012", createdAt: "2026-04-08", location: "서울특별시 마포구 합정동 78-9",
+    portfolios: { "영상": ["🎬","📹","🎥","🎙️","📺","🎞️"] } },
 ];
 
 const HAIR_MAKEUP_OPTIONS = [
@@ -35,6 +47,13 @@ const HAIR_MAKEUP_OPTIONS = [
 ];
 
 const REGIONS = ["전체", "서울 강남", "서울 성수", "서울 잠실", "서울 홍대", "서울 합정", "경기 판교"];
+const PRICE_RANGES = [
+  { key: "all", label: "전체", min: 0, max: Infinity },
+  { key: "low", label: "5만원 이하", min: 0, max: 50000 },
+  { key: "mid", label: "5~10만원", min: 50001, max: 100000 },
+  { key: "high", label: "10~20만원", min: 100001, max: 200000 },
+  { key: "premium", label: "20만원 이상", min: 200001, max: Infinity },
+];
 
 const BOOKED_TIMES = ["10:00", "11:00", "15:00"];
 
@@ -45,7 +64,6 @@ const CONSUMER_NOTIFICATIONS = [
   { id: 4, type: "booking", text: "블룸 웨딩 스튜디오 예약이 확정되었습니다", time: "1일 전", read: true },
   { id: 5, type: "system", text: "퍼니 앱이 업데이트되었습니다", time: "3일 전", read: true },
 ];
-
 
 const UPCOMING_BOOKINGS = [
   { studio: "루미에르 스튜디오", date: "2026.05.10 (토)", time: "14:00~16:00", cat: "프로필", price: "₩100,000", status: "확정" },
@@ -83,8 +101,8 @@ const ALL_MY_BOOKINGS_FOR_MYPAGE = [
   { studio: "블룸 웨딩 스튜디오", date: "2026.03.22 (토) 10:00~14:00", cat: "웨딩", status: "완료" },
 ];
 
-type Screen = "home" | "category" | "search" | "like" | "myBookings" | "detail" | "booking" | "done" | "mypage" | "reviewWrite" | "myReviews" | "paymentHistory" | "login" | "signup" | "bizSignup" | "forgotPassword" | "notifications";
-type Sort = "popular" | "nearby" | "reviews";
+type Screen = "home" | "category" | "myBookings" | "detail" | "booking" | "done" | "mypage" | "reviewWrite" | "myReviews" | "paymentHistory" | "login" | "signup" | "bizSignup" | "forgotPassword" | "notifications";
+type Sort = "newest" | "rating" | "priceAsc";
 type BookingFilter = "예정" | "완료" | "취소";
 type Tab = "home" | "category" | "mypage";
 
@@ -93,14 +111,11 @@ const TIMES = ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","
 export default function ConsumerApp() {
   const [screen, setScreen] = useState<Screen>("home");
   const [prevScreenRef, setPrevScreenRef] = useState<Screen>("home");
-  const [selectedCat, setSelectedCat] = useState("추천");
   const [selectedStudio, setSelectedStudio] = useState(STUDIOS[0]);
   const [tab, setTab] = useState<Tab>("home");
-  const [sort, setSort] = useState<Sort>("popular");
-  const [liked, setLiked] = useState<number[]>([]);
+  const [sort, setSort] = useState<Sort>("newest");
   const [selectedTime, setSelectedTime] = useState("14:00");
   const [selectedDate, setSelectedDate] = useState(10);
-  const [searchText, setSearchText] = useState("");
   const [bookingFilter, setBookingFilter] = useState<BookingFilter>("예정");
   const [adIdx, setAdIdx] = useState(0);
   const [reviewRating, setReviewRating] = useState(5);
@@ -112,6 +127,10 @@ export default function ConsumerApp() {
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
   const [categoryCat, setCategoryCat] = useState("추천");
   const [selectedRegion, setSelectedRegion] = useState("전체");
+  const [selectedPriceRange, setSelectedPriceRange] = useState("all");
+  const [detailEntryCat, setDetailEntryCat] = useState<string>(""); // 탐색 진입 카테고리
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [agreePrivacy, setAgreePrivacy] = useState(false);
 
   const touchStartX = useRef(0);
 
@@ -119,33 +138,50 @@ export default function ConsumerApp() {
   const goBack = () => {
     if (screen === "home") return;
     const map: Record<string, { s: Screen; t: Tab }> = {
-      category: { s: "home", t: "home" }, search: { s: "home", t: "home" }, myBookings: { s: "mypage", t: "mypage" },
-      mypage: { s: "home", t: "home" }, detail: { s: prevScreenRef === "search" ? "search" : prevScreenRef === "category" ? "category" : "home", t: prevScreenRef === "category" ? "category" : "home" },
-      booking: { s: "detail", t: tab }, done: { s: "home", t: "home" }, like: { s: "mypage", t: "mypage" },
-      reviewWrite: { s: "myBookings", t: "mypage" }, myReviews: { s: "mypage", t: "mypage" }, paymentHistory: { s: "mypage", t: "mypage" },
-      login: { s: "mypage", t: "mypage" }, signup: { s: "login", t: "mypage" }, bizSignup: { s: "login", t: "mypage" }, forgotPassword: { s: "login", t: "mypage" },
+      category: { s: "home", t: "home" },
+      myBookings: { s: "mypage", t: "mypage" },
+      mypage: { s: "home", t: "home" },
+      detail: { s: prevScreenRef === "category" ? "category" : "home", t: prevScreenRef === "category" ? "category" : "home" },
+      booking: { s: "detail", t: tab },
+      done: { s: "home", t: "home" },
+      reviewWrite: { s: "myBookings", t: "mypage" },
+      myReviews: { s: "mypage", t: "mypage" },
+      paymentHistory: { s: "mypage", t: "mypage" },
+      login: { s: "mypage", t: "mypage" },
+      signup: { s: "login", t: "mypage" },
+      bizSignup: { s: "login", t: "mypage" },
+      forgotPassword: { s: "login", t: "mypage" },
       notifications: { s: "home", t: "home" },
     };
     const target = map[screen] || { s: "home" as Screen, t: "home" as Tab };
     setScreen(target.s); setTab(target.t);
   };
 
-  const filtered = STUDIOS.filter(s => selectedRegion === "전체" || s.area.includes(selectedRegion.replace("서울 ", "").replace("경기 ", "")));
-  const sorted = [...filtered].sort((a, b) => {
-    if (sort === "popular") return b.rating * b.reviews - a.rating * a.reviews;
-    if (sort === "reviews") return b.reviews - a.reviews;
-    if (sort === "nearby") return a.distance - b.distance;
-    return 0;
+  // 홈: 지역 + 가격대 필터 + 정렬
+  const homeFiltered = STUDIOS
+    .filter(s => selectedRegion === "전체" || s.area.includes(selectedRegion.replace("서울 ", "").replace("경기 ", "")))
+    .filter(s => {
+      const pr = PRICE_RANGES.find(p => p.key === selectedPriceRange);
+      if (!pr) return true;
+      return s.price >= pr.min && s.price <= pr.max;
+    });
+  const homeSorted = [...homeFiltered].sort((a, b) => {
+    if (sort === "rating") return b.rating - a.rating;
+    if (sort === "priceAsc") return a.price - b.price;
+    // newest
+    return b.createdAt.localeCompare(a.createdAt);
   });
-  const catFiltered = categoryCat === "추천" ? STUDIOS : STUDIOS.filter(s => s.cat === categoryCat);
-  const searchResults = searchText ? STUDIOS.filter(s => s.name.includes(searchText) || s.desc.includes(searchText) || s.area.includes(searchText) || s.cat.includes(searchText)) : STUDIOS;
-  const toggleLike = (id: number) => setLiked(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-  const likedStudios = STUDIOS.filter(s => liked.includes(s.id));
+
+  // 카테고리 탭: 카테고리 + 지역 + 가격대
+  const catFiltered = STUDIOS
+    .filter(s => categoryCat === "추천" || s.cats.includes(categoryCat))
+    .filter(s => selectedRegion === "전체" || s.area.includes(selectedRegion.replace("서울 ", "").replace("경기 ", "")));
+
   const toggleOption = (id: number) => setSelectedOptions(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
   const timeIdx = TIMES.indexOf(selectedTime);
   const endTime = TIMES[Math.min(timeIdx + 2, TIMES.length - 1)] || "22:00";
-  const basePrice = parseInt(selectedStudio.price.replace(",", "")) * 2;
+  const basePrice = selectedStudio.price * 2;
   const optionsTotal = selectedOptions.reduce((sum, id) => sum + (HAIR_MAKEUP_OPTIONS.find(o => o.id === id)?.price || 0), 0);
   const totalPrice = basePrice + optionsTotal;
 
@@ -167,9 +203,24 @@ export default function ConsumerApp() {
     return "bg-red-100 text-red-500";
   };
 
-  // Hide header on auth screens
+  // 상세 화면에서 표시할 포트폴리오 (IA-012: 카테고리별 갤러리)
+  const detailPortfolio = (() => {
+    if (detailEntryCat && selectedStudio.portfolios[detailEntryCat]) {
+      return { cat: detailEntryCat, photos: selectedStudio.portfolios[detailEntryCat] };
+    }
+    const firstCat = selectedStudio.cats[0];
+    return { cat: firstCat, photos: selectedStudio.portfolios[firstCat] || [] };
+  })();
+
   const authScreens: Screen[] = ["login", "signup", "bizSignup", "forgotPassword"];
   const showHeader = !authScreens.includes(screen);
+
+  const openDetail = (s: typeof STUDIOS[0], fromCat?: string) => {
+    setSelectedStudio(s);
+    setSelectedOptions([]);
+    setDetailEntryCat(fromCat || "");
+    navigate("detail");
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8 px-4">
@@ -187,38 +238,33 @@ export default function ConsumerApp() {
                 {screen !== "home" && <button onClick={goBack} className="text-gray-500 text-lg w-7 h-7 flex items-center justify-center">‹</button>}
                 <button onClick={() => { setScreen("home"); setTab("home"); }} className="text-xl font-bold text-primary">퍼니</button>
               </div>
-              <div className="flex items-center gap-2">
-                <button onClick={() => navigate("notifications")} className="text-gray-400 text-lg relative">🔔
-                  {CONSUMER_NOTIFICATIONS.some(n => !n.read) && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
-                </button>
-                <button onClick={() => { navigate("search"); }} className="text-gray-400 text-lg">🔍</button>
-              </div>
+              <button onClick={() => navigate("notifications")} className="text-gray-400 text-lg relative">🔔
+                {CONSUMER_NOTIFICATIONS.some(n => !n.read) && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
+              </button>
             </div>
           </div>
         )}
 
-        {/* Content */}
         <div className="overflow-y-auto bg-white" style={{ height: showHeader ? "calc(780px - 84px - 56px)" : "calc(780px - 28px - 56px)" }}>
 
-          {/* ===== HOME ===== */}
+          {/* ===== HOME (IA-010) ===== */}
           {screen === "home" && (
             <div>
-              {/* 프리미엄 영역 — 광고 스튜디오 상단 노출 (REQ-112) */}
+              {/* 프리미엄 영역 — 광고 스튜디오 (REQ-112) */}
               <div className="policy-area mx-4 mt-3 p-2">
                 <PolicyBadge label="광고 정책 미확정" />
                 <div className="mt-1 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
                   <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${adIdx * 100}%)` }}>
                     {STUDIOS.slice(0, 3).map((s, i) => (
-                      <div key={i} onClick={() => { setSelectedStudio(s); setSelectedOptions([]); navigate("detail"); }}
-                        className="min-w-full cursor-pointer">
+                      <div key={i} onClick={() => openDetail(s)} className="min-w-full cursor-pointer">
                         <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-4 flex gap-3 items-center relative">
                           <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
                           <div className="w-16 h-16 bg-white/60 rounded-lg flex items-center justify-center text-2xl shrink-0">📷</div>
                           <div>
                             <p className="text-sm font-bold text-gray-900">{s.name}</p>
-                            <p className="text-[10px] text-gray-500 mt-0.5">{s.cat} · {s.area}</p>
+                            <p className="text-[10px] text-gray-500 mt-0.5">{s.cats.join(", ")} · {s.area}</p>
                             <div className="flex items-center gap-1 mt-1">
-                              <span className="text-xs font-bold">₩{s.price}</span>
+                              <span className="text-xs font-bold">₩{s.price.toLocaleString()}</span>
                               <span className="text-[10px] text-yellow-600">★ {s.rating}</span>
                             </div>
                           </div>
@@ -234,40 +280,51 @@ export default function ConsumerApp() {
                 </div>
               </div>
 
-              {/* Sort + Region Filter */}
+              {/* Filters + Sort (REQ-106) */}
               <div className="px-4 mt-3 mb-2">
                 <p className="font-bold text-base mb-2">추천 스튜디오</p>
-                <div className="flex gap-2">
-                  {([{ key: "popular" as Sort, icon: "🔄", label: "인기순" }, { key: "nearby" as Sort, icon: "📍", label: "내 주변" }, { key: "reviews" as Sort, icon: "💬", label: "리뷰많은순" }]).map(s => (
+                {/* 정렬: 최신등록순 · 평점순 · 가격순 */}
+                <div className="flex gap-2 mb-2">
+                  {([
+                    { key: "newest" as Sort, label: "최신등록순" },
+                    { key: "rating" as Sort, label: "평점순" },
+                    { key: "priceAsc" as Sort, label: "가격 낮은순" },
+                  ]).map(s => (
                     <button key={s.key} onClick={() => setSort(s.key)}
-                      className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs border transition-all ${sort === s.key ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-200 text-gray-500"}`}>{s.icon} {s.label}</button>
+                      className={`rounded-full px-3 py-1.5 text-xs border transition-all ${sort === s.key ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-200 text-gray-500"}`}>{s.label}</button>
                   ))}
                 </div>
-                <div className="flex gap-1.5 mt-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+                {/* 지역 필터 */}
+                <div className="flex gap-1.5 mb-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
                   {REGIONS.map(r => (
                     <button key={r} onClick={() => setSelectedRegion(r)}
-                      className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] border transition-all ${selectedRegion === r ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-100 text-gray-400 bg-gray-50"}`}>{r}</button>
+                      className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] border transition-all ${selectedRegion === r ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-100 text-gray-400 bg-gray-50"}`}>📍 {r}</button>
+                  ))}
+                </div>
+                {/* 가격대 필터 */}
+                <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+                  {PRICE_RANGES.map(p => (
+                    <button key={p.key} onClick={() => setSelectedPriceRange(p.key)}
+                      className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] border transition-all ${selectedPriceRange === p.key ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-100 text-gray-400 bg-gray-50"}`}>💰 {p.label}</button>
                   ))}
                 </div>
               </div>
 
               {/* Studio List */}
               <div className="px-4">
-                {sorted.length === 0 ? (
-                  <div className="text-center py-12"><p className="text-gray-400 text-sm">해당 카테고리에 등록된 스튜디오가 없습니다</p></div>
-                ) : sorted.map(s => (
-                  <div key={s.id} onClick={() => { setSelectedStudio(s); setSelectedOptions([]); navigate("detail"); }} className="w-full flex gap-3 py-4 border-b border-gray-50 text-left cursor-pointer">
-                    <div className="relative w-[88px] h-[88px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-3xl shrink-0">
-                      📷
-                      <button onClick={(e) => { e.stopPropagation(); toggleLike(s.id); }} className="absolute top-1 right-1 w-6 h-6 bg-white/80 rounded-full flex items-center justify-center text-xs">{liked.includes(s.id) ? "❤️" : "🤍"}</button>
-                    </div>
+                {homeSorted.length === 0 ? (
+                  <div className="text-center py-12"><p className="text-gray-400 text-sm">조건에 맞는 스튜디오가 없습니다</p></div>
+                ) : homeSorted.map(s => (
+                  <div key={s.id} onClick={() => openDetail(s)}
+                    className="w-full flex gap-3 py-4 border-b border-gray-50 cursor-pointer">
+                    <div className="w-[88px] h-[88px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-3xl shrink-0">📷</div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm text-gray-900">{s.name}</p>
                       <p className="text-xs text-gray-400 mt-0.5 truncate">{s.desc}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{s.area}{sort === "nearby" ? ` · ${s.distance}km` : ""}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{s.area}</p>
                       <div className="flex items-center gap-1 mt-1.5">
-                        <span className="text-sm font-bold text-gray-900">₩{s.price}</span>
-                        <span className="text-xs text-gray-400">VAT 포함</span>
+                        <span className="text-sm font-bold text-gray-900">₩{s.price.toLocaleString()}</span>
+                        <span className="text-xs text-gray-400">/ 시간 · VAT 포함</span>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-yellow-500">★ {s.rating}</span>
@@ -280,27 +337,41 @@ export default function ConsumerApp() {
             </div>
           )}
 
-          {/* ===== CATEGORY TAB (IA-011) ===== */}
+          {/* ===== CATEGORY (IA-011) ===== */}
           {screen === "category" && (
             <div className="p-4">
               <h2 className="text-base font-bold mb-4">카테고리</h2>
-              <div className="grid grid-cols-4 gap-3 mb-6">
-                {CATEGORIES.map(c => (
-                  <button key={c.name} onClick={() => setCategoryCat(c.name)} className={`flex flex-col items-center gap-1.5 py-3 rounded-xl transition-all ${categoryCat === c.name ? "bg-primary/10 border border-primary" : "bg-gray-50"}`}>
-                    <span className="text-2xl">{c.icon}</span>
-                    <span className={`text-[10px] ${categoryCat === c.name ? "text-primary font-bold" : "text-gray-500"}`}>{c.name}</span>
-                  </button>
+              <div className="policy-area p-2 mb-4">
+                <PolicyBadge label="카테고리 목록 미확정" />
+                <div className="grid grid-cols-4 gap-3 mt-2">
+                  {CATEGORIES.map(c => (
+                    <button key={c.name} onClick={() => setCategoryCat(c.name)}
+                      className={`flex flex-col items-center gap-1.5 py-3 rounded-xl transition-all ${categoryCat === c.name ? "bg-primary/10 border border-primary" : "bg-white"}`}>
+                      <span className="text-2xl">{c.icon}</span>
+                      <span className={`text-[10px] ${categoryCat === c.name ? "text-primary font-bold" : "text-gray-500"}`}>{c.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 지역 필터 */}
+              <div className="flex gap-1.5 mb-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+                {REGIONS.map(r => (
+                  <button key={r} onClick={() => setSelectedRegion(r)}
+                    className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] border transition-all ${selectedRegion === r ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-100 text-gray-400 bg-gray-50"}`}>📍 {r}</button>
                 ))}
               </div>
+
               <p className="text-sm font-bold mb-3">&lsquo;{categoryCat}&rsquo; 스튜디오 {catFiltered.length}곳</p>
               {catFiltered.map(s => (
-                <div key={s.id} onClick={() => { setSelectedStudio(s); setSelectedOptions([]); navigate("detail"); }} className="flex gap-3 py-3 border-b border-gray-50 cursor-pointer">
+                <div key={s.id} onClick={() => openDetail(s, categoryCat === "추천" ? s.cats[0] : categoryCat)}
+                  className="flex gap-3 py-3 border-b border-gray-50 cursor-pointer">
                   <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-xl shrink-0">📷</div>
                   <div>
                     <p className="text-sm font-medium">{s.name}</p>
-                    <p className="text-xs text-gray-400">{s.cat} · {s.area}</p>
+                    <p className="text-xs text-gray-400">{s.cats.join(", ")} · {s.area}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-sm font-bold">₩{s.price}</span>
+                      <span className="text-sm font-bold">₩{s.price.toLocaleString()}</span>
                       <span className="text-xs text-yellow-500">★ {s.rating}</span>
                     </div>
                   </div>
@@ -309,77 +380,12 @@ export default function ConsumerApp() {
             </div>
           )}
 
-          {/* ===== SEARCH ===== */}
-          {screen === "search" && (
-            <div className="p-4">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex-1 bg-gray-100 rounded-xl px-4 py-2.5 flex items-center gap-2">
-                  <span className="text-gray-400 text-sm">🔍</span>
-                  <input type="text" value={searchText} onChange={e => setSearchText(e.target.value)} placeholder="스튜디오, 지역, 카테고리 검색" className="bg-transparent text-sm w-full outline-none" autoFocus />
-                  {searchText && <button onClick={() => setSearchText("")} className="text-gray-400 text-xs">✕</button>}
-                </div>
-                <button onClick={() => { setScreen("home"); setTab("home"); setSearchText(""); }} className="text-sm text-gray-400">취소</button>
-              </div>
-              {!searchText ? (
-                <div>
-                  {/* 인기 키워드 */}
-                  <div className="flex gap-2 overflow-x-auto mb-5" style={{ scrollbarWidth: 'none' }}>
-                    {KEYWORDS.map(k => (
-                      <button key={k} onClick={() => setSearchText(k.split(" ")[1] || k)} className="keyword-pill cursor-pointer hover:bg-primary/5">{k}</button>
-                    ))}
-                  </div>
-                  <p className="text-xs text-gray-400 mb-3">최근 검색어</p>
-                  <div className="flex flex-wrap gap-2">{["프로필", "강남", "바디프로필", "웨딩"].map(k => (<button key={k} onClick={() => setSearchText(k)} className="bg-gray-100 rounded-full px-3 py-1.5 text-xs text-gray-600">{k}</button>))}</div>
-                  <p className="text-xs text-gray-400 mb-3 mt-6">인기 검색어</p>
-                  {["프로필 촬영", "바디프로필", "증명사진", "웨딩 스냅"].map((k, i) => (
-                    <button key={k} onClick={() => setSearchText(k)} className="flex items-center gap-3 py-2.5 w-full text-left">
-                      <span className="text-xs text-primary font-bold w-5">{i + 1}</span><span className="text-sm">{k}</span>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div>
-                  <p className="text-xs text-gray-400 mb-3">&lsquo;{searchText}&rsquo; 검색 결과 {searchResults.length}건</p>
-                  {searchResults.map(s => (
-                    <div key={s.id} onClick={() => { setSelectedStudio(s); setSelectedOptions([]); navigate("detail"); }} className="w-full flex gap-3 py-3 border-b border-gray-50 text-left cursor-pointer">
-                      <div className="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center text-xl shrink-0">📷</div>
-                      <div><p className="text-sm font-medium">{s.name}</p><p className="text-xs text-gray-400">{s.cat} · {s.area}</p><p className="text-xs font-bold text-gray-900 mt-0.5">₩{s.price}</p></div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ===== LIKE ===== */}
-          {screen === "like" && (
-            <div className="p-4">
-              <h2 className="text-base font-bold mb-4">찜한 스튜디오</h2>
-              {likedStudios.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <span className="text-4xl mb-4">♡</span><p className="text-sm text-gray-400">아직 찜한 스튜디오가 없어요</p>
-                  <button onClick={() => { setScreen("home"); setTab("home"); }} className="mt-4 text-sm text-primary font-medium">스튜디오 보러가기 →</button>
-                </div>
-              ) : likedStudios.map(s => (
-                <div key={s.id} onClick={() => { setSelectedStudio(s); setSelectedOptions([]); navigate("detail"); }} className="w-full flex gap-3 py-3 border-b border-gray-50 cursor-pointer">
-                  <div className="relative w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-2xl shrink-0">📷
-                    <button onClick={e => { e.stopPropagation(); toggleLike(s.id); }} className="absolute -top-1 -right-1 text-sm">❤️</button>
-                  </div>
-                  <div><p className="text-sm font-medium">{s.name}</p><p className="text-xs text-gray-400">{s.cat} · {s.area}</p>
-                    <div className="flex items-center gap-1 mt-1"><span className="text-sm font-bold">₩{s.price}</span></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* ===== DETAIL (IA-012: + 헤어메이크업 + 문의전화) ===== */}
+          {/* ===== DETAIL (IA-012) ===== */}
           {screen === "detail" && (
             <div>
               <div className="h-52 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-6xl relative">
                 📷
                 <button onClick={goBack} className="absolute top-3 left-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-sm shadow">←</button>
-                <button onClick={() => toggleLike(selectedStudio.id)} className="absolute top-3 right-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-sm shadow">{liked.includes(selectedStudio.id) ? "❤️" : "🤍"}</button>
               </div>
               <div className="p-4">
                 <h2 className="text-lg font-bold mb-0.5">{selectedStudio.name}</h2>
@@ -389,15 +395,16 @@ export default function ConsumerApp() {
                   <span className="text-xs text-gray-400">리뷰 {selectedStudio.reviews}개</span>
                 </div>
 
+                {/* 가격표 (VAT 포함) */}
                 <div className="bg-gray-50 rounded-xl p-4 mb-4">
                   <p className="text-xs text-gray-500 mb-2 font-medium">촬영 가격</p>
                   <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold">₩{selectedStudio.price}</span>
+                    <span className="text-lg font-bold">₩{selectedStudio.price.toLocaleString()}</span>
                     <span className="text-xs text-gray-400">/ 시간 · VAT 포함</span>
                   </div>
                 </div>
 
-                {/* 헤어/메이크업 옵션 (IA-012) */}
+                {/* 헤어/메이크업 옵션 */}
                 <div className="bg-gray-50 rounded-xl p-4 mb-4">
                   <p className="text-xs text-gray-500 mb-2 font-medium">헤어 / 메이크업 옵션</p>
                   <div className="space-y-2">
@@ -416,12 +423,52 @@ export default function ConsumerApp() {
                   </div>
                 </div>
 
+                {/* 카테고리별 포트폴리오 (IA-012 / REQ-106) */}
                 <div className="mb-4">
-                  <p className="text-xs text-gray-500 mb-2 font-medium">포트폴리오 (최대 30장)</p>
-                  <div className="grid grid-cols-3 gap-1 rounded-xl overflow-hidden">{[1,2,3,4,5,6].map(i => <div key={i} className="aspect-square bg-gray-100" />)}</div>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs text-gray-500 font-medium">{detailPortfolio.cat} 포트폴리오</p>
+                    <span className="text-[10px] text-gray-400">최대 30장</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1 rounded-xl overflow-hidden">
+                    {detailPortfolio.photos.map((emoji, i) => (
+                      <div key={i} className="aspect-square bg-gray-100 flex items-center justify-center text-2xl">{emoji}</div>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Date/Time */}
+                {/* 위치 (지도) - REQ-106 */}
+                <div className="mb-4">
+                  <p className="text-xs text-gray-500 mb-2 font-medium">위치</p>
+                  <div className="bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
+                    <div className="h-32 bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center relative">
+                      <div className="absolute inset-0 opacity-40" style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
+                      <span className="text-3xl z-10">📍</span>
+                    </div>
+                    <div className="p-3">
+                      <p className="text-xs font-medium text-gray-700">{selectedStudio.location}</p>
+                      <a href={`tel:${selectedStudio.phone}`} className="text-[10px] text-primary mt-1 inline-block">📞 {selectedStudio.phone}</a>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Reviews (IA-031) */}
+                <div className="policy-area mb-4 p-3">
+                  <PolicyBadge label="리뷰 정책 미확정" />
+                  <div className="mt-2">
+                    <p className="text-sm font-medium mb-2">리뷰 {selectedStudio.reviews}개</p>
+                    <div className="space-y-2">
+                      {[{ name: "김**", rating: 5, text: "분위기 너무 좋아요! 사진 결과물도 만족합니다" }, { name: "이**", rating: 4, text: "접근성이 좋고 시설이 깔끔해요" }].map((r, i) => (
+                        <div key={i} className="bg-white rounded-lg p-3 border border-gray-100">
+                          <div className="flex items-center gap-2 mb-1"><span className="text-xs font-medium">{r.name}</span><span className="text-xs text-yellow-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span></div>
+                          <p className="text-xs text-gray-600">{r.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-amber-600 mt-2">사진 첨부 · 작성 기간 · 업체 답글 → 미확정</p>
+                  </div>
+                </div>
+
+                {/* 예약 단위 정책 미확정 */}
                 <div className="policy-area mb-4 p-3">
                   <PolicyBadge label="예약 단위 미확정" />
                   <div className="mt-2">
@@ -439,7 +486,7 @@ export default function ConsumerApp() {
                         const booked = BOOKED_TIMES.includes(t);
                         return (
                           <button key={t} onClick={() => !booked && setSelectedTime(t)} disabled={booked}
-                            className={`rounded-lg py-2 text-center text-xs transition-all ${booked ? "bg-gray-200 text-gray-300 line-through cursor-not-allowed" : selectedTime === t ? "bg-primary text-white font-bold" : "bg-gray-100 text-gray-600"}`}>{t}{booked ? "" : ""}</button>
+                            className={`rounded-lg py-2 text-center text-xs transition-all ${booked ? "bg-gray-200 text-gray-300 line-through cursor-not-allowed" : selectedTime === t ? "bg-primary text-white font-bold" : "bg-gray-100 text-gray-600"}`}>{t}</button>
                         );
                       })}
                     </div>
@@ -447,42 +494,23 @@ export default function ConsumerApp() {
                   </div>
                 </div>
 
-                {/* Reviews */}
-                <div className="policy-area mb-4 p-3">
-                  <PolicyBadge label="리뷰 정책 미확정" />
-                  <div className="mt-2">
-                    <p className="text-sm font-medium mb-2">리뷰 {selectedStudio.reviews}개</p>
-                    <div className="space-y-2">
-                      {[{ name: "김**", rating: 5, text: "분위기 너무 좋아요! 사진 결과물도 만족합니다" }, { name: "이**", rating: 4, text: "접근성이 좋고 시설이 깔끔해요" }].map((r, i) => (
-                        <div key={i} className="bg-white rounded-lg p-3 border border-gray-100">
-                          <div className="flex items-center gap-2 mb-1"><span className="text-xs font-medium">{r.name}</span><span className="text-xs text-yellow-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span></div>
-                          <p className="text-xs text-gray-600">{r.text}</p>
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-[10px] text-amber-600 mt-2">사진 첨부 · 작성 기간 · 업체 답글 → 미확정</p>
-                  </div>
-                </div>
-
-                {/* CTA: 예약 + 문의(전화) (IA-012) */}
+                {/* CTA: 예약 + 문의(전화) */}
                 <div className="flex gap-2">
-                  <a href={`tel:${selectedStudio.phone}`} className="flex items-center justify-center gap-1 w-14 h-12 border border-gray-300 rounded-xl text-gray-500 text-sm shrink-0">📞</a>
+                  <a href={`tel:${selectedStudio.phone}`} className="flex items-center justify-center w-14 h-12 border border-gray-300 rounded-xl text-gray-500 text-sm shrink-0">📞</a>
                   <button onClick={() => navigate("booking")} className="flex-1 bg-primary text-white py-3.5 rounded-xl font-bold text-sm">예약하기</button>
                 </div>
-                <p className="text-center text-[10px] text-gray-400 mt-1">📞 {selectedStudio.phone}</p>
               </div>
             </div>
           )}
 
-          {/* ===== BOOKING (IA-020: + 헤어메이크업 옵션 포함) ===== */}
+          {/* ===== BOOKING (IA-020) ===== */}
           {screen === "booking" && (
             <div className="p-4">
               <h2 className="text-lg font-bold mb-4">예약 확인</h2>
               <div className="bg-gray-50 rounded-xl p-4 mb-4">
                 <p className="font-bold text-sm">{selectedStudio.name}</p>
-                <p className="text-xs text-gray-400 mt-1">{selectedStudio.cat} · {selectedStudio.area}</p>
+                <p className="text-xs text-gray-400 mt-1">{selectedStudio.cats.join(", ")} · {selectedStudio.area}</p>
               </div>
-
               <div className="space-y-3 mb-4 px-1">
                 <div className="flex justify-between text-sm"><span className="text-gray-500">날짜</span><span className="font-medium">2026.05.{selectedDate} ({["목","금","토","일","월","화","수"][selectedDate - 8]})</span></div>
                 <div className="flex justify-between text-sm"><span className="text-gray-500">시간</span><span className="font-medium">{selectedTime} ~ {endTime} (2시간)</span></div>
@@ -511,7 +539,7 @@ export default function ConsumerApp() {
             </div>
           )}
 
-          {/* ===== DONE ===== */}
+          {/* ===== DONE (IA-022) ===== */}
           {screen === "done" && (
             <div className="p-6 flex flex-col items-center justify-center" style={{ minHeight: 500 }}>
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-4xl mb-4">✅</div>
@@ -527,7 +555,7 @@ export default function ConsumerApp() {
             </div>
           )}
 
-          {/* ===== MY BOOKINGS ===== */}
+          {/* ===== MY BOOKINGS (IA-023/051) ===== */}
           {screen === "myBookings" && (
             <div className="p-4">
               <h2 className="text-base font-bold mb-4">내 예약</h2>
@@ -555,7 +583,7 @@ export default function ConsumerApp() {
             </div>
           )}
 
-          {/* ===== REVIEW WRITE ===== */}
+          {/* ===== REVIEW WRITE (IA-030) ===== */}
           {screen === "reviewWrite" && (
             <div className="p-4">
               <h2 className="text-base font-bold mb-4">리뷰 작성</h2>
@@ -574,7 +602,7 @@ export default function ConsumerApp() {
             </div>
           )}
 
-          {/* ===== MY REVIEWS ===== */}
+          {/* ===== MY REVIEWS (IA-053) ===== */}
           {screen === "myReviews" && (
             <div className="p-4">
               <h2 className="text-base font-bold mb-4">내 리뷰 관리</h2>
@@ -588,7 +616,7 @@ export default function ConsumerApp() {
             </div>
           )}
 
-          {/* ===== PAYMENT HISTORY ===== */}
+          {/* ===== PAYMENT HISTORY (IA-052) ===== */}
           {screen === "paymentHistory" && (
             <div className="p-4">
               <h2 className="text-base font-bold mb-4">결제 내역</h2>
@@ -601,9 +629,10 @@ export default function ConsumerApp() {
             </div>
           )}
 
-          {/* ===== MY PAGE (IA-050~053) ===== */}
+          {/* ===== MY PAGE (IA-050) ===== */}
           {screen === "mypage" && (
             <div className="p-4">
+              {/* 프로필 편집 */}
               <div className="flex items-center gap-3 mb-6">
                 <div className="relative">
                   <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-2xl">👤</div>
@@ -616,7 +645,7 @@ export default function ConsumerApp() {
                 </div>
               </div>
 
-              {/* Booking History with Pagination */}
+              {/* 예약 내역 with pagination */}
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-bold text-sm">예약 내역</h3>
@@ -639,7 +668,6 @@ export default function ConsumerApp() {
                 {[
                   { label: "내 예약 내역", action: () => navigate("myBookings") },
                   { label: "내 리뷰 관리", action: () => navigate("myReviews") },
-                  { label: "찜 목록", action: () => { setScreen("like"); } },
                   { label: "결제 내역", action: () => navigate("paymentHistory") },
                   { label: "고객센터", action: () => {} },
                   { label: "로그아웃", action: () => navigate("login") },
@@ -687,18 +715,33 @@ export default function ConsumerApp() {
               <h2 className="text-lg font-bold mb-1">회원가입</h2>
               <p className="text-xs text-gray-400 mb-6">소비자 계정</p>
 
-              <div className="space-y-3 mb-6">
+              <div className="space-y-3 mb-4">
                 <div><p className="text-xs text-gray-500 mb-1">이름</p><input type="text" placeholder="홍길동" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
-                <div><p className="text-xs text-gray-500 mb-1">닉네임</p><input type="text" placeholder="퍼니유저" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
+                <div><p className="text-xs text-gray-500 mb-1">닉네임 (앱 내 표시)</p><input type="text" placeholder="퍼니유저" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
                 <div><p className="text-xs text-gray-500 mb-1">이메일</p><input type="email" placeholder="email@example.com" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
                 <div><p className="text-xs text-gray-500 mb-1">비밀번호</p><input type="password" placeholder="8자 이상" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
+              </div>
+
+              {/* 약관 동의 (REQ-101) */}
+              <div className="space-y-2 mb-4 bg-gray-50 rounded-xl p-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={agreeTerms} onChange={e => setAgreeTerms(e.target.checked)} className="w-4 h-4 accent-[#7C3AED]" />
+                  <span className="text-xs flex-1"><span className="text-red-500">*</span> 서비스 이용약관 동의</span>
+                  <span className="text-[10px] text-gray-400 underline">보기</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={agreePrivacy} onChange={e => setAgreePrivacy(e.target.checked)} className="w-4 h-4 accent-[#7C3AED]" />
+                  <span className="text-xs flex-1"><span className="text-red-500">*</span> 개인정보 처리방침 동의</span>
+                  <span className="text-[10px] text-gray-400 underline">보기</span>
+                </label>
               </div>
 
               <p className="text-xs text-gray-400 mb-3">또는 SNS로 가입</p>
               <button className="w-full bg-[#FEE500] text-[#191919] py-3 rounded-xl font-bold text-sm mb-2">💬 카카오로 가입</button>
               <button className="w-full bg-[#03C75A] text-white py-3 rounded-xl font-bold text-sm mb-6">🟢 네이버로 가입</button>
 
-              <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm">가입 완료</button>
+              <button onClick={() => { if (agreeTerms && agreePrivacy) { setScreen("home"); setTab("home"); } }} disabled={!agreeTerms || !agreePrivacy}
+                className={`w-full py-3 rounded-xl font-bold text-sm ${agreeTerms && agreePrivacy ? "bg-primary text-white" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}>가입 완료</button>
             </div>
           )}
 
@@ -708,27 +751,37 @@ export default function ConsumerApp() {
               <h2 className="text-lg font-bold mb-1">업체 회원가입</h2>
               <p className="text-xs text-gray-400 mb-6">사업자 계정 · 승인 후 이용 가능</p>
 
-              <div className="space-y-3 mb-6">
-                <div><p className="text-xs text-gray-500 mb-1">사업자등록번호</p><input type="text" placeholder="000-00-00000" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
+              <div className="space-y-3 mb-4">
+                <div><p className="text-xs text-gray-500 mb-1">업체명</p><input type="text" placeholder="스튜디오명" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
                 <div><p className="text-xs text-gray-500 mb-1">대표자명</p><input type="text" placeholder="홍길동" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
-                <div><p className="text-xs text-gray-500 mb-1">상호명</p><input type="text" placeholder="스튜디오명" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
+                <div><p className="text-xs text-gray-500 mb-1">사업자등록번호</p><input type="text" placeholder="000-00-00000" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
                 <div><p className="text-xs text-gray-500 mb-1">연락처</p><input type="tel" placeholder="02-0000-0000" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
                 <div><p className="text-xs text-gray-500 mb-1">이메일</p><input type="email" placeholder="biz@example.com" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
+                <div><p className="text-xs text-gray-500 mb-1">비밀번호</p><input type="password" placeholder="8자 이상" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
               </div>
 
-              <div className="mb-6">
-                <p className="text-xs text-gray-500 mb-2">포트폴리오 사진 업로드 (최대 30장)</p>
+              <div className="mb-4">
+                <p className="text-xs text-gray-500 mb-2">스튜디오/작업물 사진 업로드</p>
                 <div className="grid grid-cols-4 gap-2">
                   <div className="aspect-square bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed border-gray-300"><span className="text-xl text-gray-400">+</span></div>
                   {[1,2,3].map(i => <div key={i} className="aspect-square bg-gray-100 rounded-xl" />)}
                 </div>
-                <p className="text-[10px] text-gray-400 mt-1">사진만 가능 · 동영상 불가</p>
+                <p className="text-[10px] text-gray-400 mt-1">심사 시 활용됩니다</p>
               </div>
 
-              <button onClick={() => {
-                setScreen("login"); // Show approval waiting inline
-                // In real app, would navigate to approval waiting screen
-              }} className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm mb-3">가입 신청</button>
+              {/* 약관 동의 */}
+              <div className="space-y-2 mb-4 bg-gray-50 rounded-xl p-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" className="w-4 h-4 accent-[#7C3AED]" />
+                  <span className="text-xs flex-1"><span className="text-red-500">*</span> 서비스 이용약관 동의</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" className="w-4 h-4 accent-[#7C3AED]" />
+                  <span className="text-xs flex-1"><span className="text-red-500">*</span> 개인정보 처리방침 동의</span>
+                </label>
+              </div>
+
+              <button onClick={() => { setScreen("login"); }} className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm mb-3">가입 신청</button>
 
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                 <p className="text-xs font-bold text-amber-700 mb-1">📋 승인 안내</p>
@@ -745,19 +798,17 @@ export default function ConsumerApp() {
           {screen === "forgotPassword" && (
             <div className="p-6 pt-16">
               <h2 className="text-lg font-bold mb-1">비밀번호 찾기</h2>
-              <p className="text-xs text-gray-400 mb-8">가입 시 사용한 이메일을 입력해주세요</p>
-
+              <p className="text-xs text-gray-400 mb-8">가입 시 사용한 이메일로 재설정 링크를 발송합니다</p>
               <div className="mb-6">
                 <p className="text-xs text-gray-500 mb-1">이메일</p>
                 <input type="email" placeholder="email@example.com" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" />
               </div>
-
               <button onClick={goBack} className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm mb-4">비밀번호 재설정 링크 발송</button>
               <p className="text-center text-[10px] text-gray-400">입력한 이메일로 비밀번호 재설정 링크가 전송됩니다</p>
             </div>
           )}
 
-          {/* ===== NOTIFICATIONS (REQ-114) ===== */}
+          {/* ===== NOTIFICATIONS (IA-040) ===== */}
           {screen === "notifications" && (
             <div className="p-4">
               <h2 className="text-base font-bold mb-4">알림</h2>
@@ -777,7 +828,7 @@ export default function ConsumerApp() {
           )}
         </div>
 
-        {/* Bottom Tab - IA 기준 3탭: 홈/카테고리/마이페이지 */}
+        {/* Bottom Tab — IA: 홈/카테고리/마이페이지 */}
         {showHeader && (
           <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">
             {[

@@ -75,6 +75,10 @@ export default function BusinessApp() {
   const [selectedStudio, setSelectedStudio] = useState(STUDIOS[0]);
   const [categoryCat, setCategoryCat] = useState("추천");
   const [adIdx, setAdIdx] = useState(0);
+  const [showManualModal, setShowManualModal] = useState(false);
+  const [manualDate, setManualDate] = useState("");
+  const [manualTime, setManualTime] = useState("");
+  const [manualMemo, setManualMemo] = useState("");
   const touchStartX = useRef(0);
 
   const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
@@ -429,19 +433,33 @@ export default function BusinessApp() {
                   </div>
                 )}
 
-                {/* Photos */}
+                {/* 카테고리별 포트폴리오 업로드 (REQ-103 / IA-060) */}
                 <div>
-                  <label className="text-xs text-gray-500 mb-1.5 block font-medium">포트폴리오 (최대 30장, 동영상 불가)</label>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                      <div key={i} className={`aspect-square rounded-lg flex items-center justify-center ${
-                        i < 6 ? "bg-gray-200" : "bg-white border-2 border-dashed border-gray-200 text-gray-300 text-lg cursor-pointer hover:border-primary hover:text-primary"
-                      }`}>
-                        {i >= 6 && "+"}
+                  <label className="text-xs text-gray-500 mb-1.5 block font-medium">카테고리별 포트폴리오 (카테고리당 최대 30장, 동영상 불가)</label>
+                  {selectedCats.length === 0 ? (
+                    <div className="bg-gray-50 rounded-xl p-4 text-center">
+                      <p className="text-xs text-gray-400">카테고리를 먼저 선택하세요</p>
+                    </div>
+                  ) : selectedCats.map((c, catIdx) => (
+                    <div key={c} className="bg-gray-50 rounded-xl p-3 mb-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-bold">{c} 포트폴리오</p>
+                        <span className="text-[10px] text-gray-400">{catIdx === 0 ? 6 : catIdx === 1 ? 4 : 0} / 30장</span>
                       </div>
-                    ))}
-                  </div>
-                  <p className="text-[10px] text-gray-400 mt-1">6 / 30장</p>
+                      <div className="grid grid-cols-5 gap-1.5">
+                        {(() => {
+                          const count = catIdx === 0 ? 6 : catIdx === 1 ? 4 : 0;
+                          return Array.from({ length: Math.min(count + 1, 10) }).map((_, i) => (
+                            <div key={i} className={`aspect-square rounded-lg flex items-center justify-center ${
+                              i < count ? "bg-gray-200" : "bg-white border-2 border-dashed border-gray-300 text-gray-300 text-lg cursor-pointer hover:border-primary hover:text-primary"
+                            }`}>
+                              {i >= count && "+"}
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 {/* 헤어/메이크업 옵션 3종 (REQ-103) */}
@@ -559,7 +577,7 @@ export default function BusinessApp() {
             <div className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-base font-bold">예약 관리</h2>
-                <button onClick={() => {/* 수기 일정 추가 모달 - 프로토타입 */}}
+                <button onClick={() => setShowManualModal(true)}
                   className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-[10px] font-medium">
                   ✏️ 수기 일정 추가
                 </button>
@@ -773,8 +791,6 @@ export default function BusinessApp() {
               <div className="space-y-0">
                 {[
                   { label: "리뷰 관리", action: () => {} },
-                  { label: "사업자 정보", action: () => {} },
-                  { label: "업체 가입 신청 (데모)", action: () => setScreen("bizSignup") },
                   { label: "고객센터", action: () => {} },
                   { label: "로그아웃", action: () => {} },
                 ].map(m => (
@@ -888,6 +904,39 @@ export default function BusinessApp() {
             </div>
           )}
         </div>
+
+        {/* ===== 수기 일정 추가 모달 (IA-062 / REQ-104) ===== */}
+        {showManualModal && (
+          <div className="absolute inset-0 bg-black/50 z-30 flex items-end">
+            <div className="w-full bg-white rounded-t-3xl p-5 pb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-bold">수기 일정 추가</h3>
+                <button onClick={() => setShowManualModal(false)} className="text-gray-400 text-xl">✕</button>
+              </div>
+              <p className="text-[10px] text-gray-400 mb-4">앱 외부로 받은 예약을 달력에 수기로 추가합니다</p>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">날짜</label>
+                  <input type="date" value={manualDate} onChange={e => setManualDate(e.target.value)}
+                    className="w-full bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-200" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">시간</label>
+                  <input type="time" value={manualTime} onChange={e => setManualTime(e.target.value)}
+                    className="w-full bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-200" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">메모</label>
+                  <textarea value={manualMemo} onChange={e => setManualMemo(e.target.value)}
+                    placeholder="예약자명, 연락처, 특이사항 등" rows={3}
+                    className="w-full bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-200 resize-none" />
+                </div>
+              </div>
+              <button onClick={() => { setShowManualModal(false); setManualDate(""); setManualTime(""); setManualMemo(""); }}
+                className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm mt-4">일정 추가</button>
+            </div>
+          </div>
+        )}
 
         {/* Bottom Tab - 소비자 앱과 동일 3탭: 홈/카테고리/마이페이지 (마이페이지만 업체 전용) */}
         <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">

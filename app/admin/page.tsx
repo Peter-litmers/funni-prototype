@@ -10,6 +10,8 @@ type Tab = "dashboard" | "businesses" | "settlement" | "ads" | "members" | "cate
 
 export default function AdminWeb() {
   const [tab, setTab] = useState<Tab>("dashboard");
+  const [bizDetail, setBizDetail] = useState<null | { name: string; cats: string; area: string; status: string; photos: number }>(null);
+  const [bizDetailView, setBizDetailView] = useState<"info" | "portfolio" | "calendar">("info");
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -317,18 +319,18 @@ export default function AdminWeb() {
                           <div className="flex gap-1 flex-wrap">
                             <button className="text-xs bg-primary text-white px-3 py-1 rounded-lg">승인</button>
                             <button className="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-lg">거절</button>
-                            <button className="text-xs text-primary px-2 py-1">📷 사진({b.photos})</button>
+                            <button onClick={() => { setBizDetail(b); setBizDetailView("portfolio"); }} className="text-xs text-primary px-2 py-1">📷 사진({b.photos})</button>
                           </div>
                         ) : b.status === "정지" ? (
                           <div className="flex gap-1">
                             <button className="text-xs text-green-600 px-2 py-1 bg-green-50 rounded">해제</button>
-                            <button className="text-xs text-gray-400 px-2 py-1">📅 달력</button>
+                            <button onClick={() => { setBizDetail(b); setBizDetailView("calendar"); }} className="text-xs text-gray-400 px-2 py-1">📅 달력</button>
                           </div>
                         ) : (
                           <div className="flex gap-1">
-                            <button className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">상세</button>
+                            <button onClick={() => { setBizDetail(b); setBizDetailView("info"); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">상세</button>
                             <button className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded">정지</button>
-                            <button className="text-xs text-gray-400 px-2 py-1">📅 달력</button>
+                            <button onClick={() => { setBizDetail(b); setBizDetailView("calendar"); }} className="text-xs text-gray-400 px-2 py-1">📅 달력</button>
                           </div>
                         )}
                       </td>
@@ -421,35 +423,67 @@ export default function AdminWeb() {
 
         {tab === "ads" && (
           <div>
-            <h2 className="text-xl font-bold mb-6">광고 관리</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold">광고 관리 (상단 노출)</h2>
+              <button className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium">+ 광고 업체 추가</button>
+            </div>
 
             <div className="policy-area p-4 mb-6">
               <PolicyBadge label="광고 정책 미확정" />
-              <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div className="bg-white rounded-lg p-3">
-                  <p className="text-xs text-gray-500">상단 노출 구좌 수</p>
-                  <p className="text-sm text-amber-700 font-medium">미확정</p>
-                </div>
-                <div className="bg-white rounded-lg p-3">
-                  <p className="text-xs text-gray-500">광고 기간 단위</p>
-                  <p className="text-sm text-amber-700 font-medium">주간/월간 → 미확정</p>
-                </div>
-                <div className="bg-white rounded-lg p-3">
-                  <p className="text-xs text-gray-500">과금 방식</p>
-                  <p className="text-sm text-amber-700 font-medium">고정금액 vs 입찰 → 미확정</p>
-                </div>
-              </div>
+              <p className="text-sm text-amber-700 mt-2">구좌 수 · 기간 단위(주간/월간) · 과금 방식(고정/입찰) → 미확정</p>
             </div>
 
-            {/* Ad Slots Preview */}
+            {/* 현재 노출 중인 광고 스튜디오 (REQ-112 상단 노출) */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+              <div className="p-4 border-b border-gray-100">
+                <h3 className="font-bold text-sm">현재 노출 중인 스튜디오 (프리미엄 영역)</h3>
+                <p className="text-[10px] text-gray-400 mt-0.5">메인 홈 상단 · 카테고리 페이지 상단에 '광고' 라벨로 노출</p>
+              </div>
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left p-4 font-medium text-gray-500">순서</th>
+                    <th className="text-left p-4 font-medium text-gray-500">스튜디오</th>
+                    <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">카테고리</th>
+                    <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">기간</th>
+                    <th className="text-left p-4 font-medium text-gray-500">상태</th>
+                    <th className="text-left p-4 font-medium text-gray-500">액션</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { order: 1, studio: "루미에르 스튜디오", cat: "프로필", period: "04.01~04.30", status: "노출중" },
+                    { order: 2, studio: "선셋 포토랩", cat: "바디프로필", period: "04.15~05.15", status: "노출중" },
+                    { order: 3, studio: "블룸 웨딩 스튜디오", cat: "웨딩", period: "04.10~05.10", status: "노출중" },
+                    { order: 4, studio: "프로덕트 랩", cat: "제품", period: "05.01~05.31", status: "대기" },
+                  ].map((a, i) => (
+                    <tr key={i} className="border-t border-gray-50">
+                      <td className="p-4"><div className="flex items-center gap-1"><span className="font-mono text-xs text-gray-400">#{a.order}</span><button className="text-[10px] text-gray-400">▲</button><button className="text-[10px] text-gray-400">▼</button></div></td>
+                      <td className="p-4 font-medium">{a.studio}</td>
+                      <td className="p-4 text-gray-500 hidden md:table-cell"><span className="bg-gray-100 text-xs px-2 py-0.5 rounded">{a.cat}</span></td>
+                      <td className="p-4 text-gray-500 text-xs hidden md:table-cell">{a.period}</td>
+                      <td className="p-4"><span className={`text-xs px-2 py-1 rounded-full ${a.status === "노출중" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{a.status}</span></td>
+                      <td className="p-4"><div className="flex gap-1"><button className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">수정</button><button className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded">중지</button></div></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* 미리보기 */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="font-bold mb-4">광고 구좌 미리보기</h3>
+              <h3 className="font-bold mb-4 text-sm">유저 앱 프리미엄 영역 미리보기</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center">
-                    <p className="text-2xl mb-2">📢</p>
-                    <p className="text-sm font-medium text-gray-400">광고 구좌 #{i}</p>
-                    <p className="text-xs text-gray-300 mt-1">정책 확정 후 관리 가능</p>
+                {["루미에르 스튜디오", "선셋 포토랩", "블룸 웨딩 스튜디오"].map((name, i) => (
+                  <div key={i} className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-4 relative">
+                    <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
+                    <div className="flex items-center gap-3 mt-6">
+                      <div className="w-12 h-12 bg-white/60 rounded-lg flex items-center justify-center text-lg">📷</div>
+                      <div>
+                        <p className="text-xs font-bold">{name}</p>
+                        <p className="text-[10px] text-gray-500">서울 · 프리미엄 구좌 #{i + 1}</p>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -724,6 +758,96 @@ export default function AdminWeb() {
           </div>
         )}
       </div>
+
+      {/* ===== 업체 상세 모달 (REQ-115) ===== */}
+      {bizDetail && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setBizDetail(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="p-6 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold">{bizDetail.name}</h2>
+                  <p className="text-xs text-gray-400 mt-0.5">{bizDetail.cats} · {bizDetail.area}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs px-2 py-1 rounded-full ${bizDetail.status === "운영중" ? "bg-green-100 text-green-700" : bizDetail.status === "정지" ? "bg-red-100 text-red-500" : "bg-yellow-100 text-yellow-700"}`}>{bizDetail.status}</span>
+                  <button onClick={() => setBizDetail(null)} className="text-gray-400 text-xl ml-2">✕</button>
+                </div>
+              </div>
+              {/* View Tabs */}
+              <div className="flex gap-2 mt-4">
+                {([
+                  { key: "info" as const, label: "기본정보" },
+                  { key: "portfolio" as const, label: `포트폴리오 (${bizDetail.photos}장)` },
+                  { key: "calendar" as const, label: "예약 달력" },
+                ]).map(v => (
+                  <button key={v.key} onClick={() => setBizDetailView(v.key)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium ${bizDetailView === v.key ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{v.label}</button>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-6">
+              {bizDetailView === "info" && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-gray-50 rounded-lg p-3"><p className="text-[10px] text-gray-400">사업자등록번호</p><p className="text-sm font-medium">123-45-67890</p></div>
+                    <div className="bg-gray-50 rounded-lg p-3"><p className="text-[10px] text-gray-400">대표자명</p><p className="text-sm font-medium">김대표</p></div>
+                    <div className="bg-gray-50 rounded-lg p-3"><p className="text-[10px] text-gray-400">연락처</p><p className="text-sm font-medium">02-1234-5678</p></div>
+                    <div className="bg-gray-50 rounded-lg p-3"><p className="text-[10px] text-gray-400">이메일</p><p className="text-sm font-medium">biz@example.com</p></div>
+                    <div className="bg-gray-50 rounded-lg p-3"><p className="text-[10px] text-gray-400">카테고리</p><p className="text-sm font-medium">{bizDetail.cats}</p></div>
+                    <div className="bg-gray-50 rounded-lg p-3"><p className="text-[10px] text-gray-400">지역</p><p className="text-sm font-medium">{bizDetail.area}</p></div>
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    {bizDetail.status === "운영중" && <button className="bg-red-50 text-red-500 px-4 py-2 rounded-lg text-sm">정지</button>}
+                    {bizDetail.status === "정지" && <button className="bg-green-50 text-green-600 px-4 py-2 rounded-lg text-sm">해제</button>}
+                    {bizDetail.status === "승인대기" && <><button className="bg-primary text-white px-4 py-2 rounded-lg text-sm">승인</button><button className="bg-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm">거절</button></>}
+                  </div>
+                </div>
+              )}
+
+              {bizDetailView === "portfolio" && (
+                <div>
+                  <p className="text-sm font-bold mb-3">가입 시 제출한 포트폴리오 사진</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {Array.from({ length: bizDetail.photos }).map((_, i) => (
+                      <div key={i} className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center text-xl">📷</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {bizDetailView === "calendar" && (
+                <div>
+                  <p className="text-sm font-bold mb-3">업체 예약 달력 (2026년 5월)</p>
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-gray-400 mb-2">
+                      {["일","월","화","수","목","금","토"].map(d => <div key={d}>{d}</div>)}
+                    </div>
+                    <div className="grid grid-cols-7 gap-1 text-center">
+                      {Array.from({ length: 31 }).map((_, i) => {
+                        const hasBooking = [5, 8, 10, 11, 12, 13, 15, 18, 20, 25].includes(i + 1);
+                        const isManual = [6, 14, 22].includes(i + 1);
+                        return (
+                          <div key={i} className={`py-1.5 rounded text-xs ${hasBooking ? "bg-primary/10 text-primary font-bold" : isManual ? "bg-amber-50 text-amber-600 font-medium" : "text-gray-500"}`}>
+                            {i + 1}
+                            {hasBooking && <span className="block text-[7px]">예약</span>}
+                            {isManual && <span className="block text-[7px]">수기</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="flex gap-3 mt-3 text-[10px] text-gray-400">
+                      <span className="flex items-center gap-1"><span className="w-3 h-3 bg-primary/10 rounded inline-block" /> 앱 예약</span>
+                      <span className="flex items-center gap-1"><span className="w-3 h-3 bg-amber-50 rounded inline-block" /> 수기 일정</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
