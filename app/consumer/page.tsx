@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 import Link from "next/link";
+import FeedbackOverlay from "../components/FeedbackOverlay";
 
 function PolicyBadge({ label }: { label: string }) {
   return <span className="policy-badge">⚠️ {label}</span>;
@@ -845,6 +846,7 @@ export default function ConsumerApp() {
           </div>
         )}
       </div>
+      <FeedbackOverlay pageUrl="consumer" />
     </div>
   );
 }

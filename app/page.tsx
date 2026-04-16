@@ -1,4 +1,6 @@
+"use client";
 import Link from "next/link";
+import FeedbackOverlay from "./components/FeedbackOverlay";
 
 export default function Home() {
   return (
@@ -13,21 +15,21 @@ export default function Home() {
         <Link href="/consumer" className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 border border-gray-100">
           <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-2xl mb-4">📱</div>
           <h2 className="text-lg font-bold text-gray-900 mb-1">소비자 화면</h2>
-          <p className="text-xs text-gray-400 mb-3 leading-relaxed">스튜디오 탐색 → 예약 → 결제<br/>바비톡 스타일 UI</p>
+          <p className="text-xs text-gray-400 mb-3 leading-relaxed">스튜디오 탐색 → 예약 → 결제</p>
           <span className="text-primary font-medium text-sm group-hover:underline">열기 →</span>
         </Link>
 
         <Link href="/business" className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 border border-gray-100">
           <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-2xl mb-4">🏢</div>
           <h2 className="text-lg font-bold text-gray-900 mb-1">업체 화면</h2>
-          <p className="text-xs text-gray-400 mb-3 leading-relaxed">스튜디오 등록 → 예약 관리 → 정산<br/>MY에서 업체 모드 전환</p>
+          <p className="text-xs text-gray-400 mb-3 leading-relaxed">스튜디오 관리 → 예약 달력 → 정산</p>
           <span className="text-primary font-medium text-sm group-hover:underline">열기 →</span>
         </Link>
 
         <Link href="/admin" className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 border border-gray-100">
           <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-2xl mb-4">🖥️</div>
           <h2 className="text-lg font-bold text-gray-900 mb-1">어드민 웹</h2>
-          <p className="text-xs text-gray-400 mb-3 leading-relaxed">입점 관리 → 수동 정산 → 광고<br/>운영자 대시보드</p>
+          <p className="text-xs text-gray-400 mb-3 leading-relaxed">입점 관리 → 수동 정산 → 광고</p>
           <span className="text-primary font-medium text-sm group-hover:underline">열기 →</span>
         </Link>
       </div>
@@ -38,11 +40,11 @@ export default function Home() {
         </div>
         <p className="text-xs text-gray-500 leading-relaxed">
           소비자와 업체는 <strong className="text-primary">하나의 앱</strong>에서 동작합니다.
-          하단 네비게이션 바(홈/탐색/예약/MY)는 동일하며, MY 탭에서 업체 모드로 전환하면 각 탭의 내용이 업체용으로 바뀝니다.
+          하단 네비게이션 바(홈/카테고리/마이페이지)는 동일하며, 마이페이지만 계정 유형에 따라 업체 전용 메뉴로 전환됩니다.
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl p-5 max-w-4xl w-full border border-gray-100 shadow-sm">
+      <div className="bg-white rounded-2xl p-5 max-w-4xl w-full border border-gray-100 shadow-sm mb-4">
         <div className="flex items-center gap-2 mb-2">
           <span className="policy-badge">⚠️ 정책 미확정</span>
           <span className="text-sm font-bold text-gray-900">표시 안내</span>
@@ -52,6 +54,18 @@ export default function Home() {
           각 화면에서 확인하시고, 해당 항목이 결정되면 기획 확정 → 개발 착수가 가능합니다.
         </p>
       </div>
+
+      <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5 max-w-4xl w-full">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-sm font-bold text-primary">💬 피드백 남기기</span>
+        </div>
+        <p className="text-xs text-gray-600 leading-relaxed">
+          우측 하단 <strong className="text-primary">💬 버튼</strong>을 누르면 피드백 모드가 켜집니다. 원하는 위치를 클릭해서 코멘트를 남겨주세요.
+          등록된 피드백은 10분 이내 <strong>Notion 티켓</strong>으로 자동 생성됩니다.
+        </p>
+      </div>
+
+      <FeedbackOverlay pageUrl="main" />
     </div>
   );
 }
