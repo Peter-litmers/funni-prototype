@@ -46,11 +46,6 @@ const CONSUMER_NOTIFICATIONS = [
   { id: 5, type: "system", text: "퍼니 앱이 업데이트되었습니다", time: "3일 전", read: true },
 ];
 
-const AD_BANNERS = [
-  { title: "프로필 촬영 특가", desc: "강남 인기 스튜디오 20% 할인", gradient: "from-violet-400 to-purple-500" },
-  { title: "바디프로필 시즌", desc: "여름 맞이 바디프로필 이벤트", gradient: "from-pink-400 to-rose-500" },
-  { title: "웨딩 촬영 패키지", desc: "본식+스냅 올인원 패키지", gradient: "from-amber-400 to-orange-500" },
-];
 
 const UPCOMING_BOOKINGS = [
   { studio: "루미에르 스튜디오", date: "2026.05.10 (토)", time: "14:00~16:00", cat: "프로필", price: "₩100,000", status: "확정" },
@@ -135,7 +130,7 @@ export default function ConsumerApp() {
     setScreen(target.s); setTab(target.t);
   };
 
-  const filtered = (selectedCat === "추천" ? STUDIOS : STUDIOS.filter(s => s.cat === selectedCat)).filter(s => selectedRegion === "전체" || s.area.includes(selectedRegion.replace("서울 ", "").replace("경기 ", "")));
+  const filtered = STUDIOS.filter(s => selectedRegion === "전체" || s.area.includes(selectedRegion.replace("서울 ", "").replace("경기 ", "")));
   const sorted = [...filtered].sort((a, b) => {
     if (sort === "popular") return b.rating * b.reviews - a.rating * a.reviews;
     if (sort === "reviews") return b.reviews - a.reviews;
@@ -157,7 +152,7 @@ export default function ConsumerApp() {
   const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
   const handleTouchEnd = (e: React.TouchEvent) => {
     const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (diff > 50) setAdIdx(prev => Math.min(prev + 1, AD_BANNERS.length - 1));
+    if (diff > 50) setAdIdx(prev => Math.min(prev + 1, 2));
     if (diff < -50) setAdIdx(prev => Math.max(prev - 1, 0));
   };
 
@@ -208,16 +203,34 @@ export default function ConsumerApp() {
           {/* ===== HOME ===== */}
           {screen === "home" && (
             <div>
-              {/* Category Icons */}
+              {/* 프리미엄 영역 — 광고 스튜디오 상단 노출 (REQ-112) */}
               <div className="policy-area mx-4 mt-3 p-2">
-                <PolicyBadge label="카테고리 목록 미확정" />
-                <div className="flex gap-3 overflow-x-auto py-2 mt-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                  {CATEGORIES.map(c => (
-                    <button key={c.name} onClick={() => setSelectedCat(c.name)} className="flex flex-col items-center gap-1 min-w-[56px]">
-                      <div className={`cat-circle ${selectedCat === c.name ? "active" : ""}`}>{c.icon}</div>
-                      <span className={`text-[10px] ${selectedCat === c.name ? "text-primary font-bold" : "text-gray-500"}`}>{c.name}</span>
-                    </button>
-                  ))}
+                <PolicyBadge label="광고 정책 미확정" />
+                <div className="mt-1 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+                  <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${adIdx * 100}%)` }}>
+                    {STUDIOS.slice(0, 3).map((s, i) => (
+                      <div key={i} onClick={() => { setSelectedStudio(s); setSelectedOptions([]); navigate("detail"); }}
+                        className="min-w-full cursor-pointer">
+                        <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-4 flex gap-3 items-center relative">
+                          <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
+                          <div className="w-16 h-16 bg-white/60 rounded-lg flex items-center justify-center text-2xl shrink-0">📷</div>
+                          <div>
+                            <p className="text-sm font-bold text-gray-900">{s.name}</p>
+                            <p className="text-[10px] text-gray-500 mt-0.5">{s.cat} · {s.area}</p>
+                            <div className="flex items-center gap-1 mt-1">
+                              <span className="text-xs font-bold">₩{s.price}</span>
+                              <span className="text-[10px] text-yellow-600">★ {s.rating}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-center gap-1.5 mt-2">
+                    {[0,1,2].map(i => (
+                      <button key={i} onClick={() => setAdIdx(i)} className={`w-1.5 h-1.5 rounded-full transition-all ${i === adIdx ? "bg-primary w-4" : "bg-gray-300"}`} />
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -229,42 +242,20 @@ export default function ConsumerApp() {
                 ))}
               </div>
 
-              {/* Sort */}
+              {/* Sort + Region Filter */}
               <div className="px-4 mb-2">
-                <p className="font-bold text-base mb-2">&lsquo;{selectedCat}&rsquo; 스튜디오</p>
+                <p className="font-bold text-base mb-2">추천 스튜디오</p>
                 <div className="flex gap-2">
                   {([{ key: "popular" as Sort, icon: "🔄", label: "인기순" }, { key: "nearby" as Sort, icon: "📍", label: "내 주변" }, { key: "reviews" as Sort, icon: "💬", label: "리뷰많은순" }]).map(s => (
                     <button key={s.key} onClick={() => setSort(s.key)}
                       className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs border transition-all ${sort === s.key ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-200 text-gray-500"}`}>{s.icon} {s.label}</button>
                   ))}
                 </div>
-                {/* Region Filter */}
                 <div className="flex gap-1.5 mt-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
                   {REGIONS.map(r => (
                     <button key={r} onClick={() => setSelectedRegion(r)}
                       className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] border transition-all ${selectedRegion === r ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-100 text-gray-400 bg-gray-50"}`}>{r}</button>
                   ))}
-                </div>
-              </div>
-
-              {/* Ad Banner */}
-              <div className="policy-area mx-4 mb-3 p-2">
-                <PolicyBadge label="광고 정책 미확정" />
-                <div className="mt-1 overflow-hidden rounded-xl" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-                  <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${adIdx * 100}%)` }}>
-                    {AD_BANNERS.map((ad, i) => (
-                      <div key={i} className={`min-w-full bg-gradient-to-r ${ad.gradient} rounded-xl p-4 text-white`}>
-                        <p className="text-xs opacity-80">AD</p>
-                        <p className="font-bold text-sm mt-1">{ad.title}</p>
-                        <p className="text-xs opacity-70 mt-0.5">{ad.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex justify-center gap-1.5 mt-2">
-                    {AD_BANNERS.map((_, i) => (
-                      <button key={i} onClick={() => setAdIdx(i)} className={`w-1.5 h-1.5 rounded-full transition-all ${i === adIdx ? "bg-primary w-4" : "bg-gray-300"}`} />
-                    ))}
-                  </div>
                 </div>
               </div>
 
