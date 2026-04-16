@@ -2,6 +2,7 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import FeedbackOverlay from "../components/FeedbackOverlay";
+import PolicyForm from "../components/PolicyForm";
 import {
   Sparkles, Camera, Dumbbell, Heart, Cake, Package, Video, MoreHorizontal,
   Home, LayoutGrid, User, Bell, Phone, MapPin, Calendar,
@@ -300,6 +301,12 @@ export default function BusinessApp() {
             <div className="p-4">
               <button onClick={() => { setScreen("mypage"); setTab("my"); }} className="text-sm text-gray-400 mb-3">← 돌아가기</button>
               <h2 className="text-base font-bold mb-4">실적 대시보드</h2>
+
+              <div className="policy-area p-3 mb-4">
+                <PolicyBadge label="실적 대시보드 세부 규칙 미확정" />
+                <PolicyForm question="조회 기간 범위는? (최근 3개월 / 1년 / 커스텀)" screen="업체" area="대시보드 조회 기간" />
+                <PolicyForm question="그래프 종류는? (라인 / 바 / 혼합)" screen="업체" area="대시보드 그래프 종류" />
+              </div>
 
               {/* Summary */}
               <div className="grid grid-cols-3 gap-2 mb-5">
@@ -830,7 +837,9 @@ export default function BusinessApp() {
               </div>
 
               <div className="policy-area p-3 mb-4">
-                <PolicyBadge label="정산 정책 미확정" />
+                <PolicyBadge label="정산 세부 규칙 미확정" />
+                <PolicyForm question="월 정산 기준일은? (매월 1일 / 마지막주 / 기타)" screen="업체" area="월 정산 기준일" />
+                <PolicyForm question="최소 정산 금액은? (N원 미만 시 이월?)" screen="업체" area="최소 정산 금액" />
                 <div className="mt-2 bg-white rounded-xl p-4 border border-gray-100">
                   <p className="text-xs text-gray-500">미정산 금액</p>
                   <p className="text-2xl font-bold text-primary mt-0.5">₩{pendingAmount.toLocaleString()}</p>

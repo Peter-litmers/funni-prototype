@@ -262,7 +262,8 @@ export default function ConsumerApp() {
           {screen === "home" && (
             <div>
               {/* 프리미엄 영역 — 광고 스튜디오 (REQ-112) */}
-              <div className="mx-4 mt-3 p-2 bg-gray-50 rounded-xl">
+              <div className="policy-area mx-4 mt-3 p-2">
+                <PolicyBadge label="광고 세부 규칙 미확정" />
                 <div className="mt-1 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
                   <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${adIdx * 100}%)` }}>
                     {STUDIOS.slice(0, 3).map((s, i) => (
@@ -288,6 +289,10 @@ export default function ConsumerApp() {
                     ))}
                   </div>
                 </div>
+                <PolicyForm question="프리미엄 영역 구좌 수는?" screen="소비자" area="광고 구좌 수" />
+                <PolicyForm question="광고 노출 기간 단위는? (주간 / 월간 / 건별)" screen="소비자" area="광고 기간 단위" />
+                <PolicyForm question="광고 과금 방식은? (고정가 / 입찰)" screen="소비자" area="광고 과금 방식" />
+                <PolicyForm question="배너 노출 순서는? (로테이션 / 고정)" screen="소비자" area="배너 노출 순서" />
               </div>
 
               {/* Filters + Sort (REQ-106) */}
@@ -350,6 +355,17 @@ export default function ConsumerApp() {
           {/* ===== CATEGORY (IA-011) ===== */}
           {screen === "category" && (
             <div className="p-4">
+              {/* 광고 배너 (REQ-113: 카테고리 페이지 상단 배너) */}
+              <div className="mb-4 overflow-hidden rounded-xl">
+                <div className="bg-gradient-to-r from-violet-100 to-purple-200 rounded-xl p-4 flex items-center gap-3 relative">
+                  <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
+                  <div className="w-14 h-14 bg-white/60 rounded-lg flex items-center justify-center shrink-0 text-gray-400"><ImageIcon size={22} strokeWidth={1.5} /></div>
+                  <div>
+                    <p className="text-xs font-bold text-gray-900">카테고리별 추천 배너</p>
+                    <p className="text-[10px] text-gray-600 mt-0.5">관리자가 등록한 광고 배너 영역</p>
+                  </div>
+                </div>
+              </div>
               <h2 className="text-base font-bold mb-4">카테고리</h2>
               <div className="policy-area p-2 mb-4">
                 <PolicyBadge label="카테고리 목록 미확정" />
@@ -467,7 +483,8 @@ export default function ConsumerApp() {
                 </div>
 
                 {/* Reviews (IA-031) */}
-                <div className="mb-4">
+                <div className="policy-area mb-4 p-3">
+                  <PolicyBadge label="리뷰 세부 규칙 미확정" />
                   <div className="mt-2">
                     <p className="text-sm font-medium mb-2">리뷰 {selectedStudio.reviews}개</p>
                     <div className="space-y-2">
@@ -478,12 +495,18 @@ export default function ConsumerApp() {
                         </div>
                       ))}
                     </div>
+                    <p className="text-[10px] text-amber-600 mt-2">작성 기간 · 사진 첨부 · 수정/삭제 · 글자 수 제한 → 미확정</p>
+                    <PolicyForm question="리뷰 작성 가능 기간은? (촬영 후 며칠 이내?)" screen="소비자" area="리뷰 작성 기간" />
+                    <PolicyForm question="리뷰에 사진 첨부 가능한가요? 개수는?" screen="소비자" area="리뷰 사진 첨부" />
+                    <PolicyForm question="리뷰 수정/삭제가 가능한가요?" screen="소비자" area="리뷰 수정/삭제" />
+                    <PolicyForm question="리뷰 최소/최대 글자 수는?" screen="소비자" area="리뷰 글자 수" />
                   </div>
                 </div>
 
-                {/* 예약 단위 정책 미확정 */}
-                <div className="mb-4">
-                  <div>
+                {/* 예약 세부 규칙 미확정 (REQ-107 보완) */}
+                <div className="policy-area mb-4 p-3">
+                  <PolicyBadge label="예약 세부 규칙 미확정" />
+                  <div className="mt-2">
                     <p className="text-sm font-medium mb-2">날짜 선택</p>
                     {/* 월간 캘린더 뷰 */}
                     <div className="bg-gray-50 rounded-xl p-3">
@@ -520,6 +543,11 @@ export default function ConsumerApp() {
                         );
                       })}
                     </div>
+                    <p className="text-[10px] text-amber-600 mt-2">최소 예약 단위 · 예약 가능 기간 · 당일 예약 · 버퍼 시간 → 미확정</p>
+                    <PolicyForm question="최소 예약 단위는? (1시간 / 30분 / 업체 자유)" screen="소비자" area="최소 예약 단위" />
+                    <PolicyForm question="예약 가능 기간은? (며칠 전부터 예약 가능?)" screen="소비자" area="예약 가능 기간" />
+                    <PolicyForm question="당일 예약 가능한가요?" screen="소비자" area="당일 예약" />
+                    <PolicyForm question="예약 간 버퍼 시간은? (청소/준비 시간)" screen="소비자" area="예약 버퍼 시간" />
                   </div>
                 </div>
 
@@ -746,6 +774,13 @@ export default function ConsumerApp() {
               <h2 className="text-lg font-bold mb-1">회원가입</h2>
               <p className="text-xs text-gray-400 mb-6">소비자 계정</p>
 
+              <div className="policy-area p-3 mb-4">
+                <PolicyBadge label="회원 세부 규칙 미확정" />
+                <PolicyForm question="닉네임 중복 허용 여부는?" screen="소비자" area="닉네임 중복" />
+                <PolicyForm question="닉네임 변경 가능한가요? (빈도 제한 포함)" screen="소비자" area="닉네임 변경" />
+                <PolicyForm question="탈퇴 시 개인정보·예약 이력·리뷰는 어떻게 처리?" screen="소비자" area="탈퇴 데이터 처리" />
+              </div>
+
               <div className="space-y-3 mb-4">
                 <div><p className="text-xs text-gray-500 mb-1">이름</p><input type="text" placeholder="홍길동" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
                 <div><p className="text-xs text-gray-500 mb-1">닉네임 (앱 내 표시)</p><input type="text" placeholder="퍼니유저" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
@@ -781,6 +816,13 @@ export default function ConsumerApp() {
             <div className="p-6 pt-16">
               <h2 className="text-lg font-bold mb-1">업체 회원가입</h2>
               <p className="text-xs text-gray-400 mb-6">사업자 계정 · 승인 후 이용 가능</p>
+
+              <div className="policy-area p-3 mb-4">
+                <PolicyBadge label="업체 입점 세부 규칙 미확정" />
+                <PolicyForm question="승인 거절 시 사유 전달 방식은? (이메일 / 앱 알림)" screen="소비자" area="업체 승인 거절 사유 전달" />
+                <PolicyForm question="재신청 규칙은? (횟수 제한, 대기 기간)" screen="소비자" area="업체 재신청 규칙" />
+              </div>
+
 
               <div className="space-y-3 mb-4">
                 <div><p className="text-xs text-gray-500 mb-1">업체명</p><input type="text" placeholder="스튜디오명" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
