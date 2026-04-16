@@ -380,33 +380,31 @@ export default function ConsumerApp() {
               </div>
 
               <p className="text-sm font-bold mb-3">&lsquo;{categoryCat}&rsquo; 스튜디오 {catFiltered.length}곳</p>
-              {catFiltered.map((s, idx) => (
-                <div key={`wrap-${s.id}`}>
-                  <div onClick={() => openDetail(s, categoryCat)}
-                    className="flex gap-3 py-3 border-b border-gray-50 cursor-pointer">
-                    <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={22} strokeWidth={1.5} /></div>
-                    <div>
-                      <p className="text-sm font-medium">{s.name}</p>
-                      <p className="text-xs text-gray-400">{s.cats.join(", ")} · {s.area}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-sm font-bold">₩{s.price.toLocaleString()}</span>
-                        <span className="text-xs text-yellow-500">★ {s.rating}</span>
-                      </div>
+
+              {/* 스튜디오 리스트 상단 광고 배너 (REQ-113) */}
+              <div className="mb-3 overflow-hidden rounded-xl">
+                <div className="bg-gradient-to-r from-violet-100 to-purple-200 rounded-xl p-4 flex items-center gap-3 relative">
+                  <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
+                  <div className="w-14 h-14 bg-white/60 rounded-lg flex items-center justify-center shrink-0 text-gray-400"><ImageIcon size={22} strokeWidth={1.5} /></div>
+                  <div>
+                    <p className="text-xs font-bold text-gray-900">카테고리별 추천 배너</p>
+                    <p className="text-[10px] text-gray-600 mt-0.5">관리자가 등록한 광고 배너 영역</p>
+                  </div>
+                </div>
+              </div>
+
+              {catFiltered.map(s => (
+                <div key={s.id} onClick={() => openDetail(s, categoryCat)}
+                  className="flex gap-3 py-3 border-b border-gray-50 cursor-pointer">
+                  <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={22} strokeWidth={1.5} /></div>
+                  <div>
+                    <p className="text-sm font-medium">{s.name}</p>
+                    <p className="text-xs text-gray-400">{s.cats.join(", ")} · {s.area}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-sm font-bold">₩{s.price.toLocaleString()}</span>
+                      <span className="text-xs text-yellow-500">★ {s.rating}</span>
                     </div>
                   </div>
-                  {/* 1번째 스튜디오 다음에 광고 배너 (REQ-113) */}
-                  {idx === 0 && (
-                    <div className="my-2 overflow-hidden rounded-xl">
-                      <div className="bg-gradient-to-r from-violet-100 to-purple-200 rounded-xl p-4 flex items-center gap-3 relative">
-                        <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
-                        <div className="w-14 h-14 bg-white/60 rounded-lg flex items-center justify-center shrink-0 text-gray-400"><ImageIcon size={22} strokeWidth={1.5} /></div>
-                        <div>
-                          <p className="text-xs font-bold text-gray-900">카테고리별 추천 배너</p>
-                          <p className="text-[10px] text-gray-600 mt-0.5">관리자가 등록한 광고 배너 영역</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
