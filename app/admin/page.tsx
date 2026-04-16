@@ -95,19 +95,30 @@ export default function AdminWeb() {
 
             {/* Monthly Trend (REQ-122) */}
             <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-              <h3 className="font-bold mb-4">월별 추이</h3>
-              <div className="grid grid-cols-4 gap-3">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-bold">월별 추이</h3>
+                <div className="flex items-center gap-4 text-xs text-gray-400">
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-primary inline-block" /> 예약</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-green-400 inline-block" /> 매출</span>
+                </div>
+              </div>
+              <div className="flex items-end gap-3" style={{ height: 160 }}>
                 {[
-                  { month: "1월", bookings: 82, revenue: "₩6.2M" },
-                  { month: "2월", bookings: 95, revenue: "₩7.8M" },
-                  { month: "3월", bookings: 118, revenue: "₩9.6M" },
-                  { month: "4월", bookings: 142, revenue: "₩12.4M" },
+                  { month: "1월", bookings: 82, revenue: 6.2, maxB: 142, maxR: 12.4 },
+                  { month: "2월", bookings: 95, revenue: 7.8, maxB: 142, maxR: 12.4 },
+                  { month: "3월", bookings: 118, revenue: 9.6, maxB: 142, maxR: 12.4 },
+                  { month: "4월", bookings: 142, revenue: 12.4, maxB: 142, maxR: 12.4 },
                 ].map((m, i) => (
-                  <div key={i} className="text-center">
-                    <p className="text-xs text-gray-400 mb-1">{m.month}</p>
-                    <div className="bg-primary/10 rounded-lg mx-auto mb-1" style={{ width: 24, height: `${20 + i * 15}px` }} />
-                    <p className="text-xs font-bold">{m.bookings}건</p>
-                    <p className="text-[10px] text-gray-400">{m.revenue}</p>
+                  <div key={i} className="flex-1 flex flex-col items-center">
+                    <div className="flex gap-1 items-end w-full justify-center" style={{ height: 120 }}>
+                      <div className="w-5 bg-primary rounded-t transition-all" style={{ height: `${(m.bookings / m.maxB) * 100}%` }} title={`${m.bookings}건`} />
+                      <div className="w-5 bg-green-400 rounded-t transition-all" style={{ height: `${(m.revenue / m.maxR) * 100}%` }} title={`₩${m.revenue}M`} />
+                    </div>
+                    <div className="text-center mt-2 border-t border-gray-100 pt-2 w-full">
+                      <p className="text-xs text-gray-500 font-medium">{m.month}</p>
+                      <p className="text-xs font-bold text-gray-800">{m.bookings}건</p>
+                      <p className="text-[10px] text-green-600 font-medium">₩{m.revenue}M</p>
+                    </div>
                   </div>
                 ))}
               </div>
