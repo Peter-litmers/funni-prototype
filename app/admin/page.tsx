@@ -98,55 +98,72 @@ export default function AdminWeb() {
             <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
               <h3 className="font-bold mb-5">월별 집계</h3>
 
-              {/* 월별 예약 수 */}
-              <div className="mb-6">
-                <p className="text-xs text-gray-500 mb-2 font-medium">월별 예약 수</p>
-                <div className="flex items-end gap-3" style={{ height: 90 }}>
-                  {[
-                    { month: "1월", v: 82 },
-                    { month: "2월", v: 95 },
-                    { month: "3월", v: 118 },
-                    { month: "4월", v: 142 },
-                  ].map((m, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center">
-                      <div className="relative w-full flex justify-center" style={{ height: 60 }}>
-                        <div className="w-8 bg-primary rounded-t self-end" style={{ height: `${(m.v / 142) * 100}%` }} />
+              {(() => {
+                const MONTHLY = [
+                  { month: "1월", v: 62, rev: 4.8 },
+                  { month: "2월", v: 71, rev: 5.6 },
+                  { month: "3월", v: 88, rev: 7.1 },
+                  { month: "4월", v: 95, rev: 7.8 },
+                  { month: "5월", v: 112, rev: 9.2 },
+                  { month: "6월", v: 105, rev: 8.6 },
+                  { month: "7월", v: 128, rev: 10.4 },
+                  { month: "8월", v: 142, rev: 12.4 },
+                  { month: "9월", v: 135, rev: 11.2 },
+                  { month: "10월", v: 156, rev: 13.8 },
+                  { month: "11월", v: 168, rev: 15.2 },
+                  { month: "12월", v: 185, rev: 17.6 },
+                ];
+                const maxV = Math.max(...MONTHLY.map(m => m.v));
+                const maxR = Math.max(...MONTHLY.map(m => m.rev));
+                return (
+                  <>
+                    {/* 월별 예약 수 */}
+                    <div className="mb-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs text-gray-500 font-medium">월별 예약 수</p>
+                        <p className="text-[10px] text-gray-400">2026년 · 총 {MONTHLY.reduce((s, m) => s + m.v, 0).toLocaleString()}건</p>
                       </div>
-                      <p className="text-[10px] text-gray-400 mt-1.5">{m.month}</p>
-                      <p className="text-xs font-bold">{m.v}건</p>
+                      <div className="flex items-end gap-1.5" style={{ height: 100 }}>
+                        {MONTHLY.map((m, i) => (
+                          <div key={i} className="flex-1 flex flex-col items-center group">
+                            <div className="relative w-full flex justify-center" style={{ height: 70 }}>
+                              <div className="w-full bg-primary rounded-t self-end transition-all group-hover:bg-primary-dark" style={{ height: `${(m.v / maxV) * 100}%` }} title={`${m.v}건`} />
+                            </div>
+                            <p className="text-[9px] text-gray-400 mt-1">{m.month}</p>
+                            <p className="text-[10px] font-bold text-gray-700">{m.v}</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              {/* 월별 매출 · 수수료 수익 */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs text-gray-500 font-medium">월별 매출 · 수수료 수익</p>
-                  <div className="flex items-center gap-3 text-[10px] text-gray-400">
-                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-green-400 inline-block" /> 매출</span>
-                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block" /> 수수료 수익</span>
-                  </div>
-                </div>
-                <div className="flex items-end gap-3" style={{ height: 110 }}>
-                  {[
-                    { month: "1월", rev: 6.2, fee: 0.62 },
-                    { month: "2월", rev: 7.8, fee: 0.78 },
-                    { month: "3월", rev: 9.6, fee: 0.96 },
-                    { month: "4월", rev: 12.4, fee: 1.24 },
-                  ].map((m, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center">
-                      <div className="flex gap-1 items-end w-full justify-center" style={{ height: 70 }}>
-                        <div className="w-5 bg-green-400 rounded-t" style={{ height: `${(m.rev / 12.4) * 100}%` }} />
-                        <div className="w-5 bg-amber-400 rounded-t" style={{ height: `${(m.fee / 12.4) * 100}%` }} />
+                    {/* 월별 매출 · 수수료 수익 */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <p className="text-xs text-gray-500 font-medium">월별 매출 · 수수료 수익</p>
+                          <p className="text-[10px] text-gray-400">총 매출 ₩{MONTHLY.reduce((s, m) => s + m.rev, 0).toFixed(1)}M</p>
+                        </div>
+                        <div className="flex items-center gap-3 text-[10px] text-gray-400">
+                          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-green-400 inline-block" /> 매출</span>
+                          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block" /> 수수료 수익</span>
+                        </div>
                       </div>
-                      <p className="text-[10px] text-gray-400 mt-1.5">{m.month}</p>
-                      <p className="text-[10px] text-green-600 font-medium">₩{m.rev}M</p>
-                      <p className="text-[10px] text-amber-600">+₩{m.fee}M</p>
+                      <div className="flex items-end gap-1.5" style={{ height: 120 }}>
+                        {MONTHLY.map((m, i) => (
+                          <div key={i} className="flex-1 flex flex-col items-center group">
+                            <div className="flex gap-0.5 items-end w-full justify-center" style={{ height: 80 }}>
+                              <div className="flex-1 bg-green-400 rounded-t transition-all group-hover:bg-green-500" style={{ height: `${(m.rev / maxR) * 100}%` }} title={`₩${m.rev}M`} />
+                              <div className="flex-1 bg-amber-400 rounded-t transition-all group-hover:bg-amber-500" style={{ height: `${(m.rev * 0.1 / maxR) * 100}%` }} title={`₩${(m.rev * 0.1).toFixed(2)}M`} />
+                            </div>
+                            <p className="text-[9px] text-gray-400 mt-1">{m.month}</p>
+                            <p className="text-[10px] text-green-600 font-medium">₩{m.rev}M</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </>
+                );
+              })()}
             </div>
 
             {/* Fee Rate */}
