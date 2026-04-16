@@ -4,8 +4,8 @@ import Link from "next/link";
 import FeedbackOverlay from "../components/FeedbackOverlay";
 import {
   Sparkles, Camera, Dumbbell, Heart, Cake, Package, Video, MoreHorizontal,
-  Home, LayoutGrid, User, Bell, ChevronRight, Phone, MapPin, Calendar,
-  DollarSign, BarChart3, Building2, PenSquare, Settings
+  Home, LayoutGrid, User, Bell, Phone, MapPin, Calendar,
+  DollarSign, BarChart3, Building2, ImageIcon
 } from "lucide-react";
 
 function PolicyBadge({ label }: { label: string }) {
@@ -154,7 +154,7 @@ export default function BusinessApp() {
                       <div key={i} onClick={() => { setSelectedStudio(s); setScreen("detail"); }} className="min-w-full cursor-pointer">
                         <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-4 flex gap-3 items-center relative">
                           <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
-                          <div className="w-16 h-16 bg-white/60 rounded-lg flex items-center justify-center text-2xl shrink-0">📷</div>
+                          <div className="w-16 h-16 bg-white/60 rounded-lg flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={24} strokeWidth={1.5} /></div>
                           <div>
                             <p className="text-sm font-bold text-gray-900">{s.name}</p>
                             <p className="text-[10px] text-gray-500 mt-0.5">{s.cat} · {s.area}</p>
@@ -183,8 +183,8 @@ export default function BusinessApp() {
                 {STUDIOS.map(s => (
                   <div key={s.id} onClick={() => { setSelectedStudio(s); setScreen("detail"); }}
                     className="w-full flex gap-3 py-4 border-b border-gray-50 cursor-pointer">
-                    <div className="relative w-[88px] h-[88px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-3xl shrink-0">
-                      📷
+                    <div className="relative w-[88px] h-[88px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center shrink-0 text-gray-400">
+                      <ImageIcon size={28} strokeWidth={1.5} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm text-gray-900">{s.name}</p>
@@ -224,7 +224,7 @@ export default function BusinessApp() {
               {catFiltered.map(s => (
                 <div key={s.id} onClick={() => { setSelectedStudio(s); setScreen("detail"); }}
                   className="flex gap-3 py-3 border-b border-gray-50 cursor-pointer">
-                  <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-xl shrink-0">📷</div>
+                  <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={22} strokeWidth={1.5} /></div>
                   <div>
                     <p className="text-sm font-medium">{s.name}</p>
                     <p className="text-xs text-gray-400">{s.cat} · {s.area}</p>
@@ -241,10 +241,10 @@ export default function BusinessApp() {
           {/* ===== DETAIL (IA-012: 업체는 조회만, 예약 불가) ===== */}
           {screen === "detail" && (
             <div>
-              <div className="h-52 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-6xl relative">
-                📷
+              <div className="h-52 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center relative text-gray-400">
+                <ImageIcon size={56} strokeWidth={1} />
                 <button onClick={() => setScreen("home")}
-                  className="absolute top-3 left-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-sm shadow">←</button>
+                  className="absolute top-3 left-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-sm shadow text-gray-700">‹</button>
               </div>
               <div className="p-4">
                 <h2 className="text-lg font-bold mb-0.5">{selectedStudio.name}</h2>
@@ -339,7 +339,7 @@ export default function BusinessApp() {
               ) : todayBookings.map(b => (
                 <button key={b.id} onClick={() => { setSelectedBooking(b); setScreen("bookingDetail"); }}
                   className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl mb-2 text-left">
-                  <div className="w-11 h-11 bg-primary/10 rounded-full flex items-center justify-center text-lg">📷</div>
+                  <div className="w-11 h-11 bg-primary/10 rounded-full flex items-center justify-center text-primary"><Camera size={18} strokeWidth={1.5} /></div>
                   <div className="flex-1">
                     <p className="text-sm font-medium">{b.name}</p>
                     <p className="text-xs text-gray-400">{b.cat} · {b.time}</p>
@@ -533,7 +533,7 @@ export default function BusinessApp() {
                 <button onClick={() => setRegistered(false)} className="text-xs text-primary font-medium">수정</button>
               </div>
 
-              <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl h-40 flex items-center justify-center text-5xl mb-4">📷</div>
+              <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl h-40 flex items-center justify-center text-gray-400 mb-4"><ImageIcon size={48} strokeWidth={1} /></div>
 
               <h3 className="text-lg font-bold mb-1">루미에르 스튜디오</h3>
               <p className="text-xs text-gray-400 mb-3">서울시 강남구 역삼동 123-4</p>

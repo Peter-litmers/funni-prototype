@@ -4,9 +4,8 @@ import Link from "next/link";
 import FeedbackOverlay from "../components/FeedbackOverlay";
 import {
   Sparkles, Camera, Dumbbell, Heart, Cake, Package, Video, MoreHorizontal,
-  Home, LayoutGrid, User, Bell, Search, ChevronLeft, Phone, MapPin, Star,
-  Calendar, Clock, CreditCard, Edit2, Check, X, ChevronRight, Pencil,
-  LogOut, ShieldCheck, Headphones
+  Home, LayoutGrid, User, Bell, Phone, MapPin, Star, Pencil, Check,
+  CheckCircle2, ImageIcon
 } from "lucide-react";
 
 function PolicyBadge({ label }: { label: string }) {
@@ -267,7 +266,7 @@ export default function ConsumerApp() {
                       <div key={i} onClick={() => openDetail(s)} className="min-w-full cursor-pointer">
                         <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-4 flex gap-3 items-center relative">
                           <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
-                          <div className="w-16 h-16 bg-white/60 rounded-lg flex items-center justify-center text-2xl shrink-0">📷</div>
+                          <div className="w-16 h-16 bg-white/60 rounded-lg flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={24} strokeWidth={1.5} /></div>
                           <div>
                             <p className="text-sm font-bold text-gray-900">{s.name}</p>
                             <p className="text-[10px] text-gray-500 mt-0.5">{s.cats.join(", ")} · {s.area}</p>
@@ -325,7 +324,7 @@ export default function ConsumerApp() {
                 ) : homeSorted.map(s => (
                   <div key={s.id} onClick={() => openDetail(s)}
                     className="w-full flex gap-3 py-4 border-b border-gray-50 cursor-pointer">
-                    <div className="w-[88px] h-[88px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-3xl shrink-0">📷</div>
+                    <div className="w-[88px] h-[88px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={28} strokeWidth={1.5} /></div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm text-gray-900">{s.name}</p>
                       <p className="text-xs text-gray-400 mt-0.5 truncate">{s.desc}</p>
@@ -376,7 +375,7 @@ export default function ConsumerApp() {
               {catFiltered.map(s => (
                 <div key={s.id} onClick={() => openDetail(s, categoryCat === "추천" ? s.cats[0] : categoryCat)}
                   className="flex gap-3 py-3 border-b border-gray-50 cursor-pointer">
-                  <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-xl shrink-0">📷</div>
+                  <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={22} strokeWidth={1.5} /></div>
                   <div>
                     <p className="text-sm font-medium">{s.name}</p>
                     <p className="text-xs text-gray-400">{s.cats.join(", ")} · {s.area}</p>
@@ -393,9 +392,9 @@ export default function ConsumerApp() {
           {/* ===== DETAIL (IA-012) ===== */}
           {screen === "detail" && (
             <div>
-              <div className="h-52 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-6xl relative">
-                📷
-                <button onClick={goBack} className="absolute top-3 left-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-sm shadow">←</button>
+              <div className="h-52 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center relative text-gray-400">
+                <ImageIcon size={56} strokeWidth={1} />
+                <button onClick={goBack} className="absolute top-3 left-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-sm shadow text-gray-700">‹</button>
               </div>
               <div className="p-4">
                 <h2 className="text-lg font-bold mb-0.5">{selectedStudio.name}</h2>
@@ -423,7 +422,7 @@ export default function ConsumerApp() {
                         className={`w-full flex justify-between items-center p-3 rounded-lg border text-left transition-all ${selectedOptions.includes(opt.id) ? "border-primary bg-primary/5" : "border-gray-200"}`}>
                         <div className="flex items-center gap-2">
                           <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${selectedOptions.includes(opt.id) ? "border-primary bg-primary" : "border-gray-300"}`}>
-                            {selectedOptions.includes(opt.id) && <span className="text-white text-[8px]">✓</span>}
+                            {selectedOptions.includes(opt.id) && <Check size={10} strokeWidth={3} className="text-white" />}
                           </span>
                           <span className="text-sm">{opt.name}</span>
                         </div>
@@ -556,7 +555,7 @@ export default function ConsumerApp() {
           {/* ===== DONE (IA-022) ===== */}
           {screen === "done" && (
             <div className="p-6 flex flex-col items-center justify-center" style={{ minHeight: 500 }}>
-              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-4xl mb-4">✅</div>
+              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary"><CheckCircle2 size={48} strokeWidth={1.5} /></div>
               <h2 className="text-lg font-bold mb-1">예약 완료!</h2>
               <p className="text-sm text-gray-500">{selectedStudio.name}</p>
               <p className="text-xs text-gray-400 mb-6">2026.05.{selectedDate} {selectedTime} ~ {endTime}</p>
@@ -649,13 +648,13 @@ export default function ConsumerApp() {
               {/* 프로필 편집 */}
               <div className="flex items-center gap-3 mb-6">
                 <div className="relative">
-                  <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-2xl">👤</div>
-                  <button onClick={() => setIsEditingProfile(true)} className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center text-[10px] text-white shadow">📷</button>
+                  <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-primary"><User size={26} strokeWidth={1.5} /></div>
+                  <button onClick={() => setIsEditingProfile(true)} className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center text-white shadow"><Camera size={11} strokeWidth={2} /></button>
                 </div>
                 <div className="flex-1">
                   {isEditingProfile ? (
                     <div className="flex items-center gap-2"><input type="text" value={userName} onChange={e => setUserName(e.target.value)} className="text-sm font-bold border-b border-primary outline-none bg-transparent w-24" autoFocus /><button onClick={() => setIsEditingProfile(false)} className="text-[10px] text-primary font-medium bg-primary/10 px-2 py-1 rounded">완료</button></div>
-                  ) : (<div className="flex items-center gap-2"><p className="font-bold">{userName}</p><button onClick={() => setIsEditingProfile(true)} className="text-gray-400 text-xs">✏️</button></div>)}
+                  ) : (<div className="flex items-center gap-2"><p className="font-bold">{userName}</p><button onClick={() => setIsEditingProfile(true)} className="text-gray-400"><Pencil size={12} strokeWidth={1.5} /></button></div>)}
                 </div>
               </div>
 

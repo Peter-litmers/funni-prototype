@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import FeedbackOverlay from "../components/FeedbackOverlay";
+import { Users, Building2, Calendar, DollarSign, ImageIcon, X } from "lucide-react";
 
 function PolicyBadge({ label }: { label: string }) {
   return <span className="policy-badge">⚠️ {label}</span>;
@@ -81,14 +82,14 @@ export default function AdminWeb() {
             {/* Stats (REQ-122) — 소비자/업체 회원, 스튜디오 수, 예약 수, 매출, 수수료 수익 */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               {[
-                { label: "총 회원 (소비자/업체)", value: "3,891 / 42", icon: "👥" },
-                { label: "총 스튜디오", value: "58", icon: "🏢" },
-                { label: "이번 달 예약", value: "142", icon: "📅" },
-                { label: "이번 달 매출", value: "₩12.4M", icon: "💰", sub: "수수료 수익 ₩1.24M" },
+                { label: "총 회원 (소비자/업체)", value: "3,891 / 42", Icon: Users },
+                { label: "총 스튜디오", value: "58", Icon: Building2 },
+                { label: "이번 달 예약", value: "142", Icon: Calendar },
+                { label: "이번 달 매출", value: "₩12.4M", Icon: DollarSign, sub: "수수료 수익 ₩1.24M" },
               ].map((s, i) => (
                 <div key={i} className="bg-white rounded-xl p-4 shadow-sm">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xl">{s.icon}</span>
+                    <s.Icon size={18} strokeWidth={1.5} className="text-gray-500" />
                     <span className="text-xs text-gray-500">{s.label}</span>
                   </div>
                   <p className="text-2xl font-bold">{s.value}</p>
@@ -320,18 +321,18 @@ export default function AdminWeb() {
                           <div className="flex gap-1 flex-wrap">
                             <button className="text-xs bg-primary text-white px-3 py-1 rounded-lg">승인</button>
                             <button className="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-lg">거절</button>
-                            <button onClick={() => { setBizDetail(b); setBizDetailView("portfolio"); }} className="text-xs text-primary px-2 py-1">📷 사진({b.photos})</button>
+                            <button onClick={() => { setBizDetail(b); setBizDetailView("portfolio"); }} className="text-xs text-primary px-2 py-1"><ImageIcon size={12} strokeWidth={1.5} className="inline" /> 사진({b.photos})</button>
                           </div>
                         ) : b.status === "정지" ? (
                           <div className="flex gap-1">
                             <button className="text-xs text-green-600 px-2 py-1 bg-green-50 rounded">해제</button>
-                            <button onClick={() => { setBizDetail(b); setBizDetailView("calendar"); }} className="text-xs text-gray-400 px-2 py-1">📅 달력</button>
+                            <button onClick={() => { setBizDetail(b); setBizDetailView("calendar"); }} className="text-xs text-gray-400 px-2 py-1"><Calendar size={12} strokeWidth={1.5} className="inline" /> 달력</button>
                           </div>
                         ) : (
                           <div className="flex gap-1">
                             <button onClick={() => { setBizDetail(b); setBizDetailView("info"); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">상세</button>
                             <button className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded">정지</button>
-                            <button onClick={() => { setBizDetail(b); setBizDetailView("calendar"); }} className="text-xs text-gray-400 px-2 py-1">📅 달력</button>
+                            <button onClick={() => { setBizDetail(b); setBizDetailView("calendar"); }} className="text-xs text-gray-400 px-2 py-1"><Calendar size={12} strokeWidth={1.5} className="inline" /> 달력</button>
                           </div>
                         )}
                       </td>
@@ -479,7 +480,7 @@ export default function AdminWeb() {
                   <div key={i} className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-4 relative">
                     <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
                     <div className="flex items-center gap-3 mt-6">
-                      <div className="w-12 h-12 bg-white/60 rounded-lg flex items-center justify-center text-lg">📷</div>
+                      <div className="w-12 h-12 bg-white/60 rounded-lg flex items-center justify-center text-gray-400"><ImageIcon size={18} strokeWidth={1.5} /></div>
                       <div>
                         <p className="text-xs font-bold">{name}</p>
                         <p className="text-[10px] text-gray-500">서울 · 프리미엄 구좌 #{i + 1}</p>
@@ -772,7 +773,7 @@ export default function AdminWeb() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`text-xs px-2 py-1 rounded-full ${bizDetail.status === "운영중" ? "bg-green-100 text-green-700" : bizDetail.status === "정지" ? "bg-red-100 text-red-500" : "bg-yellow-100 text-yellow-700"}`}>{bizDetail.status}</span>
-                  <button onClick={() => setBizDetail(null)} className="text-gray-400 text-xl ml-2">✕</button>
+                  <button onClick={() => setBizDetail(null)} className="text-gray-400 ml-2"><X size={18} strokeWidth={1.5} /></button>
                 </div>
               </div>
               {/* View Tabs */}
@@ -812,7 +813,7 @@ export default function AdminWeb() {
                   <p className="text-sm font-bold mb-3">가입 시 제출한 포트폴리오 사진</p>
                   <div className="grid grid-cols-4 gap-2">
                     {Array.from({ length: bizDetail.photos }).map((_, i) => (
-                      <div key={i} className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center text-xl">📷</div>
+                      <div key={i} className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center text-gray-400"><ImageIcon size={22} strokeWidth={1.5} /></div>
                     ))}
                   </div>
                 </div>
