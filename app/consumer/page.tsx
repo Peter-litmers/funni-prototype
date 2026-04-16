@@ -346,16 +346,20 @@ export default function ConsumerApp() {
                   ))}
                 </div>
                 {/* 커스텀 가격 범위 */}
-                <div className="flex items-center gap-1 mt-1.5">
-                  <input type="number" placeholder="최소" value={customPriceMin} onChange={e => setCustomPriceMin(e.target.value)}
-                    className="flex-1 bg-gray-50 rounded-lg px-2 py-1 text-[10px] outline-none border border-gray-100 text-right" />
-                  <span className="text-[10px] text-gray-400">천원</span>
-                  <span className="text-[10px] text-gray-400 mx-0.5">~</span>
-                  <input type="number" placeholder="최대" value={customPriceMax} onChange={e => setCustomPriceMax(e.target.value)}
-                    className="flex-1 bg-gray-50 rounded-lg px-2 py-1 text-[10px] outline-none border border-gray-100 text-right" />
-                  <span className="text-[10px] text-gray-400">천원</span>
+                <div className="flex items-center gap-1 mt-1.5 text-[10px] text-gray-400">
+                  <div className="flex-1 flex items-center bg-gray-50 rounded-lg px-2 py-1 border border-gray-100">
+                    <input type="number" placeholder="최소" value={customPriceMin} onChange={e => setCustomPriceMin(e.target.value)}
+                      className="w-full min-w-0 bg-transparent outline-none text-right" />
+                    <span className="shrink-0 ml-0.5">천원</span>
+                  </div>
+                  <span className="shrink-0">~</span>
+                  <div className="flex-1 flex items-center bg-gray-50 rounded-lg px-2 py-1 border border-gray-100">
+                    <input type="number" placeholder="최대" value={customPriceMax} onChange={e => setCustomPriceMax(e.target.value)}
+                      className="w-full min-w-0 bg-transparent outline-none text-right" />
+                    <span className="shrink-0 ml-0.5">천원</span>
+                  </div>
                   {(customPriceMin || customPriceMax) && (
-                    <button onClick={() => { setCustomPriceMin(""); setCustomPriceMax(""); }} className="text-gray-400 text-[10px] px-1">✕</button>
+                    <button onClick={() => { setCustomPriceMin(""); setCustomPriceMax(""); }} className="shrink-0 px-1">✕</button>
                   )}
                 </div>
               </div>
