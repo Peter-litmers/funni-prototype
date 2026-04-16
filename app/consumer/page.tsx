@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 
 function PolicyBadge({ label }: { label: string }) {
@@ -20,21 +20,77 @@ const CATEGORIES = [
 const KEYWORDS = ["강남 프로필", "성수 바디프로필", "웨딩 스냅", "증명사진", "제품 촬영", "유튜브 스튜디오"];
 
 const STUDIOS = [
-  { id: 1, name: "루미에르 스튜디오", cat: "프로필", desc: "프로필촬영, 증명사진, 프로필영상, 이력서사진", area: "서울 강남구", price: "50,000", discount: "", rating: 4.8, reviews: 124, badge: "best" as const },
-  { id: 2, name: "선셋 포토랩", cat: "바디프로필", desc: "바디프로필, 커플촬영, 다이어트기록, 운동기록", area: "서울 성수동", price: "80,000", discount: "30%", rating: 4.9, reviews: 89, badge: "best" as const },
-  { id: 3, name: "블룸 웨딩 스튜디오", cat: "웨딩", desc: "웨딩스냅, 본식촬영, 야외웨딩, 스몰웨딩", area: "서울 잠실", price: "200,000", discount: "", rating: 4.7, reviews: 56, badge: "hot" as const },
-  { id: 4, name: "미니미 키즈포토", cat: "돌잔치", desc: "돌잔치촬영, 백일사진, 가족사진, 만삭촬영", area: "경기 판교", price: "120,000", discount: "15%", rating: 4.6, reviews: 34, badge: "hot" as const },
-  { id: 5, name: "프로덕트 랩", cat: "제품", desc: "제품촬영, 음식사진, 상세페이지, 스틸컷", area: "서울 홍대", price: "40,000", discount: "", rating: 4.5, reviews: 67, badge: "best" as const },
-  { id: 6, name: "무브 필름랩", cat: "영상", desc: "유튜브촬영, 광고영상, 인터뷰, 브이로그", area: "서울 합정", price: "60,000", discount: "20%", rating: 4.7, reviews: 45, badge: "hot" as const },
+  { id: 1, name: "루미에르 스튜디오", cat: "프로필", desc: "프로필촬영, 증명사진, 프로필영상, 이력서사진", area: "서울 강남구", price: "50,000", discount: "", rating: 4.8, reviews: 124, badge: "best" as const, distance: 1.2 },
+  { id: 2, name: "선셋 포토랩", cat: "바디프로필", desc: "바디프로필, 커플촬영, 다이어트기록, 운동기록", area: "서울 성수동", price: "80,000", discount: "30%", rating: 4.9, reviews: 89, badge: "best" as const, distance: 3.5 },
+  { id: 3, name: "블룸 웨딩 스튜디오", cat: "웨딩", desc: "웨딩스냅, 본식촬영, 야외웨딩, 스몰웨딩", area: "서울 잠실", price: "200,000", discount: "", rating: 4.7, reviews: 56, badge: "hot" as const, distance: 5.8 },
+  { id: 4, name: "미니미 키즈포토", cat: "돌잔치", desc: "돌잔치촬영, 백일사진, 가족사진, 만삭촬영", area: "경기 판교", price: "120,000", discount: "15%", rating: 4.6, reviews: 34, badge: "hot" as const, distance: 15.2 },
+  { id: 5, name: "프로덕트 랩", cat: "제품", desc: "제품촬영, 음식사진, 상세페이지, 스틸컷", area: "서울 홍대", price: "40,000", discount: "", rating: 4.5, reviews: 67, badge: "best" as const, distance: 2.1 },
+  { id: 6, name: "무브 필름랩", cat: "영상", desc: "유튜브촬영, 광고영상, 인터뷰, 브이로그", area: "서울 합정", price: "60,000", discount: "20%", rating: 4.7, reviews: 45, badge: "hot" as const, distance: 2.8 },
 ];
 
-type Screen = "home" | "search" | "like" | "myBookings" | "detail" | "booking" | "done" | "mypage";
+const VENUES = [
+  { id: 101, name: "스튜디오 이음", desc: "세미나, 워크샵, 소규모 행사", area: "서울 강남구", price: "30,000", rating: 4.6, reviews: 45 },
+  { id: 102, name: "라운지 505", desc: "파티, 생일, 소모임", area: "서울 성수동", price: "50,000", rating: 4.8, reviews: 32 },
+  { id: 103, name: "갤러리 스페이스", desc: "전시, 팝업스토어, 촬영 공간", area: "서울 홍대", price: "80,000", rating: 4.4, reviews: 28 },
+  { id: 104, name: "옥상 라운지 루프", desc: "야외촬영, 루프탑 파티, 영상촬영", area: "서울 이태원", price: "100,000", rating: 4.3, reviews: 19 },
+];
+
+const AD_BANNERS = [
+  { title: "프로필 촬영 특가", desc: "강남 인기 스튜디오 20% 할인", gradient: "from-violet-400 to-purple-500" },
+  { title: "바디프로필 시즌", desc: "여름 맞이 바디프로필 이벤트", gradient: "from-pink-400 to-rose-500" },
+  { title: "웨딩 촬영 패키지", desc: "본식+스냅 올인원 패키지", gradient: "from-amber-400 to-orange-500" },
+];
+
+const UPCOMING_BOOKINGS = [
+  { studio: "루미에르 스튜디오", date: "2026.05.10 (토)", time: "14:00~16:00", cat: "프로필", price: "₩100,000", status: "확정" },
+  { studio: "선셋 포토랩", date: "2026.05.18 (일)", time: "10:00~12:00", cat: "바디프로필", price: "₩160,000", status: "확정" },
+  { studio: "블룸 웨딩 스튜디오", date: "2026.05.25 (일)", time: "10:00~14:00", cat: "웨딩", price: "₩800,000", status: "대기" },
+];
+
+const COMPLETED_BOOKINGS = [
+  { studio: "프로덕트 랩", date: "2026.04.20 (일)", time: "13:00~15:00", cat: "제품", price: "₩80,000", status: "완료", canReview: true },
+  { studio: "블룸 웨딩 스튜디오", date: "2026.04.05 (토)", time: "10:00~14:00", cat: "웨딩", price: "₩800,000", status: "완료", canReview: false },
+  { studio: "미니미 키즈포토", date: "2026.03.22 (토)", time: "10:00~12:00", cat: "돌잔치", price: "₩240,000", status: "완료", canReview: false },
+];
+
+const CANCELLED_BOOKINGS = [
+  { studio: "무브 필름랩", date: "2026.04.15 (화)", time: "15:00~17:00", cat: "영상", price: "₩120,000", status: "취소됨", reason: "소비자 취소" },
+  { studio: "루미에르 스튜디오", date: "2026.03.28 (금)", time: "10:00~12:00", cat: "프로필", price: "₩100,000", status: "취소됨", reason: "업체 사유" },
+];
+
+const MY_REVIEWS_DATA = [
+  { studio: "블룸 웨딩 스튜디오", date: "2026.04.06", rating: 5, text: "정말 만족스러운 촬영이었습니다. 결과물도 훌륭해요!" },
+  { studio: "미니미 키즈포토", date: "2026.03.23", rating: 4, text: "아이가 편안하게 촬영할 수 있었어요. 스태프가 친절합니다." },
+  { studio: "프로덕트 랩", date: "2026.03.10", rating: 5, text: "제품 사진 퀄리티가 기대 이상이에요. 재방문 예정!" },
+];
+
+const PAYMENT_HISTORY = [
+  { studio: "루미에르 스튜디오", date: "2026.05.08", amount: "₩100,000", method: "카드", status: "결제완료" },
+  { studio: "선셋 포토랩", date: "2026.05.05", amount: "₩160,000", method: "카드", status: "결제완료" },
+  { studio: "블룸 웨딩 스튜디오", date: "2026.04.03", amount: "₩800,000", method: "카카오페이", status: "결제완료" },
+  { studio: "프로덕트 랩", date: "2026.04.18", amount: "₩80,000", method: "카드", status: "결제완료" },
+  { studio: "무브 필름랩", date: "2026.04.13", amount: "₩120,000", method: "카드", status: "환불완료" },
+];
+
+const ALL_MY_BOOKINGS_FOR_MYPAGE = [
+  { studio: "루미에르 스튜디오", date: "2026.05.10 (토) 14:00~16:00", cat: "프로필 촬영", status: "확정" },
+  { studio: "선셋 포토랩", date: "2026.05.18 (일) 10:00~12:00", cat: "바디프로필", status: "확정" },
+  { studio: "블룸 웨딩 스튜디오", date: "2026.05.25 (일) 10:00~14:00", cat: "웨딩", status: "대기" },
+  { studio: "프로덕트 랩", date: "2026.04.20 (일) 13:00~15:00", cat: "제품", status: "완료" },
+  { studio: "미니미 키즈포토", date: "2026.04.12 (토) 10:00~12:00", cat: "돌잔치", status: "완료" },
+  { studio: "무브 필름랩", date: "2026.04.05 (토) 15:00~17:00", cat: "영상", status: "취소" },
+  { studio: "블룸 웨딩 스튜디오", date: "2026.03.22 (토) 10:00~14:00", cat: "웨딩", status: "완료" },
+];
+
+type Screen = "home" | "search" | "like" | "myBookings" | "detail" | "booking" | "done" | "mypage" | "reviewWrite" | "myReviews" | "paymentHistory";
 type Sort = "popular" | "nearby" | "reviews";
+type BookingFilter = "예정" | "완료" | "취소";
 
 const TIMES = ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00"];
 
 export default function ConsumerApp() {
   const [screen, setScreen] = useState<Screen>("home");
+  const [prevScreenRef, setPrevScreenRef] = useState<Screen>("home");
   const [selectedCat, setSelectedCat] = useState("추천");
   const [selectedStudio, setSelectedStudio] = useState(STUDIOS[0]);
   const [tab, setTab] = useState<"home" | "search" | "booking" | "my">("home");
@@ -44,14 +100,48 @@ export default function ConsumerApp() {
   const [selectedDate, setSelectedDate] = useState(10);
   const [searchText, setSearchText] = useState("");
   const [mainTab, setMainTab] = useState<"촬영" | "장소대관">("촬영");
+  const [bookingFilter, setBookingFilter] = useState<BookingFilter>("예정");
+  const [adIdx, setAdIdx] = useState(0);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewTarget, setReviewTarget] = useState("");
+  const [myBookingPage, setMyBookingPage] = useState(0);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [userName, setUserName] = useState("김퍼니");
 
-  // Filtering
+  const touchStartX = useRef(0);
+
+  // Navigation
+  const navigate = (to: Screen) => {
+    setPrevScreenRef(screen);
+    setScreen(to);
+  };
+
+  const goBack = () => {
+    if (screen === "home") return;
+    const backMap: Record<string, { screen: Screen; tab: "home" | "search" | "booking" | "my" }> = {
+      search: { screen: "home", tab: "home" },
+      myBookings: { screen: "home", tab: "home" },
+      mypage: { screen: "home", tab: "home" },
+      detail: { screen: prevScreenRef === "search" ? "search" : "home", tab: prevScreenRef === "search" ? "search" : "home" },
+      booking: { screen: "detail", tab: tab },
+      done: { screen: "home", tab: "home" },
+      like: { screen: "mypage", tab: "my" },
+      reviewWrite: { screen: "myBookings", tab: "booking" },
+      myReviews: { screen: "mypage", tab: "my" },
+      paymentHistory: { screen: "mypage", tab: "my" },
+    };
+    const target = backMap[screen] || { screen: "home" as Screen, tab: "home" as const };
+    setScreen(target.screen);
+    setTab(target.tab);
+  };
+
+  // Filtering & Sorting
   const filtered = selectedCat === "추천" ? STUDIOS : STUDIOS.filter(s => s.cat === selectedCat);
-
-  // Sorting
   const sorted = [...filtered].sort((a, b) => {
     if (sort === "popular") return b.rating * b.reviews - a.rating * a.reviews;
     if (sort === "reviews") return b.reviews - a.reviews;
+    if (sort === "nearby") return a.distance - b.distance;
     return 0;
   });
 
@@ -60,17 +150,39 @@ export default function ConsumerApp() {
     ? STUDIOS.filter(s => s.name.includes(searchText) || s.desc.includes(searchText) || s.area.includes(searchText) || s.cat.includes(searchText))
     : STUDIOS;
 
-  // Like toggle
   const toggleLike = (id: number) => {
     setLiked(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
   const likedStudios = STUDIOS.filter(s => liked.includes(s.id));
 
-  // Calculate booking hours
+  // Booking price calc
   const timeIdx = TIMES.indexOf(selectedTime);
   const endTime = TIMES[Math.min(timeIdx + 2, TIMES.length - 1)] || "22:00";
   const bookingPrice = parseInt(selectedStudio.price.replace(",", "")) * 2;
+
+  // Ad swipe handlers
+  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (diff > 50) setAdIdx(prev => Math.min(prev + 1, AD_BANNERS.length - 1));
+    if (diff < -50) setAdIdx(prev => Math.max(prev - 1, 0));
+  };
+
+  // Mypage booking pagination
+  const BOOKINGS_PER_PAGE = 3;
+  const totalBookingPages = Math.ceil(ALL_MY_BOOKINGS_FOR_MYPAGE.length / BOOKINGS_PER_PAGE);
+  const pagedBookings = ALL_MY_BOOKINGS_FOR_MYPAGE.slice(myBookingPage * BOOKINGS_PER_PAGE, (myBookingPage + 1) * BOOKINGS_PER_PAGE);
+
+  // Booking filter data
+  const filteredBookings = bookingFilter === "예정" ? UPCOMING_BOOKINGS : bookingFilter === "완료" ? COMPLETED_BOOKINGS : CANCELLED_BOOKINGS;
+
+  const statusColor = (s: string) => {
+    if (s === "확정" || s === "대기") return "bg-green-100 text-green-700";
+    if (s === "완료") return "bg-gray-200 text-gray-500";
+    if (s === "취소됨" || s === "취소") return "bg-red-100 text-red-500";
+    return "bg-gray-100 text-gray-500";
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8 px-4">
@@ -84,10 +196,15 @@ export default function ConsumerApp() {
         {/* Header */}
         <div className="relative z-10 bg-white pt-10 px-4 pb-0">
           <div className="flex items-center justify-between mb-2">
-            <button onClick={() => { setScreen("home"); setTab("home"); }} className="text-xl font-bold text-primary">퍼니</button>
+            <div className="flex items-center gap-2">
+              {screen !== "home" && (
+                <button onClick={goBack} className="text-gray-500 text-lg w-7 h-7 flex items-center justify-center">‹</button>
+              )}
+              <button onClick={() => { setScreen("home"); setTab("home"); }} className="text-xl font-bold text-primary">퍼니</button>
+            </div>
             <div className="flex items-center gap-3">
-              <button onClick={() => { setScreen("search"); setTab("search"); }} className="text-gray-400 text-lg">🔍</button>
-              <button onClick={() => { setScreen("mypage"); setTab("my"); }} className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+              <button onClick={() => { navigate("search"); setTab("search"); }} className="text-gray-400 text-lg">🔍</button>
+              <button onClick={() => { navigate("mypage"); setTab("my"); }} className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                 <span className="text-white text-xs font-bold">MY</span>
               </button>
             </div>
@@ -100,7 +217,6 @@ export default function ConsumerApp() {
           {/* ===== HOME ===== */}
           {screen === "home" && (
             <div>
-              {/* Main Tab: 촬영 / 장소대관 */}
               <div className="border-b border-gray-100 px-4">
                 <div className="flex gap-6">
                   {(["촬영", "장소대관"] as const).map(t => (
@@ -112,17 +228,38 @@ export default function ConsumerApp() {
               </div>
 
               {mainTab === "장소대관" ? (
-                <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
-                  <span className="text-4xl mb-4">🏠</span>
-                  <p className="text-sm font-medium text-gray-500">장소대관 서비스 준비 중</p>
-                  <p className="text-xs text-gray-400 mt-1">촬영 없이 공간만 대여하는 서비스</p>
+                <div>
+                  <div className="px-4 pt-4 pb-2">
+                    <p className="font-bold text-base mb-1">장소대관</p>
+                    <p className="text-xs text-gray-400">촬영 없이 공간만 대여하는 서비스</p>
+                  </div>
+                  <div className="px-4">
+                    {VENUES.map(v => (
+                      <div key={v.id} className="flex gap-3 py-4 border-b border-gray-50">
+                        <div className="w-[88px] h-[88px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-3xl shrink-0">🏠</div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm text-gray-900">{v.name}</p>
+                          <p className="text-xs text-gray-400 mt-0.5 truncate">{v.desc}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">{v.area}</p>
+                          <div className="flex items-center gap-1 mt-1.5">
+                            <span className="text-sm font-bold text-gray-900">₩{v.price}</span>
+                            <span className="text-xs text-gray-400">/ 시간</span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-yellow-500">★ {v.rating}</span>
+                            <span className="text-xs text-gray-400">({v.reviews})</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <>
-                  {/* Category Icons */}
+                  {/* Category Icons - no scrollbar, touch swipe */}
                   <div className="policy-area mx-4 mt-3 p-2">
                     <PolicyBadge label="카테고리 목록 미확정" />
-                    <div className="flex gap-3 overflow-x-auto py-2 mt-1">
+                    <div className="flex gap-3 overflow-x-auto py-2 mt-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
                       {CATEGORIES.map(c => (
                         <button key={c.name} onClick={() => setSelectedCat(c.name)}
                           className="flex flex-col items-center gap-1 min-w-[56px]">
@@ -133,11 +270,11 @@ export default function ConsumerApp() {
                     </div>
                   </div>
 
-                  {/* Keywords */}
-                  <div className="flex gap-2 overflow-x-auto px-4 py-3">
+                  {/* Keywords - no scrollbar */}
+                  <div className="flex gap-2 overflow-x-auto px-4 py-3" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
                     <span className="text-xs text-gray-400 whitespace-nowrap py-1">인기 키워드</span>
                     {KEYWORDS.map(k => (
-                      <button key={k} onClick={() => { setSearchText(k.split(" ")[1] || k); setScreen("search"); setTab("search"); }}
+                      <button key={k} onClick={() => { setSearchText(k.split(" ")[1] || k); navigate("search"); setTab("search"); }}
                         className="keyword-pill cursor-pointer hover:bg-primary/5">{k}</button>
                     ))}
                   </div>
@@ -161,26 +298,37 @@ export default function ConsumerApp() {
                     </div>
                   </div>
 
-                  {/* Ad Banner */}
+                  {/* Ad Banner - swipeable */}
                   <div className="policy-area mx-4 mb-3 p-2">
                     <PolicyBadge label="광고 정책 미확정" />
-                    <div className="bg-gradient-to-r from-violet-400 to-purple-500 rounded-xl p-4 mt-1 text-white">
-                      <p className="text-xs opacity-80">AD</p>
-                      <p className="font-bold text-sm mt-1">스튜디오 상단 노출 배너</p>
-                      <p className="text-xs opacity-70 mt-0.5">구좌 수 · 기간 · 과금 → 미확정</p>
-                      <div className="text-right text-xs opacity-60 mt-2">1 / 5</div>
+                    <div className="mt-1 overflow-hidden rounded-xl" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+                      <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${adIdx * 100}%)` }}>
+                        {AD_BANNERS.map((ad, i) => (
+                          <div key={i} className={`min-w-full bg-gradient-to-r ${ad.gradient} rounded-xl p-4 text-white`}>
+                            <p className="text-xs opacity-80">AD</p>
+                            <p className="font-bold text-sm mt-1">{ad.title}</p>
+                            <p className="text-xs opacity-70 mt-0.5">{ad.desc}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex justify-center gap-1.5 mt-2">
+                        {AD_BANNERS.map((_, i) => (
+                          <button key={i} onClick={() => setAdIdx(i)}
+                            className={`w-1.5 h-1.5 rounded-full transition-all ${i === adIdx ? "bg-primary w-4" : "bg-gray-300"}`} />
+                        ))}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Studio List */}
+                  {/* Studio List - fixed: div instead of nested buttons */}
                   <div className="px-4">
                     {sorted.length === 0 ? (
                       <div className="text-center py-12">
                         <p className="text-gray-400 text-sm">해당 카테고리에 등록된 스튜디오가 없습니다</p>
                       </div>
                     ) : sorted.map(s => (
-                      <button key={s.id} onClick={() => { setSelectedStudio(s); setScreen("detail"); }}
-                        className="w-full flex gap-3 py-4 border-b border-gray-50 text-left">
+                      <div key={s.id} onClick={() => { setSelectedStudio(s); navigate("detail"); }}
+                        className="w-full flex gap-3 py-4 border-b border-gray-50 text-left cursor-pointer">
                         <div className="relative w-[88px] h-[88px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-3xl shrink-0">
                           📷
                           <span className={`absolute top-1 left-1 ${s.badge === "best" ? "badge-best" : "badge-hot"}`}>
@@ -194,7 +342,7 @@ export default function ConsumerApp() {
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-sm text-gray-900">{s.name}</p>
                           <p className="text-xs text-gray-400 mt-0.5 truncate">{s.desc}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">{s.area}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">{s.area}{sort === "nearby" ? ` · ${s.distance}km` : ""}</p>
                           <div className="flex items-center gap-1 mt-1.5">
                             {s.discount && <span className="text-xs font-bold text-red-500">{s.discount}</span>}
                             <span className="text-sm font-bold text-gray-900">₩{s.price}</span>
@@ -205,7 +353,7 @@ export default function ConsumerApp() {
                             <span className="text-xs text-gray-400">({s.reviews})</span>
                           </div>
                         </div>
-                      </button>
+                      </div>
                     ))}
                   </div>
                 </>
@@ -246,15 +394,15 @@ export default function ConsumerApp() {
                 <div>
                   <p className="text-xs text-gray-400 mb-3">&lsquo;{searchText}&rsquo; 검색 결과 {searchResults.length}건</p>
                   {searchResults.map(s => (
-                    <button key={s.id} onClick={() => { setSelectedStudio(s); setScreen("detail"); }}
-                      className="w-full flex gap-3 py-3 border-b border-gray-50 text-left">
+                    <div key={s.id} onClick={() => { setSelectedStudio(s); navigate("detail"); }}
+                      className="w-full flex gap-3 py-3 border-b border-gray-50 text-left cursor-pointer">
                       <div className="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center text-xl shrink-0">📷</div>
                       <div>
                         <p className="text-sm font-medium">{s.name}</p>
                         <p className="text-xs text-gray-400">{s.cat} · {s.area}</p>
                         <p className="text-xs font-bold text-gray-900 mt-0.5">₩{s.price}</p>
                       </div>
-                    </button>
+                    </div>
                   ))}
                 </div>
               )}
@@ -273,8 +421,8 @@ export default function ConsumerApp() {
                   <button onClick={() => { setScreen("home"); setTab("home"); }} className="mt-4 text-sm text-primary font-medium">스튜디오 보러가기 →</button>
                 </div>
               ) : likedStudios.map(s => (
-                <button key={s.id} onClick={() => { setSelectedStudio(s); setScreen("detail"); }}
-                  className="w-full flex gap-3 py-3 border-b border-gray-50 text-left">
+                <div key={s.id} onClick={() => { setSelectedStudio(s); navigate("detail"); }}
+                  className="w-full flex gap-3 py-3 border-b border-gray-50 text-left cursor-pointer">
                   <div className="relative w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-2xl shrink-0">
                     📷
                     <button onClick={e => { e.stopPropagation(); toggleLike(s.id); }}
@@ -288,7 +436,7 @@ export default function ConsumerApp() {
                       <span className="text-sm font-bold">₩{s.price}</span>
                     </div>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           )}
@@ -298,7 +446,7 @@ export default function ConsumerApp() {
             <div>
               <div className="h-52 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-6xl relative">
                 📷
-                <button onClick={() => { if (tab === "search") setScreen("search"); else setScreen("home"); }}
+                <button onClick={goBack}
                   className="absolute top-3 left-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-sm shadow">←</button>
                 <button onClick={() => toggleLike(selectedStudio.id)}
                   className="absolute top-3 right-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-sm shadow">
@@ -313,7 +461,6 @@ export default function ConsumerApp() {
                   <span className="text-xs text-gray-400">리뷰 {selectedStudio.reviews}개</span>
                 </div>
 
-                {/* Price */}
                 <div className="bg-gray-50 rounded-xl p-4 mb-4">
                   <p className="text-xs text-gray-500 mb-2 font-medium">촬영 가격</p>
                   <div className="flex items-center gap-2">
@@ -323,7 +470,6 @@ export default function ConsumerApp() {
                   </div>
                 </div>
 
-                {/* Photos */}
                 <div className="mb-4">
                   <p className="text-xs text-gray-500 mb-2 font-medium">포트폴리오 (최대 30장)</p>
                   <div className="grid grid-cols-3 gap-1 rounded-xl overflow-hidden">
@@ -333,13 +479,11 @@ export default function ConsumerApp() {
                   </div>
                 </div>
 
-                {/* Date Selection */}
                 <div className="policy-area mb-4 p-3">
                   <PolicyBadge label="예약 단위 미확정" />
                   <div className="mt-2">
-                    {/* Mini Date Picker */}
                     <p className="text-sm font-medium mb-2">날짜 선택</p>
-                    <div className="flex gap-2 overflow-x-auto pb-2">
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
                       {[8,9,10,11,12,13,14].map(d => (
                         <button key={d} onClick={() => setSelectedDate(d)}
                           className={`flex flex-col items-center min-w-[44px] py-2 rounded-xl transition-all ${
@@ -350,8 +494,6 @@ export default function ConsumerApp() {
                         </button>
                       ))}
                     </div>
-
-                    {/* Time Selection */}
                     <p className="text-sm font-medium mb-2 mt-3">시간 선택</p>
                     <div className="grid grid-cols-4 gap-1.5">
                       {TIMES.map(t => (
@@ -365,7 +507,6 @@ export default function ConsumerApp() {
                   </div>
                 </div>
 
-                {/* Reviews */}
                 <div className="policy-area mb-4 p-3">
                   <PolicyBadge label="리뷰 정책 미확정" />
                   <div className="mt-2">
@@ -390,8 +531,7 @@ export default function ConsumerApp() {
                   </div>
                 </div>
 
-                {/* CTA */}
-                <button onClick={() => setScreen("booking")}
+                <button onClick={() => navigate("booking")}
                   className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm">
                   예약하기
                 </button>
@@ -402,7 +542,6 @@ export default function ConsumerApp() {
           {/* ===== BOOKING ===== */}
           {screen === "booking" && (
             <div className="p-4">
-              <button onClick={() => setScreen("detail")} className="flex items-center gap-1 text-sm text-gray-400 mb-4">← 돌아가기</button>
               <h2 className="text-lg font-bold mb-4">예약 확인</h2>
 
               <div className="bg-gray-50 rounded-xl p-4 mb-4">
@@ -443,7 +582,7 @@ export default function ConsumerApp() {
                 <p className="text-xs text-amber-700 mt-2">즉시 확정 vs 업체 수락 후 확정?</p>
               </div>
 
-              <button onClick={() => setScreen("done")}
+              <button onClick={() => navigate("done")}
                 className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm">
                 결제하기 · 토스페이먼츠
               </button>
@@ -461,7 +600,7 @@ export default function ConsumerApp() {
                 <p className="text-xs text-primary font-medium">토스페이먼츠 결제 완료</p>
                 <p className="text-sm font-bold text-gray-900 mt-1">₩{bookingPrice.toLocaleString()}</p>
               </div>
-              <button onClick={() => { setScreen("mypage"); setTab("my"); }}
+              <button onClick={() => { setScreen("myBookings"); setTab("booking"); }}
                 className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium text-sm mb-2">예약 내역 확인</button>
               <button onClick={() => { setScreen("home"); setTab("home"); }}
                 className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm">홈으로</button>
@@ -474,110 +613,201 @@ export default function ConsumerApp() {
               <h2 className="text-base font-bold mb-4">내 예약</h2>
 
               <div className="flex gap-2 mb-4">
-                {["예정", "완료", "취소"].map((f, i) => (
-                  <button key={f} className={`px-3 py-1.5 rounded-full text-xs font-medium ${
-                    i === 0 ? "bg-primary text-white" : "bg-gray-100 text-gray-500"
-                  }`}>{f}</button>
+                {(["예정", "완료", "취소"] as BookingFilter[]).map(f => (
+                  <button key={f} onClick={() => setBookingFilter(f)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    bookingFilter === f ? "bg-primary text-white" : "bg-gray-100 text-gray-500"
+                  }`}>{f} {f === "예정" ? UPCOMING_BOOKINGS.length : f === "완료" ? COMPLETED_BOOKINGS.length : CANCELLED_BOOKINGS.length}</button>
                 ))}
               </div>
 
-              {[
-                { studio: "루미에르 스튜디오", date: "2026.05.10 (토)", time: "14:00~16:00", cat: "프로필", price: "₩100,000", status: "확정" },
-                { studio: "선셋 포토랩", date: "2026.05.18 (일)", time: "10:00~12:00", cat: "바디프로필", price: "₩160,000", status: "확정" },
-              ].map((b, i) => (
-                <div key={i} className="bg-gray-50 rounded-xl p-4 mb-3">
+              {filteredBookings.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-400 text-sm">해당 예약이 없습니다</p>
+                </div>
+              ) : filteredBookings.map((b, i) => (
+                <div key={i} className={`bg-gray-50 rounded-xl p-4 mb-3 ${bookingFilter === "취소" ? "opacity-60" : ""}`}>
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <p className="text-sm font-bold">{b.studio}</p>
                       <p className="text-xs text-gray-400 mt-0.5">{b.cat} · {b.date}</p>
                       <p className="text-xs text-gray-400">{b.time}</p>
                     </div>
-                    <span className="text-[10px] bg-green-100 text-green-700 px-2.5 py-1 rounded-full font-medium">{b.status}</span>
+                    <span className={`text-[10px] px-2.5 py-1 rounded-full font-medium ${statusColor(b.status)}`}>{b.status}</span>
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-gray-100">
                     <span className="text-sm font-bold">{b.price}</span>
-                    <div className="flex gap-2">
+                    {bookingFilter === "예정" && (
                       <div className="policy-area px-2 py-1">
                         <span className="text-[10px] text-amber-700">취소 정책 미확정</span>
                       </div>
-                    </div>
+                    )}
+                    {bookingFilter === "완료" && "canReview" in b && b.canReview && (
+                      <button onClick={() => { setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); navigate("reviewWrite"); }}
+                        className="text-xs text-primary font-medium">리뷰 작성 →</button>
+                    )}
+                    {bookingFilter === "취소" && "reason" in b && (
+                      <span className="text-[10px] text-gray-400">{b.reason}</span>
+                    )}
                   </div>
                 </div>
               ))}
+            </div>
+          )}
 
-              <div className="bg-gray-50 rounded-xl p-4 mb-3 opacity-60">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm font-bold">프로덕트 랩</p>
-                    <p className="text-xs text-gray-400 mt-0.5">제품 · 2026.04.20 (일)</p>
-                    <p className="text-xs text-gray-400">13:00~15:00</p>
-                  </div>
-                  <span className="text-[10px] bg-gray-200 text-gray-500 px-2.5 py-1 rounded-full font-medium">완료</span>
-                </div>
-                <div className="flex justify-between items-center pt-2 border-t border-gray-100 mt-2">
-                  <span className="text-sm font-bold">₩80,000</span>
-                  <button className="text-xs text-primary font-medium">리뷰 작성 →</button>
-                </div>
+          {/* ===== REVIEW WRITE ===== */}
+          {screen === "reviewWrite" && (
+            <div className="p-4">
+              <h2 className="text-base font-bold mb-4">리뷰 작성</h2>
+
+              <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                <p className="text-sm font-bold">{reviewTarget}</p>
               </div>
+
+              <div className="mb-6">
+                <p className="text-sm font-medium mb-3">별점</p>
+                <div className="flex gap-2 justify-center">
+                  {[1,2,3,4,5].map(star => (
+                    <button key={star} onClick={() => setReviewRating(star)} className="text-3xl">
+                      {star <= reviewRating ? "★" : "☆"}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-center text-xs text-gray-400 mt-2">{reviewRating}점</p>
+              </div>
+
+              <div className="mb-6">
+                <p className="text-sm font-medium mb-2">리뷰 내용</p>
+                <textarea
+                  value={reviewText}
+                  onChange={e => setReviewText(e.target.value)}
+                  placeholder="촬영 경험을 공유해주세요"
+                  className="w-full bg-gray-50 rounded-xl p-4 text-sm outline-none resize-none border border-gray-200 focus:border-primary"
+                  rows={5}
+                />
+                <p className="text-right text-[10px] text-gray-400 mt-1">{reviewText.length}/500</p>
+              </div>
+
+              <button onClick={() => { setScreen("myBookings"); setTab("booking"); }}
+                className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm">
+                리뷰 등록
+              </button>
+            </div>
+          )}
+
+          {/* ===== MY REVIEWS ===== */}
+          {screen === "myReviews" && (
+            <div className="p-4">
+              <h2 className="text-base font-bold mb-4">내 리뷰 관리</h2>
+
+              {MY_REVIEWS_DATA.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-400 text-sm">작성한 리뷰가 없습니다</p>
+                </div>
+              ) : MY_REVIEWS_DATA.map((r, i) => (
+                <div key={i} className="bg-gray-50 rounded-xl p-4 mb-3">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="text-sm font-bold">{r.studio}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{r.date}</p>
+                    </div>
+                    <span className="text-xs text-yellow-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
+                  </div>
+                  <p className="text-xs text-gray-600">{r.text}</p>
+                  <div className="flex justify-end gap-2 mt-3 pt-2 border-t border-gray-100">
+                    <button className="text-[10px] text-gray-400 px-2 py-1">수정</button>
+                    <button className="text-[10px] text-red-400 px-2 py-1">삭제</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ===== PAYMENT HISTORY ===== */}
+          {screen === "paymentHistory" && (
+            <div className="p-4">
+              <h2 className="text-base font-bold mb-4">결제 내역</h2>
+
+              {PAYMENT_HISTORY.map((p, i) => (
+                <div key={i} className="flex justify-between items-center py-3.5 border-b border-gray-50">
+                  <div>
+                    <p className="text-sm font-medium">{p.studio}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{p.date} · {p.method}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-sm font-bold ${p.status === "환불완료" ? "text-red-500" : "text-gray-900"}`}>
+                      {p.status === "환불완료" ? "-" : ""}{p.amount}
+                    </p>
+                    <p className={`text-[10px] ${p.status === "환불완료" ? "text-red-400" : "text-green-500"}`}>{p.status}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 
           {/* ===== MY PAGE ===== */}
           {screen === "mypage" && (
             <div className="p-4">
+              {/* Profile - editable name & photo */}
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-2xl">👤</div>
-                <div>
-                  <p className="font-bold">김퍼니</p>
-                  <div className="flex gap-1.5 mt-1">
-                    <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-medium">💬 카카오</span>
-                    <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">🟢 네이버</span>
-                  </div>
+                <div className="relative">
+                  <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-2xl">👤</div>
+                  <button onClick={() => setIsEditingProfile(true)}
+                    className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center text-[10px] text-white shadow">📷</button>
+                </div>
+                <div className="flex-1">
+                  {isEditingProfile ? (
+                    <div className="flex items-center gap-2">
+                      <input type="text" value={userName} onChange={e => setUserName(e.target.value)}
+                        className="text-sm font-bold border-b border-primary outline-none bg-transparent w-24" autoFocus />
+                      <button onClick={() => setIsEditingProfile(false)} className="text-[10px] text-primary font-medium bg-primary/10 px-2 py-1 rounded">완료</button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold">{userName}</p>
+                      <button onClick={() => setIsEditingProfile(true)} className="text-gray-400 text-xs">✏️</button>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <h3 className="font-bold text-sm mb-3">예약 내역</h3>
-              <div className="bg-gray-50 rounded-xl p-4 mb-2">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm font-medium">루미에르 스튜디오</p>
-                    <p className="text-xs text-gray-400 mt-0.5">2026.05.10 (토) 14:00~16:00</p>
-                    <p className="text-xs text-gray-400">프로필 촬영</p>
-                  </div>
-                  <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">확정</span>
+              {/* Booking History with Pagination */}
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-bold text-sm">예약 내역</h3>
+                  {totalBookingPages > 1 && (
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setMyBookingPage(p => Math.max(0, p - 1))} disabled={myBookingPage === 0}
+                        className={`text-sm ${myBookingPage === 0 ? "text-gray-300" : "text-gray-500"}`}>‹</button>
+                      <span className="text-xs text-gray-400">{myBookingPage + 1}/{totalBookingPages}</span>
+                      <button onClick={() => setMyBookingPage(p => Math.min(totalBookingPages - 1, p + 1))} disabled={myBookingPage === totalBookingPages - 1}
+                        className={`text-sm ${myBookingPage === totalBookingPages - 1 ? "text-gray-300" : "text-gray-500"}`}>›</button>
+                    </div>
+                  )}
                 </div>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-4 mb-2">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm font-medium">선셋 포토랩</p>
-                    <p className="text-xs text-gray-400 mt-0.5">2026.04.20 (일) 10:00~12:00</p>
-                    <p className="text-xs text-gray-400">바디프로필</p>
+                {pagedBookings.map((b, i) => (
+                  <div key={i} className={`bg-gray-50 rounded-xl p-4 mb-2 ${b.status === "취소" ? "opacity-50" : ""}`}>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-sm font-medium">{b.studio}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{b.date}</p>
+                        <p className="text-xs text-gray-400">{b.cat}</p>
+                      </div>
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColor(b.status)}`}>{b.status}</span>
+                    </div>
                   </div>
-                  <span className="text-xs bg-gray-200 text-gray-500 px-2 py-1 rounded-full font-medium">완료</span>
-                </div>
+                ))}
               </div>
 
-              {/* Business Mode Switch */}
-              <Link href="/business"
-                className="flex items-center justify-between w-full bg-primary/5 border border-primary/20 rounded-xl p-4 mt-2 mb-4">
-                <div>
-                  <p className="text-sm font-bold text-primary">업체 모드로 전환</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">스튜디오 등록·예약 관리·정산</p>
-                </div>
-                <span className="text-primary text-sm">→</span>
-              </Link>
-
+              {/* Menu Items */}
               <div className="space-y-0">
                 {[
-                  { label: "내 리뷰 관리" },
-                  { label: "찜 목록", action: "like" },
-                  { label: "결제 내역" },
-                  { label: "알림 설정" },
-                  { label: "고객센터" },
-                  { label: "로그아웃" },
+                  { label: "내 리뷰 관리", action: () => navigate("myReviews") },
+                  { label: "찜 목록", action: () => { setScreen("like"); } },
+                  { label: "결제 내역", action: () => navigate("paymentHistory") },
+                  { label: "고객센터", action: () => {} },
+                  { label: "로그아웃", action: () => {} },
                 ].map(m => (
-                  <button key={m.label} onClick={() => { if (m.action === "like") { setScreen("like"); setTab("my"); } }}
+                  <button key={m.label} onClick={m.action}
                     className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
                     <span className="text-sm">{m.label}</span>
                     <span className="text-gray-300 text-xs">›</span>
@@ -588,7 +818,7 @@ export default function ConsumerApp() {
           )}
         </div>
 
-        {/* Bottom Tab - 통합 네비게이션 (홈/탐색/예약/MY) */}
+        {/* Bottom Tab */}
         <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">
           {[
             { key: "home" as const, icon: "🏠", label: "홈", s: "home" as Screen },

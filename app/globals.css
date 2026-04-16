@@ -85,3 +85,19 @@ body {
   border-color: #7C3AED;
   background: #F5F3FF;
 }
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+}
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* Also target overflow-x-auto directly inside the app */
+.overflow-x-auto::-webkit-scrollbar {
+  display: none !important;
+}
+.overflow-x-auto {
+  scrollbar-width: none !important;
+}
