@@ -23,12 +23,12 @@ const CATEGORIES = [
 ];
 
 const STUDIOS = [
-  { id: 1, name: "루미에르 스튜디오", cat: "프로필", desc: "프로필촬영, 증명사진, 프로필영상", area: "서울 강남구", price: "50,000", rating: 4.8, reviews: 124, badge: "best" as const, phone: "02-1234-5678" },
-  { id: 2, name: "선셋 포토랩", cat: "바디프로필", desc: "바디프로필, 커플촬영, 운동기록", area: "서울 성수동", price: "80,000", rating: 4.9, reviews: 89, badge: "best" as const, phone: "02-2345-6789" },
-  { id: 3, name: "블룸 웨딩 스튜디오", cat: "웨딩", desc: "웨딩스냅, 본식촬영, 야외웨딩", area: "서울 잠실", price: "200,000", rating: 4.7, reviews: 56, badge: "hot" as const, phone: "02-3456-7890" },
-  { id: 4, name: "미니미 키즈포토", cat: "돌잔치", desc: "돌잔치촬영, 백일사진, 가족사진", area: "경기 판교", price: "120,000", rating: 4.6, reviews: 34, badge: "hot" as const, phone: "031-456-7890" },
-  { id: 5, name: "프로덕트 랩", cat: "제품", desc: "제품촬영, 음식사진, 상세페이지", area: "서울 홍대", price: "40,000", rating: 4.5, reviews: 67, badge: "best" as const, phone: "02-4567-8901" },
-  { id: 6, name: "무브 필름랩", cat: "영상", desc: "유튜브촬영, 광고영상, 인터뷰", area: "서울 합정", price: "60,000", rating: 4.7, reviews: 45, badge: "hot" as const, phone: "02-5678-9012" },
+  { id: 1, name: "루미에르 스튜디오", cat: "프로필", desc: "프로필촬영, 증명사진, 프로필영상", area: "서울 강남구", price: "50,000", rating: 4.8, reviews: 124, phone: "02-1234-5678" },
+  { id: 2, name: "선셋 포토랩", cat: "바디프로필", desc: "바디프로필, 커플촬영, 운동기록", area: "서울 성수동", price: "80,000", rating: 4.9, reviews: 89, phone: "02-2345-6789" },
+  { id: 3, name: "블룸 웨딩 스튜디오", cat: "웨딩", desc: "웨딩스냅, 본식촬영, 야외웨딩", area: "서울 잠실", price: "200,000", rating: 4.7, reviews: 56, phone: "02-3456-7890" },
+  { id: 4, name: "미니미 키즈포토", cat: "돌잔치", desc: "돌잔치촬영, 백일사진, 가족사진", area: "경기 판교", price: "120,000", rating: 4.6, reviews: 34, phone: "031-456-7890" },
+  { id: 5, name: "프로덕트 랩", cat: "제품", desc: "제품촬영, 음식사진, 상세페이지", area: "서울 홍대", price: "40,000", rating: 4.5, reviews: 67, phone: "02-4567-8901" },
+  { id: 6, name: "무브 필름랩", cat: "영상", desc: "유튜브촬영, 광고영상, 인터뷰", area: "서울 합정", price: "60,000", rating: 4.7, reviews: 45, phone: "02-5678-9012" },
 ];
 
 const KEYWORDS = ["강남 프로필", "성수 바디프로필", "웨딩 스냅", "증명사진", "제품 촬영"];
@@ -175,7 +175,6 @@ export default function BusinessApp() {
                     className="w-full flex gap-3 py-4 border-b border-gray-50 cursor-pointer">
                     <div className="relative w-[88px] h-[88px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-3xl shrink-0">
                       📷
-                      <span className={`absolute top-1 left-1 ${s.badge === "best" ? "badge-best" : "badge-hot"}`}>{s.badge === "best" ? "BEST" : "HOT"}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm text-gray-900">{s.name}</p>

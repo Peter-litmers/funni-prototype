@@ -20,12 +20,12 @@ const CATEGORIES = [
 const KEYWORDS = ["강남 프로필", "성수 바디프로필", "웨딩 스냅", "증명사진", "제품 촬영", "유튜브 스튜디오"];
 
 const STUDIOS = [
-  { id: 1, name: "루미에르 스튜디오", cat: "프로필", desc: "프로필촬영, 증명사진, 프로필영상, 이력서사진", area: "서울 강남구", price: "50,000", discount: "", rating: 4.8, reviews: 124, badge: "best" as const, distance: 1.2, phone: "02-1234-5678" },
-  { id: 2, name: "선셋 포토랩", cat: "바디프로필", desc: "바디프로필, 커플촬영, 다이어트기록, 운동기록", area: "서울 성수동", price: "80,000", discount: "30%", rating: 4.9, reviews: 89, badge: "best" as const, distance: 3.5, phone: "02-2345-6789" },
-  { id: 3, name: "블룸 웨딩 스튜디오", cat: "웨딩", desc: "웨딩스냅, 본식촬영, 야외웨딩, 스몰웨딩", area: "서울 잠실", price: "200,000", discount: "", rating: 4.7, reviews: 56, badge: "hot" as const, distance: 5.8, phone: "02-3456-7890" },
-  { id: 4, name: "미니미 키즈포토", cat: "돌잔치", desc: "돌잔치촬영, 백일사진, 가족사진, 만삭촬영", area: "경기 판교", price: "120,000", discount: "15%", rating: 4.6, reviews: 34, badge: "hot" as const, distance: 15.2, phone: "031-456-7890" },
-  { id: 5, name: "프로덕트 랩", cat: "제품", desc: "제품촬영, 음식사진, 상세페이지, 스틸컷", area: "서울 홍대", price: "40,000", discount: "", rating: 4.5, reviews: 67, badge: "best" as const, distance: 2.1, phone: "02-4567-8901" },
-  { id: 6, name: "무브 필름랩", cat: "영상", desc: "유튜브촬영, 광고영상, 인터뷰, 브이로그", area: "서울 합정", price: "60,000", discount: "20%", rating: 4.7, reviews: 45, badge: "hot" as const, distance: 2.8, phone: "02-5678-9012" },
+  { id: 1, name: "루미에르 스튜디오", cat: "프로필", desc: "프로필촬영, 증명사진, 프로필영상, 이력서사진", area: "서울 강남구", price: "50,000", rating: 4.8, reviews: 124, distance: 1.2, phone: "02-1234-5678" },
+  { id: 2, name: "선셋 포토랩", cat: "바디프로필", desc: "바디프로필, 커플촬영, 다이어트기록, 운동기록", area: "서울 성수동", price: "80,000", rating: 4.9, reviews: 89, distance: 3.5, phone: "02-2345-6789" },
+  { id: 3, name: "블룸 웨딩 스튜디오", cat: "웨딩", desc: "웨딩스냅, 본식촬영, 야외웨딩, 스몰웨딩", area: "서울 잠실", price: "200,000", rating: 4.7, reviews: 56, distance: 5.8, phone: "02-3456-7890" },
+  { id: 4, name: "미니미 키즈포토", cat: "돌잔치", desc: "돌잔치촬영, 백일사진, 가족사진, 만삭촬영", area: "경기 판교", price: "120,000", rating: 4.6, reviews: 34, distance: 15.2, phone: "031-456-7890" },
+  { id: 5, name: "프로덕트 랩", cat: "제품", desc: "제품촬영, 음식사진, 상세페이지, 스틸컷", area: "서울 홍대", price: "40,000", rating: 4.5, reviews: 67, distance: 2.1, phone: "02-4567-8901" },
+  { id: 6, name: "무브 필름랩", cat: "영상", desc: "유튜브촬영, 광고영상, 인터뷰, 브이로그", area: "서울 합정", price: "60,000", rating: 4.7, reviews: 45, distance: 2.8, phone: "02-5678-9012" },
 ];
 
 const HAIR_MAKEUP_OPTIONS = [
@@ -259,7 +259,6 @@ export default function ConsumerApp() {
                   <div key={s.id} onClick={() => { setSelectedStudio(s); setSelectedOptions([]); navigate("detail"); }} className="w-full flex gap-3 py-4 border-b border-gray-50 text-left cursor-pointer">
                     <div className="relative w-[88px] h-[88px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-3xl shrink-0">
                       📷
-                      <span className={`absolute top-1 left-1 ${s.badge === "best" ? "badge-best" : "badge-hot"}`}>{s.badge === "best" ? "BEST" : "HOT"}</span>
                       <button onClick={(e) => { e.stopPropagation(); toggleLike(s.id); }} className="absolute top-1 right-1 w-6 h-6 bg-white/80 rounded-full flex items-center justify-center text-xs">{liked.includes(s.id) ? "❤️" : "🤍"}</button>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -267,7 +266,6 @@ export default function ConsumerApp() {
                       <p className="text-xs text-gray-400 mt-0.5 truncate">{s.desc}</p>
                       <p className="text-xs text-gray-400 mt-0.5">{s.area}{sort === "nearby" ? ` · ${s.distance}km` : ""}</p>
                       <div className="flex items-center gap-1 mt-1.5">
-                        {s.discount && <span className="text-xs font-bold text-red-500">{s.discount}</span>}
                         <span className="text-sm font-bold text-gray-900">₩{s.price}</span>
                         <span className="text-xs text-gray-400">VAT 포함</span>
                       </div>
@@ -368,7 +366,7 @@ export default function ConsumerApp() {
                     <button onClick={e => { e.stopPropagation(); toggleLike(s.id); }} className="absolute -top-1 -right-1 text-sm">❤️</button>
                   </div>
                   <div><p className="text-sm font-medium">{s.name}</p><p className="text-xs text-gray-400">{s.cat} · {s.area}</p>
-                    <div className="flex items-center gap-1 mt-1">{s.discount && <span className="text-xs font-bold text-red-500">{s.discount}</span>}<span className="text-sm font-bold">₩{s.price}</span></div>
+                    <div className="flex items-center gap-1 mt-1"><span className="text-sm font-bold">₩{s.price}</span></div>
                   </div>
                 </div>
               ))}
@@ -394,7 +392,6 @@ export default function ConsumerApp() {
                 <div className="bg-gray-50 rounded-xl p-4 mb-4">
                   <p className="text-xs text-gray-500 mb-2 font-medium">촬영 가격</p>
                   <div className="flex items-center gap-2">
-                    {selectedStudio.discount && <span className="text-sm font-bold text-red-500">{selectedStudio.discount}</span>}
                     <span className="text-lg font-bold">₩{selectedStudio.price}</span>
                     <span className="text-xs text-gray-400">/ 시간 · VAT 포함</span>
                   </div>
