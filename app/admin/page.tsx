@@ -75,13 +75,13 @@ export default function AdminWeb() {
         {tab === "dashboard" && (
           <div>
             <h2 className="text-xl font-bold mb-6">대시보드</h2>
-            {/* Stats */}
+            {/* Stats (REQ-122) — 소비자/업체 회원, 스튜디오 수, 예약 수, 매출, 수수료 수익 */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               {[
-                { label: "총 업체", value: "42", icon: "🏢" },
-                { label: "총 예약", value: "1,284", icon: "📅" },
-                { label: "이번 달 매출", value: "₩12.4M", icon: "💰" },
-                { label: "총 회원", value: "3,891", icon: "👥" },
+                { label: "총 회원 (소비자/업체)", value: "3,891 / 42", icon: "👥" },
+                { label: "총 스튜디오", value: "58", icon: "🏢" },
+                { label: "이번 달 예약", value: "142", icon: "📅" },
+                { label: "이번 달 매출", value: "₩12.4M", icon: "💰", sub: "수수료 수익 ₩1.24M" },
               ].map((s, i) => (
                 <div key={i} className="bg-white rounded-xl p-4 shadow-sm">
                   <div className="flex items-center gap-2 mb-2">
@@ -89,38 +89,63 @@ export default function AdminWeb() {
                     <span className="text-xs text-gray-500">{s.label}</span>
                   </div>
                   <p className="text-2xl font-bold">{s.value}</p>
+                  {s.sub && <p className="text-[10px] text-primary font-medium mt-1">{s.sub}</p>}
                 </div>
               ))}
             </div>
 
-            {/* Monthly Trend (REQ-122) */}
+            {/* Monthly Trend (REQ-122: 월별 예약 수 + 월별 매출·수수료 수익) */}
             <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="font-bold">월별 추이</h3>
-                <div className="flex items-center gap-4 text-xs text-gray-400">
-                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-primary inline-block" /> 예약</span>
-                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-green-400 inline-block" /> 매출</span>
+              <h3 className="font-bold mb-5">월별 집계</h3>
+
+              {/* 월별 예약 수 */}
+              <div className="mb-6">
+                <p className="text-xs text-gray-500 mb-2 font-medium">월별 예약 수</p>
+                <div className="flex items-end gap-3" style={{ height: 90 }}>
+                  {[
+                    { month: "1월", v: 82 },
+                    { month: "2월", v: 95 },
+                    { month: "3월", v: 118 },
+                    { month: "4월", v: 142 },
+                  ].map((m, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center">
+                      <div className="relative w-full flex justify-center" style={{ height: 60 }}>
+                        <div className="w-8 bg-primary rounded-t self-end" style={{ height: `${(m.v / 142) * 100}%` }} />
+                      </div>
+                      <p className="text-[10px] text-gray-400 mt-1.5">{m.month}</p>
+                      <p className="text-xs font-bold">{m.v}건</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div className="flex items-end gap-3" style={{ height: 160 }}>
-                {[
-                  { month: "1월", bookings: 82, revenue: 6.2, maxB: 142, maxR: 12.4 },
-                  { month: "2월", bookings: 95, revenue: 7.8, maxB: 142, maxR: 12.4 },
-                  { month: "3월", bookings: 118, revenue: 9.6, maxB: 142, maxR: 12.4 },
-                  { month: "4월", bookings: 142, revenue: 12.4, maxB: 142, maxR: 12.4 },
-                ].map((m, i) => (
-                  <div key={i} className="flex-1 flex flex-col items-center">
-                    <div className="flex gap-1 items-end w-full justify-center" style={{ height: 120 }}>
-                      <div className="w-5 bg-primary rounded-t transition-all" style={{ height: `${(m.bookings / m.maxB) * 100}%` }} title={`${m.bookings}건`} />
-                      <div className="w-5 bg-green-400 rounded-t transition-all" style={{ height: `${(m.revenue / m.maxR) * 100}%` }} title={`₩${m.revenue}M`} />
-                    </div>
-                    <div className="text-center mt-2 border-t border-gray-100 pt-2 w-full">
-                      <p className="text-xs text-gray-500 font-medium">{m.month}</p>
-                      <p className="text-xs font-bold text-gray-800">{m.bookings}건</p>
-                      <p className="text-[10px] text-green-600 font-medium">₩{m.revenue}M</p>
-                    </div>
+
+              {/* 월별 매출 · 수수료 수익 */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-gray-500 font-medium">월별 매출 · 수수료 수익</p>
+                  <div className="flex items-center gap-3 text-[10px] text-gray-400">
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-green-400 inline-block" /> 매출</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block" /> 수수료 수익</span>
                   </div>
-                ))}
+                </div>
+                <div className="flex items-end gap-3" style={{ height: 110 }}>
+                  {[
+                    { month: "1월", rev: 6.2, fee: 0.62 },
+                    { month: "2월", rev: 7.8, fee: 0.78 },
+                    { month: "3월", rev: 9.6, fee: 0.96 },
+                    { month: "4월", rev: 12.4, fee: 1.24 },
+                  ].map((m, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center">
+                      <div className="flex gap-1 items-end w-full justify-center" style={{ height: 70 }}>
+                        <div className="w-5 bg-green-400 rounded-t" style={{ height: `${(m.rev / 12.4) * 100}%` }} />
+                        <div className="w-5 bg-amber-400 rounded-t" style={{ height: `${(m.fee / 12.4) * 100}%` }} />
+                      </div>
+                      <p className="text-[10px] text-gray-400 mt-1.5">{m.month}</p>
+                      <p className="text-[10px] text-green-600 font-medium">₩{m.rev}M</p>
+                      <p className="text-[10px] text-amber-600">+₩{m.fee}M</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
