@@ -2,20 +2,26 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import FeedbackOverlay from "../components/FeedbackOverlay";
+import {
+  Sparkles, Camera, Dumbbell, Heart, Cake, Package, Video, MoreHorizontal,
+  Home, LayoutGrid, User, Bell, Search, ChevronLeft, Phone, MapPin, Star,
+  Calendar, Clock, CreditCard, Edit2, Check, X, ChevronRight, Pencil,
+  LogOut, ShieldCheck, Headphones
+} from "lucide-react";
 
 function PolicyBadge({ label }: { label: string }) {
   return <span className="policy-badge">⚠️ {label}</span>;
 }
 
 const CATEGORIES = [
-  { name: "추천", icon: "🏆" },
-  { name: "프로필", icon: "📸" },
-  { name: "바디프로필", icon: "💪" },
-  { name: "웨딩", icon: "💍" },
-  { name: "돌잔치", icon: "🎂" },
-  { name: "제품", icon: "📦" },
-  { name: "영상", icon: "🎬" },
-  { name: "기타", icon: "✨" },
+  { name: "추천", Icon: Sparkles },
+  { name: "프로필", Icon: Camera },
+  { name: "바디프로필", Icon: Dumbbell },
+  { name: "웨딩", Icon: Heart },
+  { name: "돌잔치", Icon: Cake },
+  { name: "제품", Icon: Package },
+  { name: "영상", Icon: Video },
+  { name: "기타", Icon: MoreHorizontal },
 ];
 
 // 카테고리별 포트폴리오 (REQ-106: 탐색 경로의 카테고리에 맞는 사진만 표시)
@@ -239,8 +245,9 @@ export default function ConsumerApp() {
                 {screen !== "home" && <button onClick={goBack} className="text-gray-500 text-lg w-7 h-7 flex items-center justify-center">‹</button>}
                 <button onClick={() => { setScreen("home"); setTab("home"); }} className="text-xl font-bold text-primary">퍼니</button>
               </div>
-              <button onClick={() => navigate("notifications")} className="text-gray-400 text-lg relative">🔔
-                {CONSUMER_NOTIFICATIONS.some(n => !n.read) && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
+              <button onClick={() => navigate("notifications")} className="text-gray-500 relative p-1">
+                <Bell size={20} strokeWidth={1.5} />
+                {CONSUMER_NOTIFICATIONS.some(n => !n.read) && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
               </button>
             </div>
           </div>
@@ -344,11 +351,14 @@ export default function ConsumerApp() {
               <h2 className="text-base font-bold mb-4">카테고리</h2>
               <div className="policy-area p-2 mb-4">
                 <PolicyBadge label="카테고리 목록 미확정" />
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="grid grid-cols-4 gap-2 mt-2">
                   {CATEGORIES.map(c => (
                     <button key={c.name} onClick={() => setCategoryCat(c.name)}
-                      className={`rounded-full px-3 py-1.5 text-xs border transition-all ${categoryCat === c.name ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-200 text-gray-500 bg-white"}`}>
-                      {c.name}
+                      className="flex flex-col items-center gap-1.5 py-2">
+                      <div className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all ${categoryCat === c.name ? "border-primary bg-primary/5 text-primary" : "border-gray-200 bg-white text-gray-600"}`}>
+                        <c.Icon size={20} strokeWidth={1.5} />
+                      </div>
+                      <span className={`text-[10px] ${categoryCat === c.name ? "text-primary font-semibold" : "text-gray-600"}`}>{c.name}</span>
                     </button>
                   ))}
                 </div>
@@ -442,11 +452,13 @@ export default function ConsumerApp() {
                   <div className="bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
                     <div className="h-32 bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center relative">
                       <div className="absolute inset-0 opacity-40" style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
-                      <span className="text-3xl z-10">📍</span>
+                      <MapPin size={32} strokeWidth={1.5} className="text-primary z-10" />
                     </div>
                     <div className="p-3">
                       <p className="text-xs font-medium text-gray-700">{selectedStudio.location}</p>
-                      <a href={`tel:${selectedStudio.phone}`} className="text-[10px] text-primary mt-1 inline-block">📞 {selectedStudio.phone}</a>
+                      <a href={`tel:${selectedStudio.phone}`} className="flex items-center gap-1 text-[10px] text-primary mt-1">
+                        <Phone size={12} strokeWidth={1.5} /> {selectedStudio.phone}
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -496,7 +508,9 @@ export default function ConsumerApp() {
 
                 {/* CTA: 예약 + 문의(전화) */}
                 <div className="flex gap-2">
-                  <a href={`tel:${selectedStudio.phone}`} className="flex items-center justify-center w-14 h-12 border border-gray-300 rounded-xl text-gray-500 text-sm shrink-0">📞</a>
+                  <a href={`tel:${selectedStudio.phone}`} className="flex items-center justify-center w-14 h-12 border border-gray-300 rounded-xl text-gray-500 shrink-0">
+                    <Phone size={18} strokeWidth={1.5} />
+                  </a>
                   <button onClick={() => navigate("booking")} className="flex-1 bg-primary text-white py-3.5 rounded-xl font-bold text-sm">예약하기</button>
                 </div>
               </div>
@@ -832,13 +846,13 @@ export default function ConsumerApp() {
         {showHeader && (
           <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">
             {[
-              { key: "home" as Tab, icon: "🏠", label: "홈", s: "home" as Screen },
-              { key: "category" as Tab, icon: "📂", label: "카테고리", s: "category" as Screen },
-              { key: "mypage" as Tab, icon: "👤", label: "마이페이지", s: "mypage" as Screen },
+              { key: "home" as Tab, Icon: Home, label: "홈", s: "home" as Screen },
+              { key: "category" as Tab, Icon: LayoutGrid, label: "카테고리", s: "category" as Screen },
+              { key: "mypage" as Tab, Icon: User, label: "마이페이지", s: "mypage" as Screen },
             ].map(t => (
               <button key={t.key} onClick={() => { setTab(t.key); setScreen(t.s); }}
                 className={`flex-1 flex flex-col items-center justify-center gap-0.5 ${tab === t.key ? "text-primary" : "text-gray-400"}`}>
-                <span className="text-base">{t.icon}</span>
+                <t.Icon size={20} strokeWidth={1.5} />
                 <span className="text-[10px]">{t.label}</span>
               </button>
             ))}

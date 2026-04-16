@@ -2,6 +2,11 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import FeedbackOverlay from "../components/FeedbackOverlay";
+import {
+  Sparkles, Camera, Dumbbell, Heart, Cake, Package, Video, MoreHorizontal,
+  Home, LayoutGrid, User, Bell, ChevronRight, Phone, MapPin, Calendar,
+  DollarSign, BarChart3, Building2, PenSquare, Settings
+} from "lucide-react";
 
 function PolicyBadge({ label }: { label: string }) {
   return <span className="policy-badge">⚠️ {label}</span>;
@@ -13,14 +18,14 @@ type Tab = "home" | "category" | "my";
 
 // Studio browsing data — 소비자와 동일한 탐색 화면
 const CATEGORIES = [
-  { name: "추천", icon: "🏆" },
-  { name: "프로필", icon: "📸" },
-  { name: "바디프로필", icon: "💪" },
-  { name: "웨딩", icon: "💍" },
-  { name: "돌잔치", icon: "🎂" },
-  { name: "제품", icon: "📦" },
-  { name: "영상", icon: "🎬" },
-  { name: "기타", icon: "✨" },
+  { name: "추천", Icon: Sparkles },
+  { name: "프로필", Icon: Camera },
+  { name: "바디프로필", Icon: Dumbbell },
+  { name: "웨딩", Icon: Heart },
+  { name: "돌잔치", Icon: Cake },
+  { name: "제품", Icon: Package },
+  { name: "영상", Icon: Video },
+  { name: "기타", Icon: MoreHorizontal },
 ];
 
 const STUDIOS = [
@@ -122,9 +127,9 @@ export default function BusinessApp() {
             <button onClick={() => { setScreen("home"); setTab("home"); }} className="text-xl font-bold text-gray-900">
               퍼니 <span className="text-primary text-sm font-medium">비즈니스</span>
             </button>
-            <button onClick={() => { setScreen("notifications"); setHasNotif(false); }} className="relative">
-              <span className="text-gray-400 text-lg">🔔</span>
-              {hasNotif && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />}
+            <button onClick={() => { setScreen("notifications"); setHasNotif(false); }} className="relative text-gray-500 p-1">
+              <Bell size={20} strokeWidth={1.5} />
+              {hasNotif && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
             </button>
           </div>
         </div>
@@ -204,11 +209,14 @@ export default function BusinessApp() {
           {screen === "category" && (
             <div className="p-4">
               <h2 className="text-base font-bold mb-4">카테고리</h2>
-              <div className="flex flex-wrap gap-2 mb-6">
+              <div className="grid grid-cols-4 gap-2 mb-6">
                 {CATEGORIES.map(c => (
                   <button key={c.name} onClick={() => setCategoryCat(c.name)}
-                    className={`rounded-full px-3 py-1.5 text-xs border transition-all ${categoryCat === c.name ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-200 text-gray-500 bg-white"}`}>
-                    {c.name}
+                    className="flex flex-col items-center gap-1.5 py-2">
+                    <div className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all ${categoryCat === c.name ? "border-primary bg-primary/5 text-primary" : "border-gray-200 bg-white text-gray-600"}`}>
+                      <c.Icon size={20} strokeWidth={1.5} />
+                    </div>
+                    <span className={`text-[10px] ${categoryCat === c.name ? "text-primary font-semibold" : "text-gray-600"}`}>{c.name}</span>
                   </button>
                 ))}
               </div>
@@ -278,7 +286,7 @@ export default function BusinessApp() {
                 </div>
 
                 <div className="flex gap-2">
-                  <a href={`tel:${selectedStudio.phone}`} className="flex items-center justify-center gap-1 w-14 h-12 border border-gray-300 rounded-xl text-gray-500 text-sm shrink-0">📞</a>
+                  <a href={`tel:${selectedStudio.phone}`} className="flex items-center justify-center w-14 h-12 border border-gray-300 rounded-xl text-gray-500 shrink-0"><Phone size={18} strokeWidth={1.5} /></a>
                   <button disabled className="flex-1 bg-gray-200 text-gray-400 py-3.5 rounded-xl font-bold text-sm cursor-not-allowed">예약 불가 (업체 계정)</button>
                 </div>
               </div>
@@ -748,13 +756,13 @@ export default function BusinessApp() {
               <div className="grid grid-cols-2 gap-2 mb-2">
                 <button onClick={() => { setScreen("register"); }}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
-                  <span className="text-xl">🏠</span>
+                  <Home size={20} strokeWidth={1.5} className="text-gray-700" />
                   <p className="text-sm font-medium mt-1">내 스튜디오 관리</p>
                   <p className="text-[10px] text-gray-400">IA-060 · 등록/수정/삭제</p>
                 </button>
                 <button onClick={() => { setScreen("bookings"); }}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
-                  <span className="text-xl">📅</span>
+                  <Calendar size={20} strokeWidth={1.5} className="text-gray-700" />
                   <p className="text-sm font-medium mt-1">내 예약 달력</p>
                   <p className="text-[10px] text-gray-400">IA-061 · 예약·수기 일정</p>
                 </button>
@@ -762,13 +770,13 @@ export default function BusinessApp() {
               <div className="grid grid-cols-2 gap-2 mb-2">
                 <button onClick={() => setScreen("dashboard")}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
-                  <span className="text-xl">📊</span>
+                  <BarChart3 size={20} strokeWidth={1.5} className="text-gray-700" />
                   <p className="text-sm font-medium mt-1">실적 대시보드</p>
                   <p className="text-[10px] text-gray-400">IA-063 · 월별 예약·매출</p>
                 </button>
                 <button onClick={() => setScreen("settlement")}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
-                  <span className="text-xl">💰</span>
+                  <DollarSign size={20} strokeWidth={1.5} className="text-gray-700" />
                   <p className="text-sm font-medium mt-1">정산 내역</p>
                   <p className="text-[10px] text-gray-400">IA-064 · 월별 정산</p>
                 </button>
@@ -776,13 +784,13 @@ export default function BusinessApp() {
               <div className="grid grid-cols-2 gap-2 mb-4">
                 <button onClick={() => setScreen("bizInfo")}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
-                  <span className="text-xl">🏢</span>
+                  <Building2 size={20} strokeWidth={1.5} className="text-gray-700" />
                   <p className="text-sm font-medium mt-1">업체 기본정보</p>
                   <p className="text-[10px] text-gray-400">IA-065 · 기본정보 수정</p>
                 </button>
                 <button onClick={() => setScreen("notifications")}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
-                  <span className="text-xl">🔔</span>
+                  <Bell size={20} strokeWidth={1.5} className="text-gray-700" />
                   <p className="text-sm font-medium mt-1">알림</p>
                   <p className="text-[10px] text-gray-400">{hasNotif ? "새 알림" : "확인 완료"}</p>
                 </button>
@@ -941,15 +949,15 @@ export default function BusinessApp() {
         {/* Bottom Tab - 소비자 앱과 동일 3탭: 홈/카테고리/마이페이지 (마이페이지만 업체 전용) */}
         <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">
           {[
-            { key: "home" as Tab, icon: "🏠", label: "홈", s: "home" as Screen },
-            { key: "category" as Tab, icon: "📂", label: "카테고리", s: "category" as Screen },
-            { key: "my" as Tab, icon: "👤", label: "마이페이지", s: "mypage" as Screen },
+            { key: "home" as Tab, Icon: Home, label: "홈", s: "home" as Screen },
+            { key: "category" as Tab, Icon: LayoutGrid, label: "카테고리", s: "category" as Screen },
+            { key: "my" as Tab, Icon: User, label: "마이페이지", s: "mypage" as Screen },
           ].map(t => (
             <button key={t.key} onClick={() => { setTab(t.key); setScreen(t.s); }}
               className={`flex-1 flex flex-col items-center justify-center gap-0.5 ${
                 tab === t.key ? "text-primary" : "text-gray-400"
               }`}>
-              <span className="text-base">{t.icon}</span>
+              <t.Icon size={20} strokeWidth={1.5} />
               <span className="text-[10px]">{t.label}</span>
             </button>
           ))}
