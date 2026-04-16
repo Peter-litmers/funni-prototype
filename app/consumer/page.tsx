@@ -234,16 +234,8 @@ export default function ConsumerApp() {
                 </div>
               </div>
 
-              {/* Keywords */}
-              <div className="flex gap-2 overflow-x-auto px-4 py-3" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                <span className="text-xs text-gray-400 whitespace-nowrap py-1">인기 키워드</span>
-                {KEYWORDS.map(k => (
-                  <button key={k} onClick={() => { setSearchText(k.split(" ")[1] || k); navigate("search"); }} className="keyword-pill cursor-pointer hover:bg-primary/5">{k}</button>
-                ))}
-              </div>
-
               {/* Sort + Region Filter */}
-              <div className="px-4 mb-2">
+              <div className="px-4 mt-3 mb-2">
                 <p className="font-bold text-base mb-2">추천 스튜디오</p>
                 <div className="flex gap-2">
                   {([{ key: "popular" as Sort, icon: "🔄", label: "인기순" }, { key: "nearby" as Sort, icon: "📍", label: "내 주변" }, { key: "reviews" as Sort, icon: "💬", label: "리뷰많은순" }]).map(s => (
@@ -332,6 +324,12 @@ export default function ConsumerApp() {
               </div>
               {!searchText ? (
                 <div>
+                  {/* 인기 키워드 */}
+                  <div className="flex gap-2 overflow-x-auto mb-5" style={{ scrollbarWidth: 'none' }}>
+                    {KEYWORDS.map(k => (
+                      <button key={k} onClick={() => setSearchText(k.split(" ")[1] || k)} className="keyword-pill cursor-pointer hover:bg-primary/5">{k}</button>
+                    ))}
+                  </div>
                   <p className="text-xs text-gray-400 mb-3">최근 검색어</p>
                   <div className="flex flex-wrap gap-2">{["프로필", "강남", "바디프로필", "웨딩"].map(k => (<button key={k} onClick={() => setSearchText(k)} className="bg-gray-100 rounded-full px-3 py-1.5 text-xs text-gray-600">{k}</button>))}</div>
                   <p className="text-xs text-gray-400 mb-3 mt-6">인기 검색어</p>

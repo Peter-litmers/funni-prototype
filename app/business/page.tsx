@@ -535,19 +535,32 @@ export default function BusinessApp() {
                 <span className="text-gray-400 text-sm">→</span>
               </Link>
 
-              {/* Quick Menu */}
-              <div className="grid grid-cols-2 gap-2 mb-4">
+              {/* Quick Menu — 업체 마이페이지 전용 메뉴 (IA Group 07) */}
+              <div className="grid grid-cols-2 gap-2 mb-2">
                 <button onClick={() => { setScreen("register"); setTab("home"); }}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <span className="text-xl">🏠</span>
                   <p className="text-sm font-medium mt-1">스튜디오 관리</p>
-                  <p className="text-[10px] text-gray-400">정보 수정·사진 관리</p>
+                  <p className="text-[10px] text-gray-400">등록·수정·삭제</p>
                 </button>
+                <button onClick={() => { setScreen("bookings"); setTab("my"); }}
+                  className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
+                  <span className="text-xl">📅</span>
+                  <p className="text-sm font-medium mt-1">내 예약 달력</p>
+                  <p className="text-[10px] text-gray-400">예약·수기 일정</p>
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2 mb-4">
                 <button onClick={() => setScreen("settlement")}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <span className="text-xl">💰</span>
-                  <p className="text-sm font-medium mt-1">정산</p>
-                  <p className="text-[10px] text-gray-400">정산 내역 확인</p>
+                  <p className="text-sm font-medium mt-1">정산 내역</p>
+                  <p className="text-[10px] text-gray-400">매출·수수료·정산</p>
+                </button>
+                <button className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
+                  <span className="text-xl">📊</span>
+                  <p className="text-sm font-medium mt-1">실적 대시보드</p>
+                  <p className="text-[10px] text-gray-400">예약 수·매출·평점</p>
                 </button>
               </div>
 
@@ -670,11 +683,11 @@ export default function BusinessApp() {
           )}
         </div>
 
-        {/* Bottom Tab - IA 기준 3탭: 홈/카테고리/마이페이지 */}
+        {/* Bottom Tab - 소비자 앱과 동일 3탭: 홈/카테고리/마이페이지 (마이페이지만 업체 전용) */}
         <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">
           {[
             { key: "home" as const, icon: "🏠", label: "홈", s: "home" as Screen },
-            { key: "booking" as const, icon: "📅", label: "예약관리", s: "bookings" as Screen },
+            { key: "search" as const, icon: "📂", label: "카테고리", s: "home" as Screen },
             { key: "my" as const, icon: "👤", label: "마이페이지", s: "mypage" as Screen },
           ].map(t => (
             <button key={t.key} onClick={() => { setTab(t.key); setScreen(t.s); }}
