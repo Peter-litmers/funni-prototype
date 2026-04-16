@@ -5,14 +5,14 @@ import FeedbackOverlay from "../components/FeedbackOverlay";
 import {
   Sparkles, Camera, Dumbbell, Heart, Cake, Package, Video, MoreHorizontal,
   Home, LayoutGrid, User, Bell, Phone, MapPin, Calendar,
-  DollarSign, BarChart3, Building2, ImageIcon
+  DollarSign, BarChart3, Building2, ImageIcon, X, Star
 } from "lucide-react";
 
 function PolicyBadge({ label }: { label: string }) {
   return <span className="policy-badge">⚠️ {label}</span>;
 }
 
-type Screen = "home" | "category" | "detail" | "register" | "bookings" | "bookingDetail" | "settlement" | "notifications" | "studioView" | "mypage" | "bizSignup" | "approvalWaiting" | "dashboard" | "bizInfo";
+type Screen = "home" | "category" | "detail" | "register" | "bookings" | "bookingDetail" | "settlement" | "notifications" | "studioView" | "mypage" | "bizSignup" | "approvalWaiting" | "dashboard" | "bizInfo" | "reviews";
 type BookingFilter = "전체" | "확정" | "취소요청" | "완료";
 type Tab = "home" | "category" | "my";
 
@@ -124,8 +124,10 @@ export default function BusinessApp() {
         {/* Header */}
         <div className="relative z-10 bg-white pt-10 px-4 pb-2 border-b border-gray-50">
           <div className="flex items-center justify-between">
-            <button onClick={() => { setScreen("home"); setTab("home"); }} className="text-xl font-bold text-gray-900">
-              퍼니 <span className="text-primary text-sm font-medium">비즈니스</span>
+            <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center gap-1.5">
+              <img src="/funni-logo.png" alt="퍼니" className="w-6 h-6" />
+              <span className="text-xl font-bold text-gray-900">퍼니</span>
+              <span className="text-primary text-sm font-medium">비즈니스</span>
             </button>
             <button onClick={() => { setScreen("notifications"); setHasNotif(false); }} className="relative text-gray-500 p-1">
               <Bell size={20} strokeWidth={1.5} />
@@ -376,10 +378,10 @@ export default function BusinessApp() {
               <h2 className="text-base font-bold mb-4">알림</h2>
               {NOTIFICATIONS.map(n => (
                 <div key={n.id} className="flex gap-3 py-3 border-b border-gray-50">
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm shrink-0 ${
-                    n.type === "booking" ? "bg-primary/10" : n.type === "cancel" ? "bg-red-50" : n.type === "review" ? "bg-yellow-50" : "bg-green-50"
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
+                    n.type === "booking" ? "bg-primary/10 text-primary" : n.type === "cancel" ? "bg-red-50 text-red-500" : n.type === "review" ? "bg-yellow-50 text-yellow-600" : "bg-green-50 text-green-600"
                   }`}>
-                    {n.type === "booking" ? "📅" : n.type === "cancel" ? "❌" : n.type === "review" ? "⭐" : "💰"}
+                    {n.type === "booking" ? <Calendar size={16} strokeWidth={1.5} /> : n.type === "cancel" ? <X size={16} strokeWidth={1.5} /> : n.type === "review" ? <Star size={16} strokeWidth={1.5} /> : <DollarSign size={16} strokeWidth={1.5} />}
                   </div>
                   <div className="flex-1">
                     <p className="text-sm text-gray-700">{n.text}</p>
@@ -798,7 +800,7 @@ export default function BusinessApp() {
 
               <div className="space-y-0">
                 {[
-                  { label: "리뷰 관리", action: () => {} },
+                  { label: "리뷰 관리", action: () => setScreen("reviews") },
                   { label: "고객센터", action: () => {} },
                   { label: "로그아웃", action: () => {} },
                 ].map(m => (
@@ -859,6 +861,42 @@ export default function BusinessApp() {
                     </div>
                     <p className="text-sm font-bold text-amber-600">정산액 {s.net}</p>
                   </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ===== REVIEWS (REQ-111 업체 리뷰 답변) ===== */}
+          {screen === "reviews" && (
+            <div className="p-4">
+              <button onClick={() => { setScreen("mypage"); setTab("my"); }} className="text-sm text-gray-400 mb-3">← 돌아가기</button>
+              <h2 className="text-base font-bold mb-4">리뷰 관리</h2>
+
+              {[
+                { author: "김**", rating: 5, text: "분위기 너무 좋아요! 사진 결과물도 만족합니다", date: "2026.04.10", replied: true, reply: "감사합니다! 다음에도 좋은 촬영 하겠습니다." },
+                { author: "이**", rating: 4, text: "접근성이 좋고 시설이 깔끔해요", date: "2026.04.08", replied: false },
+                { author: "한**", rating: 5, text: "결과물 퀄리티가 정말 좋습니다. 재방문 예정!", date: "2026.03.28", replied: true, reply: "좋은 리뷰 감사합니다! 또 뵙겠습니다." },
+                { author: "박**", rating: 3, text: "가격 대비 보통이었어요", date: "2026.03.20", replied: false },
+              ].map((r, i) => (
+                <div key={i} className="bg-gray-50 rounded-xl p-4 mb-3">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <span className="text-xs font-medium">{r.author}</span>
+                      <span className="text-xs text-yellow-500 ml-2">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
+                    </div>
+                    <span className="text-[10px] text-gray-400">{r.date}</span>
+                  </div>
+                  <p className="text-xs text-gray-600 mb-2">{r.text}</p>
+                  {r.replied && r.reply ? (
+                    <div className="bg-white rounded-lg p-2.5 border border-gray-100">
+                      <p className="text-[10px] text-primary font-medium mb-1">업체 답변</p>
+                      <p className="text-xs text-gray-600">{r.reply}</p>
+                    </div>
+                  ) : (
+                    <button className="w-full bg-white border border-gray-200 rounded-lg py-2 text-xs text-gray-500 hover:border-primary hover:text-primary transition-all">
+                      답글 작성
+                    </button>
+                  )}
                 </div>
               ))}
             </div>

@@ -2,10 +2,11 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import FeedbackOverlay from "../components/FeedbackOverlay";
+import PolicyForm from "../components/PolicyForm";
 import {
   Sparkles, Camera, Dumbbell, Heart, Cake, Package, Video, MoreHorizontal,
   Home, LayoutGrid, User, Bell, Phone, MapPin, Star, Pencil, Check,
-  CheckCircle2, ImageIcon
+  CheckCircle2, ImageIcon, Calendar, Clock
 } from "lucide-react";
 
 function PolicyBadge({ label }: { label: string }) {
@@ -242,7 +243,10 @@ export default function ConsumerApp() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 {screen !== "home" && <button onClick={goBack} className="text-gray-500 text-lg w-7 h-7 flex items-center justify-center">‹</button>}
-                <button onClick={() => { setScreen("home"); setTab("home"); }} className="text-xl font-bold text-primary">퍼니</button>
+                <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center gap-1.5">
+                  <img src="/funni-logo.png" alt="퍼니" className="w-6 h-6" />
+                  <span className="text-xl font-bold text-primary">퍼니</span>
+                </button>
               </div>
               <button onClick={() => navigate("notifications")} className="text-gray-500 relative p-1">
                 <Bell size={20} strokeWidth={1.5} />
@@ -476,6 +480,7 @@ export default function ConsumerApp() {
                       ))}
                     </div>
                     <p className="text-[10px] text-amber-600 mt-2">사진 첨부 · 작성 기간 · 업체 답글 → 미확정</p>
+                    <PolicyForm question="리뷰 정책을 어떻게 설정할까요? (사진 첨부 가능? 작성 가능 기간? 업체 답글 가능?)" screen="소비자" area="리뷰 정책" />
                   </div>
                 </div>
 
@@ -502,6 +507,7 @@ export default function ConsumerApp() {
                       })}
                     </div>
                     <p className="text-[10px] text-amber-600 mt-2">1시간 단위? 반일/종일? 업체 자유설정? → 미확정</p>
+                    <PolicyForm question="예약 단위를 어떻게 설정할까요? (1시간 고정 / 반일·종일 / 업체 자유설정)" screen="소비자" area="예약 단위" />
                   </div>
                 </div>
 
@@ -547,7 +553,9 @@ export default function ConsumerApp() {
                   </div>
                 </div>
               </div>
-              <div className="policy-area mb-4 p-3"><PolicyBadge label="예약 확정 방식 미확정" /><p className="text-xs text-amber-700 mt-2">즉시 확정 vs 업체 수락 후 확정?</p></div>
+              <div className="policy-area mb-4 p-3"><PolicyBadge label="예약 확정 방식 미확정" /><p className="text-xs text-amber-700 mt-2">즉시 확정 vs 업체 수락 후 확정?</p>
+                <PolicyForm question="예약 확정 방식: 결제 즉시 확정 vs 업체 수락 후 확정?" screen="소비자" area="예약 확정 방식" />
+              </div>
               <button onClick={() => navigate("done")} className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm">결제하기 · 토스페이먼츠</button>
             </div>
           )}
@@ -825,18 +833,21 @@ export default function ConsumerApp() {
           {screen === "notifications" && (
             <div className="p-4">
               <h2 className="text-base font-bold mb-4">알림</h2>
-              {CONSUMER_NOTIFICATIONS.map(n => (
-                <div key={n.id} className={`flex gap-3 py-3.5 border-b border-gray-50 ${n.read ? "opacity-60" : ""}`}>
-                  <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-base shrink-0">
-                    {n.type === "booking" ? "📅" : n.type === "remind" ? "⏰" : n.type === "review" ? "⭐" : "📢"}
+              {CONSUMER_NOTIFICATIONS.map(n => {
+                const IconComp = n.type === "booking" ? Calendar : n.type === "remind" ? Clock : n.type === "review" ? Star : Bell;
+                return (
+                  <div key={n.id} className={`flex gap-3 py-3.5 border-b border-gray-50 ${n.read ? "opacity-60" : ""}`}>
+                    <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center shrink-0 text-gray-500">
+                      <IconComp size={16} strokeWidth={1.5} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-800">{n.text}</p>
+                      <p className="text-[10px] text-gray-400 mt-1">{n.time}</p>
+                    </div>
+                    {!n.read && <span className="w-2 h-2 bg-primary rounded-full mt-2 shrink-0" />}
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-800">{n.text}</p>
-                    <p className="text-[10px] text-gray-400 mt-1">{n.time}</p>
-                  </div>
-                  {!n.read && <span className="w-2 h-2 bg-primary rounded-full mt-2 shrink-0" />}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
