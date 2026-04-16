@@ -840,7 +840,7 @@ export default function BusinessApp() {
 
               {/* Period Filter */}
               <div className="flex gap-2 mb-4">
-                {["4월", "3월", "전체"].map(m => (
+                {["전체", "4월", "3월"].map(m => (
                   <button key={m} onClick={() => setSettlementMonth(m)}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                       settlementMonth === m ? "bg-primary text-white" : "bg-gray-100 text-gray-500"
@@ -853,7 +853,7 @@ export default function BusinessApp() {
                 <PolicyForm question="월 정산 기준일은? (매월 1일 / 마지막주 / 기타)" screen="업체" area="월 정산 기준일" />
                 <PolicyForm question="최소 정산 금액은? (N원 미만 시 이월?)" screen="업체" area="최소 정산 금액" />
                 <div className="mt-2 bg-white rounded-xl p-4 border border-gray-100">
-                  <p className="text-xs text-gray-500">미정산 금액</p>
+                  <p className="text-xs text-gray-500">{settlementMonth === "전체" ? "전체 정산금" : "이번달 금액"}</p>
                   <p className="text-2xl font-bold text-primary mt-0.5">₩{pendingAmount.toLocaleString()}</p>
                   <div className="mt-3 grid grid-cols-2 gap-2 text-[10px]">
                     <div className="bg-gray-50 rounded-lg p-2"><span className="text-gray-400">수수료율</span><br/><span className="text-amber-600 font-medium">어드민 설정 (?%)</span></div>
