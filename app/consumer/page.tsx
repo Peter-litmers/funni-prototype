@@ -14,6 +14,7 @@ function PolicyBadge({ label }: { label: string }) {
 }
 
 const CATEGORIES = [
+  { name: "전체", Icon: LayoutGrid },
   { name: "프로필", Icon: Camera },
   { name: "바디프로필", Icon: Dumbbell },
   { name: "웨딩", Icon: Heart },
@@ -134,6 +135,8 @@ export default function ConsumerApp() {
   const [categoryCat, setCategoryCat] = useState("프로필");
   const [selectedRegion, setSelectedRegion] = useState("전체");
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
+  const [customPriceMin, setCustomPriceMin] = useState<string>("");
+  const [customPriceMax, setCustomPriceMax] = useState<string>("");
   const [detailEntryCat, setDetailEntryCat] = useState<string>(""); // 탐색 진입 카테고리
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
@@ -165,8 +168,20 @@ export default function ConsumerApp() {
 
   // 홈: 지역 + 가격대 필터 + 정렬
   const homeFiltered = STUDIOS
-    .filter(s => selectedRegion === "전체" || s.area.includes(selectedRegion.replace("서울 ", "").replace("경기 ", "")))
     .filter(s => {
+      if (selectedRegion === "전체" || !selectedRegion.trim()) return true;
+      const kw = selectedRegion.trim().toLowerCase();
+      return s.area.toLowerCase().includes(kw);
+    })
+    .filter(s => {
+      // 커스텀 범위 우선
+      const cmin = customPriceMin ? parseInt(customPriceMin) * 1000 : null;
+      const cmax = customPriceMax ? parseInt(customPriceMax) * 1000 : null;
+      if (cmin !== null || cmax !== null) {
+        if (cmin !== null && s.price < cmin) return false;
+        if (cmax !== null && s.price > cmax) return false;
+        return true;
+      }
       const pr = PRICE_RANGES.find(p => p.key === selectedPriceRange);
       if (!pr) return true;
       return s.price >= pr.min && s.price <= pr.max;
@@ -178,10 +193,14 @@ export default function ConsumerApp() {
     return b.createdAt.localeCompare(a.createdAt);
   });
 
-  // 카테고리 탭: 카테고리 + 지역 + 가격대
+  // 카테고리 탭: 카테고리 + 지역
   const catFiltered = STUDIOS
-    .filter(s => s.cats.includes(categoryCat))
-    .filter(s => selectedRegion === "전체" || s.area.includes(selectedRegion.replace("서울 ", "").replace("경기 ", "")));
+    .filter(s => categoryCat === "전체" || s.cats.includes(categoryCat))
+    .filter(s => {
+      if (selectedRegion === "전체" || !selectedRegion.trim()) return true;
+      const kw = selectedRegion.trim().toLowerCase();
+      return s.area.toLowerCase().includes(kw);
+    });
 
   const toggleOption = (id: number) => setSelectedOptions(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
@@ -242,8 +261,8 @@ export default function ConsumerApp() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 {screen !== "home" && <button onClick={goBack} className="text-gray-500 text-lg w-7 h-7 flex items-center justify-center">‹</button>}
-                <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center gap-1.5">
-                  <img src="/funni-logo.png" alt="퍼니" className="w-10 h-10" />
+                <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center gap-0.5">
+                  <img src="/funni-logo.png" alt="퍼니" className="w-12 h-12" />
                   <span className="text-xl font-bold text-primary">퍼니</span>
                 </button>
               </div>
@@ -308,19 +327,36 @@ export default function ConsumerApp() {
                       className={`rounded-full px-3 py-1.5 text-xs border transition-all ${sort === s.key ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-200 text-gray-500"}`}>{s.label}</button>
                   ))}
                 </div>
-                {/* 지역 필터 */}
-                <div className="flex gap-1.5 mb-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-                  {REGIONS.map(r => (
-                    <button key={r} onClick={() => setSelectedRegion(r)}
-                      className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] border transition-all ${selectedRegion === r ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-100 text-gray-400 bg-gray-50"}`}>📍 {r}</button>
-                  ))}
+                {/* 지역 검색 */}
+                <div className="mb-1.5">
+                  <div className="flex items-center gap-1.5 bg-gray-50 rounded-full px-3 py-1.5 border border-gray-100">
+                    <MapPin size={12} strokeWidth={1.5} className="text-gray-400" />
+                    <input type="text" value={selectedRegion === "전체" ? "" : selectedRegion} onChange={e => setSelectedRegion(e.target.value || "전체")}
+                      placeholder="지역 검색 (예: 잠실)" className="flex-1 bg-transparent text-[11px] outline-none placeholder:text-gray-400" />
+                    {selectedRegion !== "전체" && (
+                      <button onClick={() => setSelectedRegion("전체")} className="text-gray-400 text-xs">✕</button>
+                    )}
+                  </div>
                 </div>
                 {/* 가격대 필터 */}
                 <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
                   {PRICE_RANGES.map(p => (
-                    <button key={p.key} onClick={() => setSelectedPriceRange(p.key)}
-                      className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] border transition-all ${selectedPriceRange === p.key ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-100 text-gray-400 bg-gray-50"}`}>💰 {p.label}</button>
+                    <button key={p.key} onClick={() => { setSelectedPriceRange(p.key); setCustomPriceMin(""); setCustomPriceMax(""); }}
+                      className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] border transition-all ${selectedPriceRange === p.key && !customPriceMin && !customPriceMax ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-100 text-gray-400 bg-gray-50"}`}>💰 {p.label}</button>
                   ))}
+                </div>
+                {/* 커스텀 가격 범위 */}
+                <div className="flex items-center gap-1 mt-1.5">
+                  <input type="number" placeholder="최소" value={customPriceMin} onChange={e => setCustomPriceMin(e.target.value)}
+                    className="flex-1 bg-gray-50 rounded-lg px-2 py-1 text-[10px] outline-none border border-gray-100 text-right" />
+                  <span className="text-[10px] text-gray-400">천원</span>
+                  <span className="text-[10px] text-gray-400 mx-0.5">~</span>
+                  <input type="number" placeholder="최대" value={customPriceMax} onChange={e => setCustomPriceMax(e.target.value)}
+                    className="flex-1 bg-gray-50 rounded-lg px-2 py-1 text-[10px] outline-none border border-gray-100 text-right" />
+                  <span className="text-[10px] text-gray-400">천원</span>
+                  {(customPriceMin || customPriceMax) && (
+                    <button onClick={() => { setCustomPriceMin(""); setCustomPriceMax(""); }} className="text-gray-400 text-[10px] px-1">✕</button>
+                  )}
                 </div>
               </div>
 
@@ -371,12 +407,16 @@ export default function ConsumerApp() {
                 <PolicyForm question="상세 카테고리 목록을 확정해주세요. (웨딩/프로필/피아노 등 대략적 방향만 논의됨)" screen="소비자" area="카테고리 목록" />
               </div>
 
-              {/* 지역 필터 */}
-              <div className="flex gap-1.5 mb-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-                {REGIONS.map(r => (
-                  <button key={r} onClick={() => setSelectedRegion(r)}
-                    className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] border transition-all ${selectedRegion === r ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-100 text-gray-400 bg-gray-50"}`}>📍 {r}</button>
-                ))}
+              {/* 지역 검색 */}
+              <div className="mb-3">
+                <div className="flex items-center gap-1.5 bg-gray-50 rounded-full px-3 py-2 border border-gray-100">
+                  <MapPin size={13} strokeWidth={1.5} className="text-gray-400" />
+                  <input type="text" value={selectedRegion === "전체" ? "" : selectedRegion} onChange={e => setSelectedRegion(e.target.value || "전체")}
+                    placeholder="지역 검색 (예: 잠실, 강남)" className="flex-1 bg-transparent text-xs outline-none placeholder:text-gray-400" />
+                  {selectedRegion !== "전체" && (
+                    <button onClick={() => setSelectedRegion("전체")} className="text-gray-400 text-xs">✕</button>
+                  )}
+                </div>
               </div>
 
               <p className="text-sm font-bold mb-3">&lsquo;{categoryCat}&rsquo; 스튜디오 {catFiltered.length}곳</p>

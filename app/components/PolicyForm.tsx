@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { MessageSquarePlus, Send, X, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { MessageSquarePlus, Send, X, Check, Pencil, Trash2 } from "lucide-react";
 
 type PolicyAnswer = {
   id: string;
@@ -24,9 +24,10 @@ export default function PolicyForm({ question, screen, area }: Props) {
   const [author, setAuthor] = useState("");
   const [loading, setLoading] = useState(false);
   const [answers, setAnswers] = useState<PolicyAnswer[]>([]);
-  const [showAnswers, setShowAnswers] = useState(false);
+  const [showAnswers, setShowAnswers] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
 
-  // 기존 답변 로드
   const loadAnswers = async () => {
     try {
       const res = await fetch("/api/policy-answer", { cache: "no-store" });
@@ -60,6 +61,43 @@ export default function PolicyForm({ question, screen, area }: Props) {
     }
   };
 
+  const startEdit = (a: PolicyAnswer) => {
+    setEditingId(a.id);
+    setEditText(a.answer);
+  };
+
+  const cancelEdit = () => { setEditingId(null); setEditText(""); };
+
+  const saveEdit = async (id: string) => {
+    if (!editText.trim()) return;
+    try {
+      setLoading(true);
+      const res = await fetch("/api/policy-answer", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, answer: editText.trim(), processed: false }),
+      });
+      if (!res.ok) throw new Error("수정 실패");
+      setEditingId(null); setEditText("");
+      await loadAnswers();
+    } catch (e) {
+      alert(String(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteAnswer = async (id: string) => {
+    if (!confirm("이 답변을 삭제하시겠습니까?")) return;
+    try {
+      const res = await fetch(`/api/policy-answer?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("삭제 실패");
+      await loadAnswers();
+    } catch (e) {
+      alert(String(e));
+    }
+  };
+
   return (
     <div className="mt-2">
       {/* 기존 답변 표시 */}
@@ -69,16 +107,37 @@ export default function PolicyForm({ question, screen, area }: Props) {
             className="flex items-center gap-1 text-[10px] text-green-700 font-medium">
             <Check size={10} strokeWidth={2} />
             {answers.length}개 답변 등록됨
-            {showAnswers ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
           </button>
           {showAnswers && (
             <div className="mt-1.5 space-y-1.5">
               {answers.map(a => (
                 <div key={a.id} className="bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-                  <p className="text-xs text-green-800 font-medium">{a.answer}</p>
-                  <p className="text-[9px] text-green-600 mt-1">
-                    {a.author} · {new Date(a.createdAt).toLocaleDateString("ko-KR")}
-                  </p>
+                  {editingId === a.id ? (
+                    <div>
+                      <textarea value={editText} onChange={e => setEditText(e.target.value)} rows={2}
+                        className="w-full bg-white rounded px-2 py-1 text-xs outline-none border border-green-300 resize-none" autoFocus />
+                      <div className="flex justify-end gap-1 mt-1.5">
+                        <button onClick={cancelEdit} className="text-[10px] text-gray-500 px-2 py-0.5">취소</button>
+                        <button onClick={() => saveEdit(a.id)} disabled={!editText.trim() || loading}
+                          className={`text-[10px] px-2 py-0.5 rounded ${editText.trim() && !loading ? "bg-primary text-white" : "bg-gray-200 text-gray-400"}`}>
+                          {loading ? "..." : "저장"}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-xs text-green-800 font-medium flex-1 whitespace-pre-wrap">{a.answer}</p>
+                        <div className="flex gap-0.5 shrink-0">
+                          <button onClick={() => startEdit(a)} className="text-green-600 hover:text-green-800 p-0.5" title="수정"><Pencil size={10} strokeWidth={1.5} /></button>
+                          <button onClick={() => deleteAnswer(a.id)} className="text-red-400 hover:text-red-600 p-0.5" title="삭제"><Trash2 size={10} strokeWidth={1.5} /></button>
+                        </div>
+                      </div>
+                      <p className="text-[9px] text-green-600 mt-1">
+                        {a.author} · {new Date(a.createdAt).toLocaleDateString("ko-KR")}
+                      </p>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -86,14 +145,16 @@ export default function PolicyForm({ question, screen, area }: Props) {
         </div>
       )}
 
-      {/* 답변 입력 */}
-      {!open ? (
+      {/* 답변이 없을 때만 '이 항목에 답변하기' 버튼 표시 */}
+      {answers.length === 0 && !open && (
         <button onClick={() => setOpen(true)}
           className="flex items-center gap-1 text-[10px] text-primary bg-primary/5 hover:bg-primary/10 border border-primary/20 rounded-lg px-2.5 py-1.5 transition-all">
-          <MessageSquarePlus size={12} strokeWidth={1.5} />
-          {answers.length > 0 ? "답변 추가" : "이 항목에 답변하기"}
+          <MessageSquarePlus size={12} strokeWidth={1.5} /> 이 항목에 답변하기
         </button>
-      ) : (
+      )}
+
+      {/* 답변 입력 폼 */}
+      {open && (
         <div className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <p className="text-[10px] text-gray-500 font-medium">정책 답변</p>
