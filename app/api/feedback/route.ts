@@ -7,12 +7,14 @@ export const dynamic = "force-dynamic";
 type Feedback = {
   id: string;
   pageUrl: string;        // 어느 화면인지 (consumer/business/admin/main)
-  x: number;              // 0~100 (% of viewport width)
-  y: number;              // 0~100 (% of viewport height)
+  x: number;              // 0~100 (% of document width)
+  y: number;              // 0~100 (% of document height)
   title: string;
   comment: string;
   author: string;
+  nearbyText?: string;    // 클릭 지점 근처 DOM 요소의 텍스트
   createdAt: string;      // ISO
+  updatedAt?: string;     // ISO (위치/내용 수정 시)
   processed: boolean;
   notionPageId?: string;
 };
@@ -51,7 +53,7 @@ export async function POST(req: NextRequest) {
   }
   try {
     const body = await req.json();
-    const { pageUrl, x, y, title, comment, author } = body || {};
+    const { pageUrl, x, y, title, comment, author, nearbyText } = body || {};
     if (typeof x !== "number" || typeof y !== "number" || !comment) {
       return NextResponse.json({ error: "x, y, comment are required" }, { status: 400 });
     }
@@ -64,6 +66,7 @@ export async function POST(req: NextRequest) {
       title: (title || "").slice(0, 200),
       comment: String(comment).slice(0, 2000),
       author: (author || "익명").slice(0, 50),
+      nearbyText: (nearbyText || "").slice(0, 200),
       createdAt: new Date().toISOString(),
       processed: false,
     };
@@ -82,14 +85,21 @@ export async function PATCH(req: NextRequest) {
   }
   try {
     const body = await req.json();
-    const { id, processed, notionPageId } = body || {};
+    const { id, processed, notionPageId, x, y, title, comment, nearbyText } = body || {};
     if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });
     const item = await kv.get<Feedback>(itemKey(id));
     if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const isEdit = typeof x === "number" || typeof y === "number" || typeof title === "string" || typeof comment === "string" || typeof nearbyText === "string";
     const updated: Feedback = {
       ...item,
       ...(typeof processed === "boolean" ? { processed } : {}),
       ...(notionPageId ? { notionPageId } : {}),
+      ...(typeof x === "number" ? { x: Math.max(0, Math.min(100, x)) } : {}),
+      ...(typeof y === "number" ? { y: Math.max(0, Math.min(100, y)) } : {}),
+      ...(typeof title === "string" ? { title: title.slice(0, 200) } : {}),
+      ...(typeof comment === "string" ? { comment: comment.slice(0, 2000) } : {}),
+      ...(typeof nearbyText === "string" ? { nearbyText: nearbyText.slice(0, 200) } : {}),
+      ...(isEdit ? { updatedAt: new Date().toISOString() } : {}),
     };
     await kv.set(itemKey(id), updated);
     return NextResponse.json({ ok: true, item: updated });

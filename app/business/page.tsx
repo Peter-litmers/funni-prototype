@@ -204,12 +204,11 @@ export default function BusinessApp() {
           {screen === "category" && (
             <div className="p-4">
               <h2 className="text-base font-bold mb-4">카테고리</h2>
-              <div className="grid grid-cols-4 gap-3 mb-6">
+              <div className="flex flex-wrap gap-2 mb-6">
                 {CATEGORIES.map(c => (
                   <button key={c.name} onClick={() => setCategoryCat(c.name)}
-                    className={`flex flex-col items-center gap-1.5 py-3 rounded-xl transition-all ${categoryCat === c.name ? "bg-primary/10 border border-primary" : "bg-gray-50"}`}>
-                    <span className="text-2xl">{c.icon}</span>
-                    <span className={`text-[10px] ${categoryCat === c.name ? "text-primary font-bold" : "text-gray-500"}`}>{c.name}</span>
+                    className={`rounded-full px-3 py-1.5 text-xs border transition-all ${categoryCat === c.name ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-200 text-gray-500 bg-white"}`}>
+                    {c.name}
                   </button>
                 ))}
               </div>
