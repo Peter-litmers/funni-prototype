@@ -25,7 +25,7 @@ const CATEGORIES = [
 ];
 
 // 카테고리별 포트폴리오 (REQ-106: 탐색 경로의 카테고리에 맞는 사진만 표시)
-type StudioCategoryPortfolio = Record<string, string[]>;
+type StudioCategoryPortfolio = Record<string, number[]>;
 
 const STUDIOS: {
   id: number; name: string; cats: string[]; desc: string; area: string;
@@ -34,17 +34,17 @@ const STUDIOS: {
   portfolios: StudioCategoryPortfolio;
 }[] = [
   { id: 1, name: "루미에르 스튜디오", cats: ["프로필"], desc: "프로필촬영, 증명사진, 프로필영상, 이력서사진", area: "서울 강남구", price: 50000, rating: 4.8, reviews: 124, phone: "02-1234-5678", createdAt: "2026-04-10", location: "서울특별시 강남구 역삼동 123-4",
-    portfolios: { "프로필": ["👤","📷","✨","🎨","💫","🌟"] } },
+    portfolios: { "프로필": [1,2,3,4,5,6] } },
   { id: 2, name: "선셋 포토랩", cats: ["바디프로필"], desc: "바디프로필, 커플촬영, 다이어트기록", area: "서울 성수동", price: 80000, rating: 4.9, reviews: 89, phone: "02-2345-6789", createdAt: "2026-03-28", location: "서울특별시 성동구 성수동 45-6",
-    portfolios: { "바디프로필": ["💪","🏋️","🔥","⚡","🎯","✨"] } },
+    portfolios: { "바디프로필": [1,2,3,4,5,6] } },
   { id: 3, name: "블룸 웨딩 스튜디오", cats: ["웨딩"], desc: "웨딩스냅, 본식촬영, 야외웨딩", area: "서울 잠실", price: 200000, rating: 4.7, reviews: 56, phone: "02-3456-7890", createdAt: "2026-04-05", location: "서울특별시 송파구 잠실동 78-9",
-    portfolios: { "웨딩": ["💍","👰","🤵","💐","💒","💕"] } },
+    portfolios: { "웨딩": [1,2,3,4,5,6] } },
   { id: 4, name: "미니미 키즈포토", cats: ["돌잔치"], desc: "돌잔치촬영, 백일사진, 가족사진", area: "경기 판교", price: 120000, rating: 4.6, reviews: 34, phone: "031-456-7890", createdAt: "2026-03-15", location: "경기도 성남시 분당구 판교동 12-3",
-    portfolios: { "돌잔치": ["🎂","👶","🎈","🎀","🍼","🧸"] } },
+    portfolios: { "돌잔치": [1,2,3,4,5,6] } },
   { id: 5, name: "프로덕트 랩", cats: ["제품"], desc: "제품촬영, 음식사진, 상세페이지, 스틸컷", area: "서울 홍대", price: 40000, rating: 4.5, reviews: 67, phone: "02-4567-8901", createdAt: "2026-04-12", location: "서울특별시 마포구 홍대입구 45-6",
-    portfolios: { "제품": ["📦","🍔","🎁","☕","💄","⌚"] } },
+    portfolios: { "제품": [1,2,3,4,5,6] } },
   { id: 6, name: "무브 필름랩", cats: ["영상"], desc: "유튜브촬영, 광고영상, 인터뷰", area: "서울 합정", price: 60000, rating: 4.7, reviews: 45, phone: "02-5678-9012", createdAt: "2026-04-08", location: "서울특별시 마포구 합정동 78-9",
-    portfolios: { "영상": ["🎬","📹","🎥","🎙️","📺","🎞️"] } },
+    portfolios: { "영상": [1,2,3,4,5,6] } },
 ];
 
 const HAIR_MAKEUP_OPTIONS = [
@@ -244,7 +244,7 @@ export default function ConsumerApp() {
               <div className="flex items-center gap-2">
                 {screen !== "home" && <button onClick={goBack} className="text-gray-500 text-lg w-7 h-7 flex items-center justify-center">‹</button>}
                 <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center gap-1.5">
-                  <img src="/funni-logo.png" alt="퍼니" className="w-8 h-8" />
+                  <img src="/funni-logo.png" alt="퍼니" className="w-10 h-10" />
                   <span className="text-xl font-bold text-primary">퍼니</span>
                 </button>
               </div>
@@ -445,8 +445,8 @@ export default function ConsumerApp() {
                     <span className="text-[10px] text-gray-400">최대 30장</span>
                   </div>
                   <div className="grid grid-cols-3 gap-1 rounded-xl overflow-hidden">
-                    {detailPortfolio.photos.map((emoji, i) => (
-                      <div key={i} className="aspect-square bg-gray-100 flex items-center justify-center text-2xl">{emoji}</div>
+                    {detailPortfolio.photos.map((_, i) => (
+                      <div key={i} className="aspect-square bg-gray-100 flex items-center justify-center text-gray-300"><ImageIcon size={20} strokeWidth={1} /></div>
                     ))}
                   </div>
                 </div>
@@ -491,12 +491,30 @@ export default function ConsumerApp() {
                   <PolicyBadge label="예약 단위 미확정" />
                   <div className="mt-2">
                     <p className="text-sm font-medium mb-2">날짜 선택</p>
-                    <div className="flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
-                      {[8,9,10,11,12,13,14].map(d => (
-                        <button key={d} onClick={() => setSelectedDate(d)} className={`flex flex-col items-center min-w-[44px] py-2 rounded-xl transition-all ${selectedDate === d ? "bg-primary text-white" : "bg-gray-100 text-gray-600"}`}>
-                          <span className="text-[10px]">{["목","금","토","일","월","화","수"][d - 8]}</span><span className="text-sm font-bold">{d}</span>
-                        </button>
-                      ))}
+                    {/* 월간 캘린더 뷰 */}
+                    <div className="bg-gray-50 rounded-xl p-3">
+                      <p className="text-xs font-medium text-center mb-2">2026년 5월</p>
+                      <div className="grid grid-cols-7 gap-0.5 text-center text-[9px] text-gray-400 mb-1">
+                        {["일","월","화","수","목","금","토"].map(d => <div key={d}>{d}</div>)}
+                      </div>
+                      <div className="grid grid-cols-7 gap-0.5 text-center">
+                        {/* 5월 1일 = 금요일 → 앞에 빈칸 5개 */}
+                        {Array.from({ length: 5 }).map((_, i) => <div key={`e${i}`} />)}
+                        {Array.from({ length: 31 }).map((_, i) => {
+                          const day = i + 1;
+                          const hasBooking = [5, 10, 11, 13, 15, 18, 20, 25].includes(day);
+                          return (
+                            <button key={day} onClick={() => setSelectedDate(day)}
+                              className={`py-1 rounded text-[11px] transition-all ${selectedDate === day ? "bg-primary text-white font-bold" : hasBooking ? "bg-primary/10 text-primary font-medium" : "text-gray-600 hover:bg-gray-100"}`}>
+                              {day}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="flex gap-3 mt-2 text-[9px] text-gray-400">
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 bg-primary rounded-full" /> 선택됨</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 bg-primary/20 rounded-full" /> 예약 있음</span>
+                      </div>
                     </div>
                     <p className="text-sm font-medium mb-2 mt-3">시간 선택</p>
                     <div className="grid grid-cols-4 gap-1.5">

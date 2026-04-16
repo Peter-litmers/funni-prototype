@@ -125,7 +125,7 @@ export default function BusinessApp() {
         <div className="relative z-10 bg-white pt-10 px-4 pb-2 border-b border-gray-50">
           <div className="flex items-center justify-between">
             <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center gap-1.5">
-              <img src="/funni-logo.png" alt="퍼니" className="w-8 h-8" />
+              <img src="/funni-logo.png" alt="퍼니" className="w-10 h-10" />
               <span className="text-xl font-bold text-gray-900">퍼니</span>
               <span className="text-primary text-sm font-medium">비즈니스</span>
             </button>
