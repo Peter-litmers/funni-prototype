@@ -4,7 +4,7 @@ import Link from "next/link";
 import FeedbackOverlay from "../components/FeedbackOverlay";
 import PolicyForm from "../components/PolicyForm";
 import {
-  Sparkles, Camera, Dumbbell, Heart, Cake, Package, Video, MoreHorizontal,
+  Camera, Dumbbell, Heart, Cake, Package, Video, MoreHorizontal,
   Home, LayoutGrid, User, Bell, Phone, MapPin, Star, Pencil, Check,
   CheckCircle2, ImageIcon, Calendar, Clock
 } from "lucide-react";
@@ -14,7 +14,6 @@ function PolicyBadge({ label }: { label: string }) {
 }
 
 const CATEGORIES = [
-  { name: "추천", Icon: Sparkles },
   { name: "프로필", Icon: Camera },
   { name: "바디프로필", Icon: Dumbbell },
   { name: "웨딩", Icon: Heart },
@@ -132,7 +131,7 @@ export default function ConsumerApp() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [userName, setUserName] = useState("김퍼니");
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
-  const [categoryCat, setCategoryCat] = useState("추천");
+  const [categoryCat, setCategoryCat] = useState("프로필");
   const [selectedRegion, setSelectedRegion] = useState("전체");
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
   const [detailEntryCat, setDetailEntryCat] = useState<string>(""); // 탐색 진입 카테고리
@@ -181,7 +180,7 @@ export default function ConsumerApp() {
 
   // 카테고리 탭: 카테고리 + 지역 + 가격대
   const catFiltered = STUDIOS
-    .filter(s => categoryCat === "추천" || s.cats.includes(categoryCat))
+    .filter(s => s.cats.includes(categoryCat))
     .filter(s => selectedRegion === "전체" || s.area.includes(selectedRegion.replace("서울 ", "").replace("경기 ", "")));
 
   const toggleOption = (id: number) => setSelectedOptions(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -393,7 +392,7 @@ export default function ConsumerApp() {
 
               <p className="text-sm font-bold mb-3">&lsquo;{categoryCat}&rsquo; 스튜디오 {catFiltered.length}곳</p>
               {catFiltered.map(s => (
-                <div key={s.id} onClick={() => openDetail(s, categoryCat === "추천" ? s.cats[0] : categoryCat)}
+                <div key={s.id} onClick={() => openDetail(s, categoryCat)}
                   className="flex gap-3 py-3 border-b border-gray-50 cursor-pointer">
                   <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={22} strokeWidth={1.5} /></div>
                   <div>

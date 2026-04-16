@@ -4,7 +4,7 @@ import Link from "next/link";
 import FeedbackOverlay from "../components/FeedbackOverlay";
 import PolicyForm from "../components/PolicyForm";
 import {
-  Sparkles, Camera, Dumbbell, Heart, Cake, Package, Video, MoreHorizontal,
+  Camera, Dumbbell, Heart, Cake, Package, Video, MoreHorizontal,
   Home, LayoutGrid, User, Bell, Phone, MapPin, Calendar,
   DollarSign, BarChart3, Building2, ImageIcon, X, Star
 } from "lucide-react";
@@ -19,7 +19,6 @@ type Tab = "home" | "category" | "my";
 
 // Studio browsing data — 소비자와 동일한 탐색 화면
 const CATEGORIES = [
-  { name: "추천", Icon: Sparkles },
   { name: "프로필", Icon: Camera },
   { name: "바디프로필", Icon: Dumbbell },
   { name: "웨딩", Icon: Heart },
@@ -80,7 +79,7 @@ export default function BusinessApp() {
   const [hasNotif, setHasNotif] = useState(true);
   const [settlementMonth, setSettlementMonth] = useState("4월");
   const [selectedStudio, setSelectedStudio] = useState(STUDIOS[0]);
-  const [categoryCat, setCategoryCat] = useState("추천");
+  const [categoryCat, setCategoryCat] = useState("프로필");
   const [adIdx, setAdIdx] = useState(0);
   const [showManualModal, setShowManualModal] = useState(false);
   const [manualDate, setManualDate] = useState("");
@@ -95,7 +94,7 @@ export default function BusinessApp() {
     if (diff < -50) setAdIdx(prev => Math.max(prev - 1, 0));
   };
 
-  const catFiltered = categoryCat === "추천" ? STUDIOS : STUDIOS.filter(s => s.cat === categoryCat);
+  const catFiltered = STUDIOS.filter(s => s.cat === categoryCat);
 
   const toggleCat = (c: string) => {
     setSelectedCats(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
