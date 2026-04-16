@@ -1,13 +1,37 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 
 function PolicyBadge({ label }: { label: string }) {
   return <span className="policy-badge">⚠️ {label}</span>;
 }
 
-type Screen = "home" | "register" | "bookings" | "bookingDetail" | "settlement" | "notifications" | "studioView" | "mypage" | "bizSignup" | "approvalWaiting";
+type Screen = "home" | "category" | "detail" | "register" | "bookings" | "bookingDetail" | "settlement" | "notifications" | "studioView" | "mypage" | "bizSignup" | "approvalWaiting" | "dashboard" | "bizInfo";
 type BookingFilter = "전체" | "확정" | "취소요청" | "완료";
+type Tab = "home" | "category" | "my";
+
+// Studio browsing data — 소비자와 동일한 탐색 화면
+const CATEGORIES = [
+  { name: "추천", icon: "🏆" },
+  { name: "프로필", icon: "📸" },
+  { name: "바디프로필", icon: "💪" },
+  { name: "웨딩", icon: "💍" },
+  { name: "돌잔치", icon: "🎂" },
+  { name: "제품", icon: "📦" },
+  { name: "영상", icon: "🎬" },
+  { name: "기타", icon: "✨" },
+];
+
+const STUDIOS = [
+  { id: 1, name: "루미에르 스튜디오", cat: "프로필", desc: "프로필촬영, 증명사진, 프로필영상", area: "서울 강남구", price: "50,000", rating: 4.8, reviews: 124, badge: "best" as const, phone: "02-1234-5678" },
+  { id: 2, name: "선셋 포토랩", cat: "바디프로필", desc: "바디프로필, 커플촬영, 운동기록", area: "서울 성수동", price: "80,000", rating: 4.9, reviews: 89, badge: "best" as const, phone: "02-2345-6789" },
+  { id: 3, name: "블룸 웨딩 스튜디오", cat: "웨딩", desc: "웨딩스냅, 본식촬영, 야외웨딩", area: "서울 잠실", price: "200,000", rating: 4.7, reviews: 56, badge: "hot" as const, phone: "02-3456-7890" },
+  { id: 4, name: "미니미 키즈포토", cat: "돌잔치", desc: "돌잔치촬영, 백일사진, 가족사진", area: "경기 판교", price: "120,000", rating: 4.6, reviews: 34, badge: "hot" as const, phone: "031-456-7890" },
+  { id: 5, name: "프로덕트 랩", cat: "제품", desc: "제품촬영, 음식사진, 상세페이지", area: "서울 홍대", price: "40,000", rating: 4.5, reviews: 67, badge: "best" as const, phone: "02-4567-8901" },
+  { id: 6, name: "무브 필름랩", cat: "영상", desc: "유튜브촬영, 광고영상, 인터뷰", area: "서울 합정", price: "60,000", rating: 4.7, reviews: 45, badge: "hot" as const, phone: "02-5678-9012" },
+];
+
+const KEYWORDS = ["강남 프로필", "성수 바디프로필", "웨딩 스냅", "증명사진", "제품 촬영"];
 
 const ALL_BOOKINGS = [
   { id: 1, date: 10, name: "김철수", cat: "프로필", time: "10:00~12:00", price: 100000, status: "확정" },
@@ -39,7 +63,7 @@ const SETTLEMENTS = [
 
 export default function BusinessApp() {
   const [screen, setScreen] = useState<Screen>("home");
-  const [tab, setTab] = useState<"home" | "search" | "booking" | "my">("home");
+  const [tab, setTab] = useState<Tab>("home");
   const [selectedCats, setSelectedCats] = useState<string[]>(["프로필", "바디프로필"]);
   const [calDate, setCalDate] = useState(10);
   const [bookingFilter, setBookingFilter] = useState<BookingFilter>("전체");
@@ -48,6 +72,19 @@ export default function BusinessApp() {
   const [registered, setRegistered] = useState(false);
   const [hasNotif, setHasNotif] = useState(true);
   const [settlementMonth, setSettlementMonth] = useState("4월");
+  const [selectedStudio, setSelectedStudio] = useState(STUDIOS[0]);
+  const [categoryCat, setCategoryCat] = useState("추천");
+  const [adIdx, setAdIdx] = useState(0);
+  const touchStartX = useRef(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (diff > 50) setAdIdx(prev => Math.min(prev + 1, 2));
+    if (diff < -50) setAdIdx(prev => Math.max(prev - 1, 0));
+  };
+
+  const catFiltered = categoryCat === "추천" ? STUDIOS : STUDIOS.filter(s => s.cat === categoryCat);
 
   const toggleCat = (c: string) => {
     setSelectedCats(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
@@ -89,9 +126,168 @@ export default function BusinessApp() {
 
         <div className="overflow-y-auto bg-white" style={{ height: "calc(780px - 76px - 56px)" }}>
 
-          {/* ===== HOME ===== */}
+          {/* ===== HOME (IA-010: 소비자와 동일한 스튜디오 탐색) ===== */}
           {screen === "home" && (
+            <div>
+              {/* 업체 모드 토스트 */}
+              <div className="bg-primary/5 border-b border-primary/10 px-4 py-2 flex items-center justify-between">
+                <span className="text-[10px] text-primary font-medium">🏢 업체 계정 · 탐색만 가능 (예약·결제 불가)</span>
+                <button onClick={() => { setScreen("dashboard"); setTab("my"); }} className="text-[10px] text-primary underline">내 대시보드 →</button>
+              </div>
+
+              {/* 프리미엄 광고 (REQ-112) */}
+              <div className="policy-area mx-4 mt-3 p-2">
+                <PolicyBadge label="광고 정책 미확정" />
+                <div className="mt-1 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+                  <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${adIdx * 100}%)` }}>
+                    {STUDIOS.slice(0, 3).map((s, i) => (
+                      <div key={i} onClick={() => { setSelectedStudio(s); setScreen("detail"); }} className="min-w-full cursor-pointer">
+                        <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-4 flex gap-3 items-center relative">
+                          <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
+                          <div className="w-16 h-16 bg-white/60 rounded-lg flex items-center justify-center text-2xl shrink-0">📷</div>
+                          <div>
+                            <p className="text-sm font-bold text-gray-900">{s.name}</p>
+                            <p className="text-[10px] text-gray-500 mt-0.5">{s.cat} · {s.area}</p>
+                            <div className="flex items-center gap-1 mt-1">
+                              <span className="text-xs font-bold">₩{s.price}</span>
+                              <span className="text-[10px] text-yellow-600">★ {s.rating}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-center gap-1.5 mt-2">
+                    {[0,1,2].map(i => (
+                      <button key={i} onClick={() => setAdIdx(i)} className={`w-1.5 h-1.5 rounded-full transition-all ${i === adIdx ? "bg-primary w-4" : "bg-gray-300"}`} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* 추천 스튜디오 */}
+              <div className="px-4 mt-3 mb-2">
+                <p className="font-bold text-base mb-2">추천 스튜디오</p>
+              </div>
+              <div className="px-4">
+                {STUDIOS.map(s => (
+                  <div key={s.id} onClick={() => { setSelectedStudio(s); setScreen("detail"); }}
+                    className="w-full flex gap-3 py-4 border-b border-gray-50 cursor-pointer">
+                    <div className="relative w-[88px] h-[88px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-3xl shrink-0">
+                      📷
+                      <span className={`absolute top-1 left-1 ${s.badge === "best" ? "badge-best" : "badge-hot"}`}>{s.badge === "best" ? "BEST" : "HOT"}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm text-gray-900">{s.name}</p>
+                      <p className="text-xs text-gray-400 mt-0.5 truncate">{s.desc}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{s.area}</p>
+                      <div className="flex items-center gap-1 mt-1.5">
+                        <span className="text-sm font-bold">₩{s.price}</span>
+                        <span className="text-xs text-gray-400">VAT 포함</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-yellow-500">★ {s.rating}</span>
+                        <span className="text-xs text-gray-400">({s.reviews})</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ===== CATEGORY (IA-011) ===== */}
+          {screen === "category" && (
             <div className="p-4">
+              <h2 className="text-base font-bold mb-4">카테고리</h2>
+              <div className="grid grid-cols-4 gap-3 mb-6">
+                {CATEGORIES.map(c => (
+                  <button key={c.name} onClick={() => setCategoryCat(c.name)}
+                    className={`flex flex-col items-center gap-1.5 py-3 rounded-xl transition-all ${categoryCat === c.name ? "bg-primary/10 border border-primary" : "bg-gray-50"}`}>
+                    <span className="text-2xl">{c.icon}</span>
+                    <span className={`text-[10px] ${categoryCat === c.name ? "text-primary font-bold" : "text-gray-500"}`}>{c.name}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="text-sm font-bold mb-3">&lsquo;{categoryCat}&rsquo; 스튜디오 {catFiltered.length}곳</p>
+              {catFiltered.map(s => (
+                <div key={s.id} onClick={() => { setSelectedStudio(s); setScreen("detail"); }}
+                  className="flex gap-3 py-3 border-b border-gray-50 cursor-pointer">
+                  <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-xl shrink-0">📷</div>
+                  <div>
+                    <p className="text-sm font-medium">{s.name}</p>
+                    <p className="text-xs text-gray-400">{s.cat} · {s.area}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-sm font-bold">₩{s.price}</span>
+                      <span className="text-xs text-yellow-500">★ {s.rating}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ===== DETAIL (IA-012: 업체는 조회만, 예약 불가) ===== */}
+          {screen === "detail" && (
+            <div>
+              <div className="h-52 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-6xl relative">
+                📷
+                <button onClick={() => setScreen("home")}
+                  className="absolute top-3 left-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-sm shadow">←</button>
+              </div>
+              <div className="p-4">
+                <h2 className="text-lg font-bold mb-0.5">{selectedStudio.name}</h2>
+                <p className="text-xs text-gray-400">{selectedStudio.area}</p>
+                <div className="flex items-center gap-2 mt-1 mb-4">
+                  <span className="text-xs text-yellow-500">★ {selectedStudio.rating}</span>
+                  <span className="text-xs text-gray-400">리뷰 {selectedStudio.reviews}개</span>
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                  <p className="text-xs text-gray-500 mb-2 font-medium">촬영 가격</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold">₩{selectedStudio.price}</span>
+                    <span className="text-xs text-gray-400">/ 시간 · VAT 포함</span>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-xs text-gray-500 mb-2 font-medium">포트폴리오</p>
+                  <div className="grid grid-cols-3 gap-1 rounded-xl overflow-hidden">{[1,2,3,4,5,6].map(i => <div key={i} className="aspect-square bg-gray-100" />)}</div>
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-xs text-gray-500 mb-2 font-medium">리뷰</p>
+                  <div className="space-y-2">
+                    {[{ name: "김**", rating: 5, text: "분위기 너무 좋아요!" }, { name: "이**", rating: 4, text: "시설이 깔끔해요" }].map((r, i) => (
+                      <div key={i} className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex items-center gap-2 mb-1"><span className="text-xs font-medium">{r.name}</span><span className="text-xs text-yellow-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span></div>
+                        <p className="text-xs text-gray-600">{r.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 업체 계정 예약 제한 (REQ-107) */}
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3">
+                  <p className="text-xs font-bold text-amber-700">🏢 업체 계정 안내</p>
+                  <p className="text-[10px] text-amber-600 mt-1">업체 계정은 스튜디오 탐색·조회만 가능합니다. 예약은 소비자 계정으로만 가능합니다.</p>
+                </div>
+
+                <div className="flex gap-2">
+                  <a href={`tel:${selectedStudio.phone}`} className="flex items-center justify-center gap-1 w-14 h-12 border border-gray-300 rounded-xl text-gray-500 text-sm shrink-0">📞</a>
+                  <button disabled className="flex-1 bg-gray-200 text-gray-400 py-3.5 rounded-xl font-bold text-sm cursor-not-allowed">예약 불가 (업체 계정)</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ===== DASHBOARD (IA-063 실적 대시보드) ===== */}
+          {screen === "dashboard" && (
+            <div className="p-4">
+              <button onClick={() => { setScreen("mypage"); setTab("my"); }} className="text-sm text-gray-400 mb-3">← 돌아가기</button>
+              <h2 className="text-base font-bold mb-4">실적 대시보드</h2>
+
               {/* Summary */}
               <div className="grid grid-cols-3 gap-2 mb-5">
                 <div className="bg-primary/5 rounded-2xl p-3 border border-primary/10 text-center">
@@ -102,19 +298,33 @@ export default function BusinessApp() {
                   <p className="text-[10px] text-gray-500 mb-0.5">이번 달</p>
                   <p className="text-xl font-bold text-green-600">₩{(totalRevenue / 10000).toFixed(0)}<span className="text-xs">만</span></p>
                 </div>
-                <button onClick={() => { setScreen("bookings"); setTab("booking"); setBookingFilter("취소요청"); }}
+                <button onClick={() => { setScreen("bookings"); setBookingFilter("취소요청"); }}
                   className="bg-red-50 rounded-2xl p-3 border border-red-100 text-center">
                   <p className="text-[10px] text-gray-500 mb-0.5">취소 요청</p>
                   <p className="text-xl font-bold text-red-500">{bookings.filter(b => b.status === "취소요청").length}</p>
                 </button>
               </div>
 
-              {/* Today's Timeline */}
+              {/* 월별 통계 */}
+              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                <p className="text-xs font-bold mb-3">월별 실적</p>
+                <div className="space-y-2">
+                  {[{m: "2026.05", bk: 12, rv: 1400000, rating: 4.8}, {m: "2026.04", bk: 18, rv: 2200000, rating: 4.7}, {m: "2026.03", bk: 15, rv: 1800000, rating: 4.6}].map((s, i) => (
+                    <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                      <span className="text-xs text-gray-500">{s.m}</span>
+                      <div className="flex items-center gap-3 text-xs">
+                        <span>{s.bk}건</span>
+                        <span className="font-bold">₩{(s.rv / 10000).toFixed(0)}만</span>
+                        <span className="text-yellow-500">★ {s.rating}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <h3 className="font-bold text-sm mb-3">오늘의 예약</h3>
               {todayBookings.length === 0 ? (
-                <div className="text-center py-8 bg-gray-50 rounded-xl mb-4">
-                  <p className="text-sm text-gray-400">오늘 예약이 없습니다</p>
-                </div>
+                <div className="text-center py-8 bg-gray-50 rounded-xl mb-4"><p className="text-sm text-gray-400">오늘 예약이 없습니다</p></div>
               ) : todayBookings.map(b => (
                 <button key={b.id} onClick={() => { setSelectedBooking(b); setScreen("bookingDetail"); }}
                   className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl mb-2 text-left">
@@ -124,45 +334,27 @@ export default function BusinessApp() {
                     <p className="text-xs text-gray-400">{b.cat} · {b.time}</p>
                   </div>
                   <div className="text-right">
-                    <span className={`text-[10px] px-2 py-1 rounded-full font-medium ${
-                      b.status === "취소요청" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
-                    }`}>{b.status}</span>
+                    <span className={`text-[10px] px-2 py-1 rounded-full font-medium ${b.status === "취소요청" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>{b.status}</span>
                     <p className="text-xs font-bold mt-1">₩{b.price.toLocaleString()}</p>
                   </div>
                 </button>
               ))}
+            </div>
+          )}
 
-              {/* Upcoming */}
-              <h3 className="font-bold text-sm mb-3 mt-5">다가오는 예약</h3>
-              {bookings.filter(b => b.date > 10 && b.date <= 15 && b.status === "확정").slice(0, 3).map(b => (
-                <button key={b.id} onClick={() => { setSelectedBooking(b); setScreen("bookingDetail"); }}
-                  className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl mb-2 text-left">
-                  <div className="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center text-xs font-bold text-gray-600">
-                    5/{b.date}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{b.name}</p>
-                    <p className="text-xs text-gray-400">{b.cat} · {b.time}</p>
-                  </div>
-                  <span className="text-xs text-gray-400">›</span>
-                </button>
-              ))}
-
-              {/* Settlement */}
-              <div className="policy-area mt-5 p-3">
-                <PolicyBadge label="정산 정책 미확정" />
-                <div className="mt-2 bg-white rounded-xl p-4 border border-gray-100">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-gray-500">미정산 금액</p>
-                      <p className="text-xl font-bold text-primary mt-0.5">₩{pendingAmount.toLocaleString()}</p>
-                    </div>
-                    <button onClick={() => { setScreen("settlement"); setTab("my"); }}
-                      className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg font-medium">상세 →</button>
-                  </div>
-                  <p className="text-[10px] text-amber-600 mt-2">정산 대상 기준 · 단위 · 수수료 차감 → 미확정</p>
-                </div>
+          {/* ===== BIZ INFO (IA-065 업체 기본정보 수정) ===== */}
+          {screen === "bizInfo" && (
+            <div className="p-4">
+              <button onClick={() => { setScreen("mypage"); setTab("my"); }} className="text-sm text-gray-400 mb-3">← 돌아가기</button>
+              <h2 className="text-base font-bold mb-4">업체 기본정보 수정</h2>
+              <div className="space-y-3">
+                <div><p className="text-xs text-gray-500 mb-1">업체명</p><input type="text" defaultValue="루미에르 스튜디오" className="w-full bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-200" /></div>
+                <div><p className="text-xs text-gray-500 mb-1">대표자명</p><input type="text" defaultValue="김사장" className="w-full bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-200" /></div>
+                <div><p className="text-xs text-gray-500 mb-1">사업자등록번호</p><input type="text" defaultValue="123-45-67890" disabled className="w-full bg-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-200 text-gray-500" /></div>
+                <div><p className="text-xs text-gray-500 mb-1">연락처</p><input type="tel" defaultValue="02-1234-5678" className="w-full bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-200" /></div>
+                <div><p className="text-xs text-gray-500 mb-1">이메일</p><input type="email" defaultValue="lumiere@example.com" className="w-full bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-200" /></div>
               </div>
+              <button className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm mt-6">저장</button>
             </div>
           )}
 
@@ -537,30 +729,45 @@ export default function BusinessApp() {
 
               {/* Quick Menu — 업체 마이페이지 전용 메뉴 (IA Group 07) */}
               <div className="grid grid-cols-2 gap-2 mb-2">
-                <button onClick={() => { setScreen("register"); setTab("home"); }}
+                <button onClick={() => { setScreen("register"); }}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <span className="text-xl">🏠</span>
-                  <p className="text-sm font-medium mt-1">스튜디오 관리</p>
-                  <p className="text-[10px] text-gray-400">등록·수정·삭제</p>
+                  <p className="text-sm font-medium mt-1">내 스튜디오 관리</p>
+                  <p className="text-[10px] text-gray-400">IA-060 · 등록/수정/삭제</p>
                 </button>
-                <button onClick={() => { setScreen("bookings"); setTab("my"); }}
+                <button onClick={() => { setScreen("bookings"); }}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <span className="text-xl">📅</span>
                   <p className="text-sm font-medium mt-1">내 예약 달력</p>
-                  <p className="text-[10px] text-gray-400">예약·수기 일정</p>
+                  <p className="text-[10px] text-gray-400">IA-061 · 예약·수기 일정</p>
                 </button>
               </div>
-              <div className="grid grid-cols-2 gap-2 mb-4">
+              <div className="grid grid-cols-2 gap-2 mb-2">
+                <button onClick={() => setScreen("dashboard")}
+                  className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
+                  <span className="text-xl">📊</span>
+                  <p className="text-sm font-medium mt-1">실적 대시보드</p>
+                  <p className="text-[10px] text-gray-400">IA-063 · 월별 예약·매출</p>
+                </button>
                 <button onClick={() => setScreen("settlement")}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <span className="text-xl">💰</span>
                   <p className="text-sm font-medium mt-1">정산 내역</p>
-                  <p className="text-[10px] text-gray-400">매출·수수료·정산</p>
+                  <p className="text-[10px] text-gray-400">IA-064 · 월별 정산</p>
                 </button>
-                <button className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
-                  <span className="text-xl">📊</span>
-                  <p className="text-sm font-medium mt-1">실적 대시보드</p>
-                  <p className="text-[10px] text-gray-400">예약 수·매출·평점</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                <button onClick={() => setScreen("bizInfo")}
+                  className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
+                  <span className="text-xl">🏢</span>
+                  <p className="text-sm font-medium mt-1">업체 기본정보</p>
+                  <p className="text-[10px] text-gray-400">IA-065 · 기본정보 수정</p>
+                </button>
+                <button onClick={() => setScreen("notifications")}
+                  className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
+                  <span className="text-xl">🔔</span>
+                  <p className="text-sm font-medium mt-1">알림</p>
+                  <p className="text-[10px] text-gray-400">{hasNotif ? "새 알림" : "확인 완료"}</p>
                 </button>
               </div>
 
@@ -686,9 +893,9 @@ export default function BusinessApp() {
         {/* Bottom Tab - 소비자 앱과 동일 3탭: 홈/카테고리/마이페이지 (마이페이지만 업체 전용) */}
         <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">
           {[
-            { key: "home" as const, icon: "🏠", label: "홈", s: "home" as Screen },
-            { key: "search" as const, icon: "📂", label: "카테고리", s: "home" as Screen },
-            { key: "my" as const, icon: "👤", label: "마이페이지", s: "mypage" as Screen },
+            { key: "home" as Tab, icon: "🏠", label: "홈", s: "home" as Screen },
+            { key: "category" as Tab, icon: "📂", label: "카테고리", s: "category" as Screen },
+            { key: "my" as Tab, icon: "👤", label: "마이페이지", s: "mypage" as Screen },
           ].map(t => (
             <button key={t.key} onClick={() => { setTab(t.key); setScreen(t.s); }}
               className={`flex-1 flex flex-col items-center justify-center gap-0.5 ${
