@@ -13,12 +13,13 @@ function PolicyBadge({ label }: { label: string }) {
   return <span className="policy-badge">⚠️ {label}</span>;
 }
 
-type Screen = "home" | "category" | "detail" | "register" | "bookings" | "bookingDetail" | "settlement" | "notifications" | "studioView" | "mypage" | "bizSignup" | "approvalWaiting" | "dashboard" | "bizInfo" | "reviews";
+type Screen = "home" | "category" | "detail" | "register" | "bookings" | "bookingDetail" | "settlement" | "notifications" | "studioView" | "mypage" | "bizSignup" | "approvalWaiting" | "dashboard" | "bizInfo" | "reviews" | "login";
 type BookingFilter = "전체" | "확정" | "취소요청" | "완료";
 type Tab = "home" | "category" | "my";
 
 // Studio browsing data — 소비자와 동일한 탐색 화면
 const CATEGORIES = [
+  { name: "전체", Icon: LayoutGrid },
   { name: "프로필", Icon: Camera },
   { name: "바디프로필", Icon: Dumbbell },
   { name: "웨딩", Icon: Heart },
@@ -80,6 +81,29 @@ export default function BusinessApp() {
   const [settlementMonth, setSettlementMonth] = useState("4월");
   const [selectedStudio, setSelectedStudio] = useState(STUDIOS[0]);
   const [categoryCat, setCategoryCat] = useState("프로필");
+  const [prevScreen, setPrevScreen] = useState<Screen>("home");
+
+  const goBack = () => {
+    if (screen === "home") return;
+    const map: Record<string, { s: Screen; t: typeof tab }> = {
+      category: { s: "home", t: "home" },
+      mypage: { s: "home", t: "home" },
+      detail: { s: prevScreen === "category" ? "category" : "home", t: prevScreen === "category" ? "category" : "home" },
+      register: { s: "mypage", t: "my" },
+      bookings: { s: "mypage", t: "my" },
+      bookingDetail: { s: "bookings", t: "my" },
+      settlement: { s: "mypage", t: "my" },
+      notifications: { s: "mypage", t: "my" },
+      dashboard: { s: "mypage", t: "my" },
+      bizInfo: { s: "mypage", t: "my" },
+      reviews: { s: "mypage", t: "my" },
+      bizSignup: { s: "mypage", t: "my" },
+      approvalWaiting: { s: "mypage", t: "my" },
+      login: { s: "home", t: "home" },
+    };
+    const target = map[screen] || { s: "home" as Screen, t: "home" as typeof tab };
+    setScreen(target.s); setTab(target.t);
+  };
   const [adIdx, setAdIdx] = useState(0);
   const [showManualModal, setShowManualModal] = useState(false);
   const [manualDate, setManualDate] = useState("");
@@ -94,7 +118,7 @@ export default function BusinessApp() {
     if (diff < -50) setAdIdx(prev => Math.max(prev - 1, 0));
   };
 
-  const catFiltered = STUDIOS.filter(s => s.cat === categoryCat);
+  const catFiltered = categoryCat === "전체" ? STUDIOS : STUDIOS.filter(s => s.cat === categoryCat);
 
   const toggleCat = (c: string) => {
     setSelectedCats(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
@@ -122,21 +146,26 @@ export default function BusinessApp() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[28px] bg-gray-900 rounded-b-2xl z-20" />
 
         {/* Header */}
-        <div className="relative z-10 bg-white pt-10 px-4 pb-2 border-b border-gray-50">
-          <div className="flex items-center justify-between">
-            <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center gap-0.5">
-              <img src="/funni-logo.png" alt="퍼니" className="w-12 h-12" />
-              <span className="text-xl font-bold text-gray-900">퍼니</span>
-              <span className="text-primary text-sm font-medium">비즈니스</span>
-            </button>
-            <button onClick={() => { setScreen("notifications"); setHasNotif(false); }} className="relative text-gray-500 p-1">
-              <Bell size={20} strokeWidth={1.5} />
-              {hasNotif && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
-            </button>
+        {screen !== "login" && (
+          <div className="relative z-10 bg-white pt-10 px-4 pb-2 border-b border-gray-50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {screen !== "home" && <button onClick={goBack} className="text-gray-500 text-lg w-7 h-7 flex items-center justify-center">‹</button>}
+                <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center gap-0.5">
+                  <img src="/funni-logo.png" alt="퍼니" className="w-12 h-12" />
+                  <span className="text-xl font-bold text-gray-900">퍼니</span>
+                  <span className="text-primary text-sm font-medium">비즈니스</span>
+                </button>
+              </div>
+              <button onClick={() => { setScreen("notifications"); setHasNotif(false); }} className="relative text-gray-500 p-1">
+                <Bell size={20} strokeWidth={1.5} />
+                {hasNotif && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
-        <div className="overflow-y-auto bg-white" style={{ height: "calc(780px - 76px - 56px)" }}>
+        <div className="overflow-y-auto bg-white" style={{ height: screen === "login" ? "calc(780px - 28px)" : "calc(780px - 76px - 56px)" }}>
 
           {/* ===== HOME (IA-010: 소비자와 동일한 스튜디오 탐색) ===== */}
           {screen === "home" && (
@@ -315,7 +344,7 @@ export default function BusinessApp() {
                 </div>
                 <div className="bg-green-50 rounded-2xl p-3 border border-green-100 text-center">
                   <p className="text-[10px] text-gray-500 mb-0.5">이번 달</p>
-                  <p className="text-xl font-bold text-green-600">₩{(totalRevenue / 10000).toFixed(0)}<span className="text-xs">만</span></p>
+                  <p className="text-lg font-bold text-green-600">₩{totalRevenue.toLocaleString()}<span className="text-[10px] font-normal">원</span></p>
                 </div>
                 <button onClick={() => { setScreen("bookings"); setBookingFilter("취소요청"); }}
                   className="bg-red-50 rounded-2xl p-3 border border-red-100 text-center">
@@ -380,7 +409,6 @@ export default function BusinessApp() {
           {/* ===== NOTIFICATIONS ===== */}
           {screen === "notifications" && (
             <div className="p-4">
-              <button onClick={() => setScreen("home")} className="text-sm text-gray-400 mb-3">← 돌아가기</button>
               <h2 className="text-base font-bold mb-4">알림</h2>
               {NOTIFICATIONS.map(n => (
                 <div key={n.id} className="flex gap-3 py-3 border-b border-gray-50">
@@ -728,11 +756,6 @@ export default function BusinessApp() {
                 </div>
               )}
 
-              {selectedBooking.status === "확정" && (
-                <div className="space-y-2">
-                  <button className="w-full bg-gray-100 text-gray-600 py-3 rounded-xl text-sm font-medium">고객에게 메시지 보내기</button>
-                </div>
-              )}
             </div>
           )}
 
@@ -749,16 +772,6 @@ export default function BusinessApp() {
                   </div>
                 </div>
               </div>
-
-              {/* Consumer Mode Switch */}
-              <Link href="/consumer"
-                className="flex items-center justify-between w-full bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4">
-                <div>
-                  <p className="text-sm font-bold text-gray-700">소비자 모드로 전환</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">스튜디오 탐색·예약·결제</p>
-                </div>
-                <span className="text-gray-400 text-sm">→</span>
-              </Link>
 
               {/* Quick Menu — 업체 마이페이지 전용 메뉴 (IA Group 07) */}
               <div className="grid grid-cols-2 gap-2 mb-2">
@@ -808,7 +821,7 @@ export default function BusinessApp() {
                 {[
                   { label: "리뷰 관리", action: () => setScreen("reviews") },
                   { label: "고객센터", action: () => {} },
-                  { label: "로그아웃", action: () => {} },
+                  { label: "로그아웃", action: () => setScreen("login") },
                 ].map(m => (
                   <button key={m.label} onClick={m.action}
                     className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
@@ -910,6 +923,34 @@ export default function BusinessApp() {
             </div>
           )}
 
+          {/* ===== LOGIN (IA-003: 소비자/업체 공용) ===== */}
+          {screen === "login" && (
+            <div className="p-6 pt-16 flex flex-col items-center">
+              <img src="/funni-logo.png" alt="퍼니" className="w-20 h-20 mb-3" />
+              <p className="text-3xl font-bold text-primary mb-1">퍼니</p>
+              <p className="text-xs text-gray-400 mb-10">스튜디오 대관·예약 플랫폼</p>
+
+              <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-[#FEE500] text-[#191919] py-3 rounded-xl font-bold text-sm mb-2 flex items-center justify-center gap-2">💬 카카오로 로그인</button>
+              <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-[#03C75A] text-white py-3 rounded-xl font-bold text-sm mb-6 flex items-center justify-center gap-2">🟢 네이버로 로그인</button>
+
+              <div className="flex items-center gap-4 w-full mb-6">
+                <div className="flex-1 h-px bg-gray-200" /><span className="text-xs text-gray-400">또는</span><div className="flex-1 h-px bg-gray-200" />
+              </div>
+
+              <input type="email" placeholder="이메일" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200 mb-2" />
+              <input type="password" placeholder="비밀번호" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200 mb-4" />
+              <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm mb-4">로그인</button>
+
+              <div className="flex items-center gap-4 text-xs text-gray-400 mb-6">
+                <button onClick={() => setScreen("bizSignup")}>업체 회원가입</button>
+                <span>|</span>
+                <button>비밀번호 찾기</button>
+              </div>
+
+              <p className="text-[10px] text-gray-400 text-center">소비자 계정은 유저 앱에서 별도로 가입하세요.<br />동일 사용자도 소비자 + 업체 계정을 각각 보유해야 합니다.</p>
+            </div>
+          )}
+
           {/* ===== BIZ SIGNUP (IA-002) ===== */}
           {screen === "bizSignup" && (
             <div className="p-4">
@@ -993,7 +1034,7 @@ export default function BusinessApp() {
         )}
 
         {/* Bottom Tab - 소비자 앱과 동일 3탭: 홈/카테고리/마이페이지 (마이페이지만 업체 전용) */}
-        <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">
+        {screen !== "login" && <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">
           {[
             { key: "home" as Tab, Icon: Home, label: "홈", s: "home" as Screen },
             { key: "category" as Tab, Icon: LayoutGrid, label: "카테고리", s: "category" as Screen },
@@ -1007,7 +1048,7 @@ export default function BusinessApp() {
               <span className="text-[10px]">{t.label}</span>
             </button>
           ))}
-        </div>
+        </div>}
       </div>
       <FeedbackOverlay pageUrl="business" />
     </div>
