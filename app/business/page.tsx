@@ -6,7 +6,7 @@ function PolicyBadge({ label }: { label: string }) {
   return <span className="policy-badge">⚠️ {label}</span>;
 }
 
-type Screen = "home" | "register" | "bookings" | "bookingDetail" | "settlement" | "notifications" | "studioView" | "mypage";
+type Screen = "home" | "register" | "bookings" | "bookingDetail" | "settlement" | "notifications" | "studioView" | "mypage" | "bizSignup" | "approvalWaiting";
 type BookingFilter = "전체" | "확정" | "취소요청" | "완료";
 
 const ALL_BOOKINGS = [
@@ -518,10 +518,16 @@ export default function BusinessApp() {
               </div>
 
               <div className="space-y-0">
-                {["리뷰 관리", "알림 설정", "사업자 정보", "고객센터", "로그아웃"].map(m => (
-                  <button key={m} onClick={() => { if (m === "리뷰 관리") { /* noop for now */ } }}
+                {[
+                  { label: "리뷰 관리", action: () => {} },
+                  { label: "사업자 정보", action: () => {} },
+                  { label: "업체 가입 신청 (데모)", action: () => setScreen("bizSignup") },
+                  { label: "고객센터", action: () => {} },
+                  { label: "로그아웃", action: () => {} },
+                ].map(m => (
+                  <button key={m.label} onClick={m.action}
                     className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
-                    <span className="text-sm">{m}</span>
+                    <span className="text-sm">{m.label}</span>
                     <span className="text-gray-300 text-xs">›</span>
                   </button>
                 ))}
@@ -580,15 +586,62 @@ export default function BusinessApp() {
               ))}
             </div>
           )}
+
+          {/* ===== BIZ SIGNUP (IA-002) ===== */}
+          {screen === "bizSignup" && (
+            <div className="p-4">
+              <button onClick={() => setScreen("mypage")} className="text-sm text-gray-400 mb-4">← 돌아가기</button>
+              <h2 className="text-base font-bold mb-1">업체 회원가입</h2>
+              <p className="text-xs text-gray-400 mb-6">사업자 계정 · 승인 후 이용 가능</p>
+
+              <div className="space-y-3 mb-4">
+                <div><p className="text-xs text-gray-500 mb-1">사업자등록번호</p><input type="text" placeholder="000-00-00000" className="w-full bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-200" /></div>
+                <div><p className="text-xs text-gray-500 mb-1">대표자명</p><input type="text" placeholder="홍길동" className="w-full bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-200" /></div>
+                <div><p className="text-xs text-gray-500 mb-1">상호명</p><input type="text" placeholder="스튜디오명" className="w-full bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-200" /></div>
+                <div><p className="text-xs text-gray-500 mb-1">연락처</p><input type="tel" placeholder="02-0000-0000" className="w-full bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-200" /></div>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-xs text-gray-500 mb-2">포트폴리오 사진 업로드 (최대 30장)</p>
+                <div className="grid grid-cols-4 gap-2">
+                  <div className="aspect-square bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed border-gray-300"><span className="text-xl text-gray-400">+</span></div>
+                  {[1,2,3].map(i => <div key={i} className="aspect-square bg-gray-100 rounded-xl" />)}
+                </div>
+                <p className="text-[10px] text-gray-400 mt-1">사진만 가능 · 동영상 불가</p>
+              </div>
+
+              <button onClick={() => setScreen("approvalWaiting")} className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm mb-3">가입 신청</button>
+            </div>
+          )}
+
+          {/* ===== APPROVAL WAITING ===== */}
+          {screen === "approvalWaiting" && (
+            <div className="p-6 flex flex-col items-center justify-center" style={{ minHeight: 450 }}>
+              <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-4xl mb-4">⏳</div>
+              <h2 className="text-lg font-bold mb-2">승인 대기 중</h2>
+              <p className="text-sm text-gray-500 text-center mb-6">제출하신 정보를 검토 중입니다</p>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 w-full mb-6">
+                <p className="text-xs font-bold text-amber-700 mb-2">📋 심사 안내</p>
+                <div className="space-y-1.5 text-[10px] text-amber-600">
+                  <p>• 사업자등록번호 및 포트폴리오를 검토합니다</p>
+                  <p>• 영업일 기준 1~3일 소요됩니다</p>
+                  <p>• 결과는 등록하신 이메일로 안내됩니다</p>
+                  <p>• 승인 완료 후 스튜디오 등록이 가능합니다</p>
+                </div>
+              </div>
+
+              <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm">홈으로 돌아가기</button>
+            </div>
+          )}
         </div>
 
-        {/* Bottom Tab - 통합 네비게이션 (홈/탐색/예약/MY) — 소비자 화면과 동일 */}
+        {/* Bottom Tab - IA 기준 3탭: 홈/카테고리/마이페이지 */}
         <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">
           {[
             { key: "home" as const, icon: "🏠", label: "홈", s: "home" as Screen },
-            { key: "search" as const, icon: "🔍", label: "탐색", s: "home" as Screen },
-            { key: "booking" as const, icon: "📅", label: "예약", s: "bookings" as Screen },
-            { key: "my" as const, icon: "👤", label: "MY", s: "mypage" as Screen },
+            { key: "booking" as const, icon: "📅", label: "예약관리", s: "bookings" as Screen },
+            { key: "my" as const, icon: "👤", label: "마이페이지", s: "mypage" as Screen },
           ].map(t => (
             <button key={t.key} onClick={() => { setTab(t.key); setScreen(t.s); }}
               className={`flex-1 flex flex-col items-center justify-center gap-0.5 ${
