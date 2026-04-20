@@ -811,11 +811,11 @@ export default function BusinessApp() {
                 </button>
               </div>
               <div className="grid grid-cols-2 gap-2 mb-2">
-                <button onClick={() => setScreen("dashboard")}
+                <button onClick={() => setScreen("bizInfo")}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
-                  <BarChart3 size={20} strokeWidth={1.5} className="text-gray-700" />
-                  <p className="text-sm font-medium mt-1">실적 대시보드</p>
-                  <p className="text-[10px] text-gray-400">IA-063 · 월별 예약·매출</p>
+                  <Building2 size={20} strokeWidth={1.5} className="text-gray-700" />
+                  <p className="text-sm font-medium mt-1">업체 기본정보</p>
+                  <p className="text-[10px] text-gray-400">IA-065 · 기본정보 수정</p>
                 </button>
                 <button onClick={() => setScreen("settlement")}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
@@ -824,18 +824,12 @@ export default function BusinessApp() {
                   <p className="text-[10px] text-gray-400">IA-064 · 월별 정산</p>
                 </button>
               </div>
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                <button onClick={() => setScreen("bizInfo")}
+              <div className="grid grid-cols-1 gap-2 mb-4">
+                <button onClick={() => setScreen("dashboard")}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
-                  <Building2 size={20} strokeWidth={1.5} className="text-gray-700" />
-                  <p className="text-sm font-medium mt-1">업체 기본정보</p>
-                  <p className="text-[10px] text-gray-400">IA-065 · 기본정보 수정</p>
-                </button>
-                <button onClick={() => setScreen("notifications")}
-                  className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
-                  <Bell size={20} strokeWidth={1.5} className="text-gray-700" />
-                  <p className="text-sm font-medium mt-1">알림</p>
-                  <p className="text-[10px] text-gray-400">{hasNotif ? "새 알림" : "확인 완료"}</p>
+                  <BarChart3 size={20} strokeWidth={1.5} className="text-gray-700" />
+                  <p className="text-sm font-medium mt-1">실적 대시보드</p>
+                  <p className="text-[10px] text-gray-400">IA-063 · 월별 예약·매출</p>
                 </button>
               </div>
 
