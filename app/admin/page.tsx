@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import FeedbackOverlay from "../components/FeedbackOverlay";
 import { Users, Building2, Calendar, DollarSign, ImageIcon, X } from "lucide-react";
 
 function PolicyBadge({ label }: { label: string }) {
@@ -850,7 +849,6 @@ export default function AdminWeb() {
           </div>
         </div>
       )}
-      <FeedbackOverlay pageUrl={`admin/${tab}`} />
     </div>
   );
 }

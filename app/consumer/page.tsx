@@ -1,7 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
 import Link from "next/link";
-import FeedbackOverlay from "../components/FeedbackOverlay";
 import PolicyForm from "../components/PolicyForm";
 import {
   Camera, Dumbbell, Heart, Cake, Package, Video, MoreHorizontal,
@@ -973,7 +972,6 @@ export default function ConsumerApp() {
           </div>
         )}
       </div>
-      <FeedbackOverlay pageUrl={`consumer/${screen}`} />
     </div>
   );
 }

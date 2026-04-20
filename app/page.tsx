@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import FeedbackOverlay from "./components/FeedbackOverlay";
 import { Smartphone, Building2, MonitorCog, MessageCircle } from "lucide-react";
 
 export default function Home() {
@@ -66,7 +65,6 @@ export default function Home() {
         </p>
       </div>
 
-      <FeedbackOverlay pageUrl="main" />
     </div>
   );
 }
