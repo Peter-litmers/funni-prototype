@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { MessageSquarePlus, Send, X, Check, Pencil, Trash2 } from "lucide-react";
+import { MessageSquarePlus, Send, X, Check, Pencil, Trash2, RotateCcw } from "lucide-react";
 
 type PolicyAnswer = {
   id: string;
@@ -29,18 +29,22 @@ export default function PolicyForm({ question, screen, area }: Props) {
   const [editText, setEditText] = useState("");
   const [editingQuestion, setEditingQuestion] = useState(false);
   const [questionText, setQuestionText] = useState(question);
+  const [hidden, setHidden] = useState(false);
+  const [initialLoaded, setInitialLoaded] = useState(false);
 
-  // 질문 텍스트 KV 저장/로드
   useEffect(() => {
-    const loadQuestion = async () => {
+    const load = async () => {
       try {
         const res = await fetch(`/api/policy-answer/question?screen=${encodeURIComponent(screen)}&area=${encodeURIComponent(area)}`, { cache: "no-store" });
         if (!res.ok) return;
         const data = await res.json();
         if (data.question) setQuestionText(data.question);
-      } catch {}
+        if (data.hidden === true) setHidden(true);
+      } catch {} finally {
+        setInitialLoaded(true);
+      }
     };
-    loadQuestion();
+    load();
   }, [screen, area]);
 
   const saveQuestion = async () => {
@@ -51,6 +55,32 @@ export default function PolicyForm({ question, screen, area }: Props) {
         body: JSON.stringify({ screen, area, question: questionText.trim() }),
       });
       setEditingQuestion(false);
+    } catch (e) {
+      alert(String(e));
+    }
+  };
+
+  const hideQuestion = async () => {
+    try {
+      await fetch("/api/policy-answer/question", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ screen, area, hidden: true }),
+      });
+      setHidden(true);
+    } catch (e) {
+      alert(String(e));
+    }
+  };
+
+  const restoreQuestion = async () => {
+    try {
+      await fetch("/api/policy-answer/question", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ screen, area, hidden: false }),
+      });
+      setHidden(false);
     } catch (e) {
       alert(String(e));
     }
@@ -89,11 +119,7 @@ export default function PolicyForm({ question, screen, area }: Props) {
     }
   };
 
-  const startEdit = (a: PolicyAnswer) => {
-    setEditingId(a.id);
-    setEditText(a.answer);
-  };
-
+  const startEdit = (a: PolicyAnswer) => { setEditingId(a.id); setEditText(a.answer); };
   const cancelEdit = () => { setEditingId(null); setEditText(""); };
 
   const saveEdit = async (id: string) => {
@@ -108,11 +134,7 @@ export default function PolicyForm({ question, screen, area }: Props) {
       if (!res.ok) throw new Error("수정 실패");
       setEditingId(null); setEditText("");
       await loadAnswers();
-    } catch (e) {
-      alert(String(e));
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { alert(String(e)); } finally { setLoading(false); }
   };
 
   const deleteAnswer = async (id: string) => {
@@ -121,14 +143,28 @@ export default function PolicyForm({ question, screen, area }: Props) {
       const res = await fetch(`/api/policy-answer?id=${encodeURIComponent(id)}`, { method: "DELETE" });
       if (!res.ok) throw new Error("삭제 실패");
       await loadAnswers();
-    } catch (e) {
-      alert(String(e));
-    }
+    } catch (e) { alert(String(e)); }
   };
+
+  if (!initialLoaded) return null;
+
+  // 숨겨진 질문 — 복구 버튼만 표시
+  if (hidden) {
+    return (
+      <div className="mt-1.5 flex items-center gap-1.5 bg-gray-50 rounded-lg px-2.5 py-1.5 border border-gray-200 border-dashed">
+        <Trash2 size={10} strokeWidth={1.5} className="text-gray-400 shrink-0" />
+        <span className="text-[10px] text-gray-400 flex-1 line-through">{questionText}</span>
+        <button onClick={restoreQuestion}
+          className="flex items-center gap-0.5 text-[10px] text-primary hover:text-primary/80 font-medium shrink-0">
+          <RotateCcw size={10} strokeWidth={1.5} /> 복구
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-2">
-      {/* 질문 텍스트 — 클릭으로 수정 가능 */}
+      {/* 질문 텍스트 — 클릭으로 수정 + 삭제 버튼 */}
       <div className="flex items-start gap-1 mb-1">
         {editingQuestion ? (
           <div className="flex-1 flex gap-1">
@@ -139,11 +175,16 @@ export default function PolicyForm({ question, screen, area }: Props) {
             <button onClick={() => { setQuestionText(question); setEditingQuestion(false); }} className="text-[10px] text-gray-400 px-1">취소</button>
           </div>
         ) : (
-          <button onClick={() => setEditingQuestion(true)}
-            className="text-xs text-gray-700 font-medium text-left hover:text-primary transition-colors group flex items-center gap-1">
-            <span>{questionText}</span>
-            <Pencil size={9} strokeWidth={1.5} className="text-gray-300 group-hover:text-primary shrink-0" />
-          </button>
+          <div className="flex items-center gap-1 flex-1 min-w-0">
+            <button onClick={() => setEditingQuestion(true)}
+              className="text-xs text-gray-700 font-medium text-left hover:text-primary transition-colors group flex items-center gap-1 flex-1 min-w-0">
+              <span className="truncate">{questionText}</span>
+              <Pencil size={9} strokeWidth={1.5} className="text-gray-300 group-hover:text-primary shrink-0" />
+            </button>
+            <button onClick={hideQuestion} className="text-gray-300 hover:text-red-400 transition-colors p-0.5 shrink-0" title="질문 숨기기">
+              <X size={12} strokeWidth={1.5} />
+            </button>
+          </div>
         )}
       </div>
 
