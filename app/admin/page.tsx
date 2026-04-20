@@ -850,7 +850,7 @@ export default function AdminWeb() {
           </div>
         </div>
       )}
-      <FeedbackOverlay pageUrl="admin" />
+      <FeedbackOverlay pageUrl={`admin/${tab}`} />
     </div>
   );
 }

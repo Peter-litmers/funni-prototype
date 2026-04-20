@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 type Feedback = {
   id: string;
-  pageUrl: string;        // 어느 화면인지 (consumer/business/admin/main)
+  pageUrl: string;        // 어느 화면인지 (consumer/home, business/dashboard 등)
   x: number;              // 0~100 (% of document width)
   y: number;              // 0~100 (% of document height)
   title: string;
@@ -26,31 +26,38 @@ function isKvConfigured(): boolean {
   return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
 }
 
+// --- 로컬 개발용 인메모리 스토어 (KV 없을 때 폴백) ---
+const memStore = new Map<string, Feedback>();
+const memIndex: string[] = [];
+
 // GET /api/feedback?processed=false
 export async function GET(req: NextRequest) {
-  if (!isKvConfigured()) {
-    return NextResponse.json({ error: "KV not configured", hint: "Set KV_REST_API_URL & KV_REST_API_TOKEN in Vercel" }, { status: 503 });
-  }
   const processedParam = req.nextUrl.searchParams.get("processed");
-  const ids = (await kv.lrange<string>(KEY_INDEX, 0, -1)) || [];
-  const items: Feedback[] = [];
-  for (const id of ids) {
-    const item = await kv.get<Feedback>(itemKey(id));
-    if (!item) continue;
-    if (processedParam === "false" && item.processed) continue;
-    if (processedParam === "true" && !item.processed) continue;
-    items.push(item);
+  let items: Feedback[] = [];
+
+  if (isKvConfigured()) {
+    const ids = (await kv.lrange<string>(KEY_INDEX, 0, -1)) || [];
+    for (const id of ids) {
+      const item = await kv.get<Feedback>(itemKey(id));
+      if (!item) continue;
+      if (processedParam === "false" && item.processed) continue;
+      if (processedParam === "true" && !item.processed) continue;
+      items.push(item);
+    }
+  } else {
+    items = Array.from(memStore.values()).filter(item => {
+      if (processedParam === "false" && item.processed) return false;
+      if (processedParam === "true" && !item.processed) return false;
+      return true;
+    });
   }
-  // Most recent first
+
   items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   return NextResponse.json({ items, count: items.length });
 }
 
 // POST /api/feedback  body: { pageUrl, x, y, title, comment, author }
 export async function POST(req: NextRequest) {
-  if (!isKvConfigured()) {
-    return NextResponse.json({ error: "KV not configured" }, { status: 503 });
-  }
   try {
     const body = await req.json();
     const { pageUrl, x, y, title, comment, author, nearbyText } = body || {};
@@ -70,8 +77,13 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
       processed: false,
     };
-    await kv.set(itemKey(id), item);
-    await kv.lpush(KEY_INDEX, id);
+    if (isKvConfigured()) {
+      await kv.set(itemKey(id), item);
+      await kv.lpush(KEY_INDEX, id);
+    } else {
+      memStore.set(id, item);
+      memIndex.unshift(id);
+    }
     return NextResponse.json({ ok: true, item });
   } catch (e) {
     return NextResponse.json({ error: "Invalid request", detail: String(e) }, { status: 400 });
@@ -80,15 +92,19 @@ export async function POST(req: NextRequest) {
 
 // PATCH /api/feedback  body: { id, processed?, notionPageId? }
 export async function PATCH(req: NextRequest) {
-  if (!isKvConfigured()) {
-    return NextResponse.json({ error: "KV not configured" }, { status: 503 });
-  }
   try {
     const body = await req.json();
     const { id, processed, notionPageId, x, y, title, comment, nearbyText } = body || {};
     if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });
-    const item = await kv.get<Feedback>(itemKey(id));
+
+    let item: Feedback | null = null;
+    if (isKvConfigured()) {
+      item = await kv.get<Feedback>(itemKey(id));
+    } else {
+      item = memStore.get(id) ?? null;
+    }
     if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
     const isEdit = typeof x === "number" || typeof y === "number" || typeof title === "string" || typeof comment === "string" || typeof nearbyText === "string";
     const updated: Feedback = {
       ...item,
@@ -101,21 +117,30 @@ export async function PATCH(req: NextRequest) {
       ...(typeof nearbyText === "string" ? { nearbyText: nearbyText.slice(0, 200) } : {}),
       ...(isEdit ? { updatedAt: new Date().toISOString() } : {}),
     };
-    await kv.set(itemKey(id), updated);
+
+    if (isKvConfigured()) {
+      await kv.set(itemKey(id), updated);
+    } else {
+      memStore.set(id, updated);
+    }
     return NextResponse.json({ ok: true, item: updated });
   } catch (e) {
     return NextResponse.json({ error: "Invalid request", detail: String(e) }, { status: 400 });
   }
 }
 
-// DELETE /api/feedback?id=xxx  (optional housekeeping)
+// DELETE /api/feedback?id=xxx
 export async function DELETE(req: NextRequest) {
-  if (!isKvConfigured()) {
-    return NextResponse.json({ error: "KV not configured" }, { status: 503 });
-  }
   const id = req.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
-  await kv.del(itemKey(id));
-  await kv.lrem(KEY_INDEX, 0, id);
+
+  if (isKvConfigured()) {
+    await kv.del(itemKey(id));
+    await kv.lrem(KEY_INDEX, 0, id);
+  } else {
+    memStore.delete(id);
+    const idx = memIndex.indexOf(id);
+    if (idx !== -1) memIndex.splice(idx, 1);
+  }
   return NextResponse.json({ ok: true });
 }
