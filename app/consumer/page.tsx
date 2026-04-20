@@ -141,28 +141,23 @@ export default function ConsumerApp() {
   const [agreePrivacy, setAgreePrivacy] = useState(false);
 
   const touchStartX = useRef(0);
+  const historyStack = useRef<{ s: Screen; t: Tab }[]>([]);
 
-  const navigate = (to: Screen) => { setPrevScreenRef(screen); setScreen(to); };
+  const navigate = (to: Screen) => {
+    historyStack.current.push({ s: screen, t: tab });
+    setPrevScreenRef(screen);
+    setScreen(to);
+  };
   const goBack = () => {
     if (screen === "home") return;
-    const map: Record<string, { s: Screen; t: Tab }> = {
-      category: { s: "home", t: "home" },
-      myBookings: { s: "mypage", t: "mypage" },
-      mypage: { s: "home", t: "home" },
-      detail: { s: prevScreenRef === "category" ? "category" : "home", t: prevScreenRef === "category" ? "category" : "home" },
-      booking: { s: "detail", t: tab },
-      done: { s: "home", t: "home" },
-      reviewWrite: { s: "myBookings", t: "mypage" },
-      myReviews: { s: "mypage", t: "mypage" },
-      paymentHistory: { s: "mypage", t: "mypage" },
-      login: { s: "mypage", t: "mypage" },
-      signup: { s: "login", t: "mypage" },
-      bizSignup: { s: "login", t: "mypage" },
-      forgotPassword: { s: "login", t: "mypage" },
-      notifications: { s: "home", t: "home" },
-    };
-    const target = map[screen] || { s: "home" as Screen, t: "home" as Tab };
-    setScreen(target.s); setTab(target.t);
+    const prev = historyStack.current.pop();
+    if (prev) {
+      setScreen(prev.s);
+      setTab(prev.t);
+    } else {
+      setScreen("home");
+      setTab("home");
+    }
   };
 
   // 홈: 지역 + 가격대 필터 + 정렬
@@ -682,7 +677,7 @@ export default function ConsumerApp() {
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-gray-100">
                     <span className="text-sm font-bold">{b.price}</span>
-                    {bookingFilter === "예정" && <div className="policy-area px-2 py-1"><span className="text-[10px] text-amber-700">취소 정책 미확정</span></div>}
+                    {bookingFilter === "예정" && <div className="policy-area px-2 py-1"><span className="text-[10px] text-amber-700">⚠️ 취소 정책 미확정</span></div>}
                     {bookingFilter === "완료" && (b as { canReview?: boolean }).canReview && (
                       <button onClick={() => { setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); navigate("reviewWrite"); }} className="text-xs text-primary font-medium">리뷰 작성 →</button>
                     )}
@@ -690,6 +685,13 @@ export default function ConsumerApp() {
                   </div>
                 </div>
               ))}
+              {/* 취소/환불 정책 미확정 — REQ-108, 미확정 항목 */}
+              <div className="policy-area mt-4 p-3">
+                <PolicyBadge label="취소/환불 정책 미확정" />
+                <PolicyForm question="예약 취소 시 환불 기준은? (7일 전/3일 전/당일/노쇼 각각 환불율)" screen="소비자" area="취소/환불 정책" />
+                <PolicyForm question="취소 수수료 부과 기준은? (업체/소비자 귀책 구분)" screen="소비자" area="취소 수수료" />
+                <PolicyForm question="환불 처리 소요 기간은? (PG사 환불 프로세스)" screen="소비자" area="환불 처리 기간" />
+              </div>
             </div>
           )}
 

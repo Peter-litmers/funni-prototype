@@ -250,6 +250,18 @@ export default function BusinessApp() {
                   </button>
                 ))}
               </div>
+              {/* 카테고리별 광고 배너 (REQ-113: 카테고리 페이지 배너) — 소비자 화면 동기화 */}
+              <div className="policy-area p-2 mb-4">
+                <PolicyBadge label="광고 세부 규칙 미확정" />
+                <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-3 flex gap-3 items-center mt-1">
+                  <span className="bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
+                  <div className="flex-1">
+                    <p className="text-xs font-bold text-gray-800">&lsquo;{categoryCat}&rsquo; 카테고리 추천 배너</p>
+                    <p className="text-[10px] text-gray-500">관리자가 등록한 광고가 노출됩니다</p>
+                  </div>
+                </div>
+                <PolicyForm question="카테고리별 배너 노출 규칙은? (위치/개수/기간)" screen="업체" area="카테고리 광고 배너" />
+              </div>
               <p className="text-sm font-bold mb-3">&lsquo;{categoryCat}&rsquo; 스튜디오 {catFiltered.length}곳</p>
               {catFiltered.map(s => (
                 <div key={s.id} onClick={() => { setSelectedStudio(s); setScreen("detail"); }}
@@ -338,17 +350,17 @@ export default function BusinessApp() {
               {/* Summary */}
               <div className="grid grid-cols-3 gap-2 mb-5">
                 <div className="bg-primary/5 rounded-2xl p-3 border border-primary/10 text-center">
-                  <p className="text-[10px] text-gray-500 mb-0.5">오늘 예약</p>
-                  <p className="text-xl font-bold text-primary">{todayBookings.length}</p>
+                  <p className="text-[10px] text-gray-500 mb-1">오늘 예약</p>
+                  <p className="text-xl font-bold text-primary">{todayBookings.length}<span className="text-[10px] font-normal ml-0.5">건</span></p>
                 </div>
-                <div className="bg-green-50 rounded-2xl p-3 border border-green-100 text-center">
-                  <p className="text-[10px] text-gray-500 mb-0.5">이번 달</p>
-                  <p className="text-lg font-bold text-green-600">₩{totalRevenue.toLocaleString()}<span className="text-[10px] font-normal">원</span></p>
+                <div className="bg-green-50 rounded-2xl p-3 border border-green-100 text-center overflow-hidden">
+                  <p className="text-[10px] text-gray-500 mb-1">이번 달</p>
+                  <p className="text-sm font-bold text-green-600 truncate">₩{(totalRevenue / 10000).toFixed(0)}<span className="text-[10px] font-normal">만원</span></p>
                 </div>
                 <button onClick={() => { setScreen("bookings"); setBookingFilter("취소요청"); }}
                   className="bg-red-50 rounded-2xl p-3 border border-red-100 text-center">
-                  <p className="text-[10px] text-gray-500 mb-0.5">취소 요청</p>
-                  <p className="text-xl font-bold text-red-500">{bookings.filter(b => b.status === "취소요청").length}</p>
+                  <p className="text-[10px] text-gray-500 mb-1">취소 요청</p>
+                  <p className="text-xl font-bold text-red-500">{bookings.filter(b => b.status === "취소요청").length}<span className="text-[10px] font-normal ml-0.5">건</span></p>
                 </button>
               </div>
 
@@ -745,8 +757,9 @@ export default function BusinessApp() {
                 <div className="policy-area p-3 mb-4">
                   <PolicyBadge label="취소/환불 정책 미확정" />
                   <p className="text-sm font-medium mt-2 mb-2 text-red-700">고객이 취소를 요청했습니다</p>
-                  <p className="text-xs text-amber-600 mb-3">취소 수락 시 환불 금액 및 페널티 → 미확정</p>
-                  <div className="flex gap-2">
+                  <PolicyForm question="취소 수락 시 환불 금액 기준은? (기간별 환불율)" screen="업체" area="취소 환불 금액" />
+                  <PolicyForm question="업체 귀책 취소 시 페널티는? (수수료 부과 여부)" screen="업체" area="업체 취소 페널티" />
+                  <div className="flex gap-2 mt-2">
                     <button onClick={() => handleBookingAction(selectedBooking.id, "reject")}
                       className="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-xl text-sm font-medium">거절</button>
                     <button onClick={() => handleBookingAction(selectedBooking.id, "accept")}
@@ -814,6 +827,15 @@ export default function BusinessApp() {
                   <p className="text-sm font-medium mt-1">알림</p>
                   <p className="text-[10px] text-gray-400">{hasNotif ? "새 알림" : "확인 완료"}</p>
                 </button>
+              </div>
+
+              {/* 업체 마이페이지 미확정 사항 — IA/명세서 기반 */}
+              <div className="policy-area p-3 mb-4">
+                <PolicyBadge label="업체 마이페이지 정책 미확정" />
+                <PolicyForm question="업체 가입 승인 심사 기준은? (사업자 확인 + 포트폴리오 품질 기준)" screen="업체" area="입점 심사 기준" />
+                <PolicyForm question="업체 계정 정지/해제 기준은? (위반 사항, 재활성화 절차)" screen="업체" area="계정 정지 기준" />
+                <PolicyForm question="예약 취소/환불 시 업체 측 처리 흐름은? (취소 수락/거절 권한, 환불 프로세스)" screen="업체" area="업체 취소/환불 처리" />
+                <PolicyForm question="정산 주기 및 기준일은? (월 단위, 기준일, 최소 정산 금액)" screen="업체" area="정산 주기" />
               </div>
 
               <div className="space-y-0">

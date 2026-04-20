@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Users, Building2, Calendar, DollarSign, ImageIcon, X } from "lucide-react";
+import PolicyForm from "../components/PolicyForm";
 
 function PolicyBadge({ label }: { label: string }) {
   return <span className="policy-badge">⚠️ {label}</span>;
@@ -283,7 +284,9 @@ export default function AdminWeb() {
 
             <div className="policy-area p-4 mb-6">
               <PolicyBadge label="입점 정책 미확정" />
-              <p className="text-sm text-amber-700 mt-2">입점 방식(자동 vs 검토) · 필요 서류 · 퇴점 기준 미확정</p>
+              <PolicyForm question="입점 방식은? (자동 승인 vs 관리자 수동 검토)" screen="어드민" area="입점 방식" />
+              <PolicyForm question="입점 심사 시 필수 확인 서류는? (사업자등록증, 포트폴리오 외)" screen="어드민" area="입점 필요 서류" />
+              <PolicyForm question="퇴점(입점 해제) 기준은? (위반 횟수, 경고 절차)" screen="어드민" area="퇴점 기준" />
             </div>
 
             {/* Business List */}
@@ -349,24 +352,11 @@ export default function AdminWeb() {
 
             <div className="policy-area p-4 mb-6">
               <PolicyBadge label="정산 정책 미확정" />
-              <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="bg-white rounded-lg p-3">
-                  <p className="text-xs text-gray-500">정산 대상 조회 기준</p>
-                  <p className="text-sm text-amber-700 font-medium">미확정</p>
-                </div>
-                <div className="bg-white rounded-lg p-3">
-                  <p className="text-xs text-gray-500">정산 단위</p>
-                  <p className="text-sm text-amber-700 font-medium">업체별 일괄 vs 건별 선택 → 미확정</p>
-                </div>
-                <div className="bg-white rounded-lg p-3">
-                  <p className="text-xs text-gray-500">수수료 차감 방식</p>
-                  <p className="text-sm text-amber-700 font-medium">자동 차감 vs 운영자 입력 → 미확정</p>
-                </div>
-                <div className="bg-white rounded-lg p-3">
-                  <p className="text-xs text-gray-500">정산 후 환불 처리</p>
-                  <p className="text-sm text-amber-700 font-medium">다음 정산 차감 vs 별도 → 미확정</p>
-                </div>
-              </div>
+              <PolicyForm question="정산 대상 조회 기준은? (완료된 예약만 / 확정 포함)" screen="어드민" area="정산 대상 기준" />
+              <PolicyForm question="정산 단위는? (업체별 일괄 vs 건별 선택)" screen="어드민" area="정산 단위" />
+              <PolicyForm question="수수료 차감 방식은? (자동 차감 vs 운영자 수동 입력)" screen="어드민" area="수수료 차감 방식" />
+              <PolicyForm question="정산 후 환불 발생 시 처리는? (다음 정산 차감 vs 별도 처리)" screen="어드민" area="정산 후 환불 처리" />
+              <PolicyForm question="업체별 수수료 차등 기준은? (기본 10%, override 패턴)" screen="어드민" area="업체별 수수료 차등" />
             </div>
 
             {/* Settlement Table */}
@@ -431,7 +421,9 @@ export default function AdminWeb() {
 
             <div className="policy-area p-4 mb-6">
               <PolicyBadge label="광고 정책 미확정" />
-              <p className="text-sm text-amber-700 mt-2">구좌 수 · 기간 단위(주간/월간) · 과금 방식(고정/입찰) → 미확정</p>
+              <PolicyForm question="프리미엄 영역 구좌 수는? (최대 몇 개 업체 동시 노출)" screen="어드민" area="광고 구좌 수" />
+              <PolicyForm question="광고 기간 단위는? (주간 / 월간 / 건별)" screen="어드민" area="광고 기간 단위" />
+              <PolicyForm question="과금 방식은? (고정 금액 / 입찰 / CPC)" screen="어드민" area="광고 과금 방식" />
             </div>
 
             {/* 현재 노출 중인 광고 스튜디오 (REQ-112 상단 노출) */}
