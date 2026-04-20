@@ -304,7 +304,6 @@ export default function ConsumerApp() {
                 <PolicyForm question="프리미엄 영역 구좌 수는?" screen="소비자" area="광고 구좌 수" />
                 <PolicyForm question="광고 노출 기간 단위는? (주간 / 월간 / 건별)" screen="소비자" area="광고 기간 단위" />
                 <PolicyForm question="광고 과금 방식은? (고정가 / 입찰)" screen="소비자" area="광고 과금 방식" />
-                <PolicyForm question="배너 노출 순서는? (로테이션 / 고정)" screen="소비자" area="배너 노출 순서" />
               </div>
 
               {/* Filters + Sort (REQ-106) */}
@@ -532,9 +531,7 @@ export default function ConsumerApp() {
                     </div>
                     <p className="text-[10px] text-amber-600 mt-2">작성 기간 · 사진 첨부 · 수정/삭제 · 글자 수 제한 → 미확정</p>
                     <PolicyForm question="리뷰 작성 가능 기간은? (촬영 후 며칠 이내?)" screen="소비자" area="리뷰 작성 기간" />
-                    <PolicyForm question="리뷰에 사진 첨부 가능한가요? 개수는?" screen="소비자" area="리뷰 사진 첨부" />
                     <PolicyForm question="리뷰 수정/삭제가 가능한가요?" screen="소비자" area="리뷰 수정/삭제" />
-                    <PolicyForm question="리뷰 최소/최대 글자 수는?" screen="소비자" area="리뷰 글자 수" />
                   </div>
                 </div>
 
@@ -592,7 +589,6 @@ export default function ConsumerApp() {
                     <p className="text-[10px] text-amber-600 mt-2">최소 예약 단위 · 예약 가능 기간 · 당일 예약 · 버퍼 시간 → 미확정</p>
                     <PolicyForm question="최소 예약 단위는? (1시간 / 30분 / 업체 자유)" screen="소비자" area="최소 예약 단위" />
                     <PolicyForm question="예약 가능 기간은? (며칠 전부터 예약 가능?)" screen="소비자" area="예약 가능 기간" />
-                    <PolicyForm question="당일 예약 가능한가요?" screen="소비자" area="당일 예약" />
                     <PolicyForm question="예약 간 버퍼 시간은? (청소/준비 시간)" screen="소비자" area="예약 버퍼 시간" />
                   </div>
                 </div>
@@ -827,12 +823,6 @@ export default function ConsumerApp() {
               <h2 className="text-lg font-bold mb-1">회원가입</h2>
               <p className="text-xs text-gray-400 mb-6">소비자 계정</p>
 
-              <div className="policy-area p-3 mb-4">
-                <PolicyBadge label="회원 세부 규칙 미확정" />
-                <PolicyForm question="닉네임 중복 허용 여부는?" screen="소비자" area="닉네임 중복" />
-                <PolicyForm question="닉네임 변경 가능한가요? (빈도 제한 포함)" screen="소비자" area="닉네임 변경" />
-                <PolicyForm question="탈퇴 시 개인정보·예약 이력·리뷰는 어떻게 처리?" screen="소비자" area="탈퇴 데이터 처리" />
-              </div>
 
               <div className="space-y-3 mb-4">
                 <div><p className="text-xs text-gray-500 mb-1">이름</p><input type="text" placeholder="홍길동" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
@@ -872,8 +862,7 @@ export default function ConsumerApp() {
 
               <div className="policy-area p-3 mb-4">
                 <PolicyBadge label="업체 입점 세부 규칙 미확정" />
-                <PolicyForm question="승인 거절 시 사유 전달 방식은? (이메일 / 앱 알림)" screen="소비자" area="업체 승인 거절 사유 전달" />
-                <PolicyForm question="재신청 규칙은? (횟수 제한, 대기 기간)" screen="소비자" area="업체 재신청 규칙" />
+                <p className="text-[10px] text-amber-600 mt-1">→ 어드민 웹 &gt; 업체 관리에 질문으로 표기</p>
               </div>
 
 

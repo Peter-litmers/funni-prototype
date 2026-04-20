@@ -284,8 +284,8 @@ export default function AdminWeb() {
 
             <div className="policy-area p-4 mb-6">
               <PolicyBadge label="입점 정책 미확정" />
-              <PolicyForm question="입점 방식은? (자동 승인 vs 관리자 수동 검토)" screen="어드민" area="입점 방식" />
-              <PolicyForm question="입점 심사 시 필수 확인 서류는? (사업자등록증, 포트폴리오 외)" screen="어드민" area="입점 필요 서류" />
+              <p className="text-[10px] text-gray-500 mt-1">• 입점 방식: 관리자 수동 검토 (REQ-115 확정)</p>
+              <p className="text-[10px] text-gray-500">• 필수 서류: 사업자등록번호 + 포트폴리오 사진 (REQ-102 확정)</p>
               <PolicyForm question="퇴점(입점 해제) 기준은? (위반 횟수, 경고 절차)" screen="어드민" area="퇴점 기준" />
             </div>
 
@@ -354,9 +354,9 @@ export default function AdminWeb() {
               <PolicyBadge label="정산 정책 미확정" />
               <PolicyForm question="정산 대상 조회 기준은? (완료된 예약만 / 확정 포함)" screen="어드민" area="정산 대상 기준" />
               <PolicyForm question="정산 단위는? (업체별 일괄 vs 건별 선택)" screen="어드민" area="정산 단위" />
-              <PolicyForm question="수수료 차감 방식은? (자동 차감 vs 운영자 수동 입력)" screen="어드민" area="수수료 차감 방식" />
+              <p className="text-[10px] text-gray-500 mt-1">• 수수료 차감: 관리자 수동 정산 (REQ-119 확정)</p>
+              <p className="text-[10px] text-gray-500">• 수수료 차등: 기본 10%, 업체별 override (REQ-119 확정)</p>
               <PolicyForm question="정산 후 환불 발생 시 처리는? (다음 정산 차감 vs 별도 처리)" screen="어드민" area="정산 후 환불 처리" />
-              <PolicyForm question="업체별 수수료 차등 기준은? (기본 10%, override 패턴)" screen="어드민" area="업체별 수수료 차등" />
             </div>
 
             {/* Settlement Table */}
@@ -421,9 +421,7 @@ export default function AdminWeb() {
 
             <div className="policy-area p-4 mb-6">
               <PolicyBadge label="광고 정책 미확정" />
-              <PolicyForm question="프리미엄 영역 구좌 수는? (최대 몇 개 업체 동시 노출)" screen="어드민" area="광고 구좌 수" />
-              <PolicyForm question="광고 기간 단위는? (주간 / 월간 / 건별)" screen="어드민" area="광고 기간 단위" />
-              <PolicyForm question="과금 방식은? (고정 금액 / 입찰 / CPC)" screen="어드민" area="광고 과금 방식" />
+              <p className="text-[10px] text-amber-600 mt-1">→ 소비자 화면 &gt; 홈에 질문으로 표기 (구좌 수, 기간 단위, 과금 방식)</p>
             </div>
 
             {/* 현재 노출 중인 광고 스튜디오 (REQ-112 상단 노출) */}

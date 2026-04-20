@@ -57,11 +57,11 @@ export default function Home() {
 
       <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5 max-w-4xl w-full">
         <div className="flex items-center gap-2 mb-2">
-          <MessageCircle size={14} strokeWidth={1.5} className="text-primary" /><span className="text-sm font-bold text-primary">피드백 남기기</span>
+          <MessageCircle size={14} strokeWidth={1.5} className="text-primary" /><span className="text-sm font-bold text-primary">질문 수정 안내</span>
         </div>
         <p className="text-xs text-gray-600 leading-relaxed">
-          우측 하단 <strong className="text-primary">💬 버튼</strong>을 누르면 피드백 모드가 켜집니다. 원하는 위치를 클릭해서 코멘트를 남겨주세요.
-          등록된 피드백은 10분 이내 <strong>Notion 티켓</strong>으로 자동 생성됩니다.
+          각 화면의 <strong className="text-amber-700">정책 미확정</strong> 영역에서 질문 텍스트를 클릭하면 직접 수정할 수 있습니다.
+          수정된 질문과 답변은 <strong className="text-primary">클라우드에 저장</strong>되어 재부팅 후에도 유지됩니다.
         </p>
       </div>
 

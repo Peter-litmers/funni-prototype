@@ -27,6 +27,34 @@ export default function PolicyForm({ question, screen, area }: Props) {
   const [showAnswers, setShowAnswers] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  const [editingQuestion, setEditingQuestion] = useState(false);
+  const [questionText, setQuestionText] = useState(question);
+
+  // 질문 텍스트 KV 저장/로드
+  useEffect(() => {
+    const loadQuestion = async () => {
+      try {
+        const res = await fetch(`/api/policy-answer/question?screen=${encodeURIComponent(screen)}&area=${encodeURIComponent(area)}`, { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.question) setQuestionText(data.question);
+      } catch {}
+    };
+    loadQuestion();
+  }, [screen, area]);
+
+  const saveQuestion = async () => {
+    try {
+      await fetch("/api/policy-answer/question", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ screen, area, question: questionText.trim() }),
+      });
+      setEditingQuestion(false);
+    } catch (e) {
+      alert(String(e));
+    }
+  };
 
   const loadAnswers = async () => {
     try {
@@ -49,7 +77,7 @@ export default function PolicyForm({ question, screen, area }: Props) {
       const res = await fetch("/api/policy-answer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, answer: answer.trim(), screen, area, author: author.trim() || "익명" }),
+        body: JSON.stringify({ question: questionText, answer: answer.trim(), screen, area, author: author.trim() || "익명" }),
       });
       if (!res.ok) throw new Error("저장 실패");
       setAnswer(""); setAuthor(""); setOpen(false);
@@ -75,7 +103,7 @@ export default function PolicyForm({ question, screen, area }: Props) {
       const res = await fetch("/api/policy-answer", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, answer: editText.trim(), processed: false }),
+        body: JSON.stringify({ id, answer: editText.trim() }),
       });
       if (!res.ok) throw new Error("수정 실패");
       setEditingId(null); setEditText("");
@@ -100,6 +128,25 @@ export default function PolicyForm({ question, screen, area }: Props) {
 
   return (
     <div className="mt-2">
+      {/* 질문 텍스트 — 클릭으로 수정 가능 */}
+      <div className="flex items-start gap-1 mb-1">
+        {editingQuestion ? (
+          <div className="flex-1 flex gap-1">
+            <input type="text" value={questionText} onChange={e => setQuestionText(e.target.value)}
+              className="flex-1 text-xs bg-white border border-primary rounded px-2 py-1 outline-none" autoFocus
+              onKeyDown={e => { if (e.key === "Enter") saveQuestion(); if (e.key === "Escape") { setQuestionText(question); setEditingQuestion(false); } }} />
+            <button onClick={saveQuestion} className="text-[10px] bg-primary text-white px-2 py-1 rounded">저장</button>
+            <button onClick={() => { setQuestionText(question); setEditingQuestion(false); }} className="text-[10px] text-gray-400 px-1">취소</button>
+          </div>
+        ) : (
+          <button onClick={() => setEditingQuestion(true)}
+            className="text-xs text-gray-700 font-medium text-left hover:text-primary transition-colors group flex items-center gap-1">
+            <span>{questionText}</span>
+            <Pencil size={9} strokeWidth={1.5} className="text-gray-300 group-hover:text-primary shrink-0" />
+          </button>
+        )}
+      </div>
+
       {/* 기존 답변 표시 */}
       {answers.length > 0 && (
         <div className="mb-1.5">
@@ -160,7 +207,7 @@ export default function PolicyForm({ question, screen, area }: Props) {
             <p className="text-[10px] text-gray-500 font-medium">정책 답변</p>
             <button onClick={() => setOpen(false)} className="text-gray-400"><X size={14} strokeWidth={1.5} /></button>
           </div>
-          <p className="text-xs text-gray-700 font-medium mb-2 bg-gray-50 rounded p-2">{question}</p>
+          <p className="text-xs text-gray-700 font-medium mb-2 bg-gray-50 rounded p-2">{questionText}</p>
           <textarea
             value={answer} onChange={e => setAnswer(e.target.value)}
             placeholder="답변을 입력하세요 (예: 즉시 확정)" rows={2}
@@ -175,7 +222,7 @@ export default function PolicyForm({ question, screen, area }: Props) {
               <Send size={10} strokeWidth={2} /> {loading ? "..." : "등록"}
             </button>
           </div>
-          <p className="text-[9px] text-gray-400 mt-1.5">클라우드 저장 · 재부팅해도 유지 · Notion 자동 동기화</p>
+          <p className="text-[9px] text-gray-400 mt-1.5">클라우드 저장 · 재부팅해도 유지</p>
         </div>
       )}
     </div>

@@ -8,12 +8,10 @@ type PolicyAnswer = {
   id: string;
   question: string;
   answer: string;
-  screen: string;    // 소비자/업체/어드민
-  area: string;      // 어떤 정책 영역인지
+  screen: string;
+  area: string;
   author: string;
   createdAt: string;
-  processed: boolean;
-  notionPageId?: string;
 };
 
 const KEY_INDEX = "policy:index";
@@ -23,7 +21,6 @@ function isKvConfigured(): boolean {
   return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
 }
 
-// --- 로컬 개발용 인메모리 스토어 ---
 const memStore = new Map<string, PolicyAnswer>();
 const memIndex: string[] = [];
 
@@ -53,7 +50,7 @@ export async function POST(req: NextRequest) {
     const item: PolicyAnswer = {
       id, question: String(question).slice(0, 500), answer: String(answer).slice(0, 2000),
       screen: screen || "", area: area || "", author: (author || "익명").slice(0, 50),
-      createdAt: new Date().toISOString(), processed: false,
+      createdAt: new Date().toISOString(),
     };
     if (isKvConfigured()) {
       await kv.set(itemKey(id), item);
@@ -86,7 +83,7 @@ export async function DELETE(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
-    const { id, processed, notionPageId } = body || {};
+    const { id, answer } = body || {};
     if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
 
     let item: PolicyAnswer | null = null;
@@ -97,7 +94,7 @@ export async function PATCH(req: NextRequest) {
     }
     if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-    const updated = { ...item, ...(typeof processed === "boolean" ? { processed } : {}), ...(notionPageId ? { notionPageId } : {}) };
+    const updated = { ...item, ...(answer ? { answer: String(answer).slice(0, 2000) } : {}) };
     if (isKvConfigured()) {
       await kv.set(itemKey(id), updated);
     } else {

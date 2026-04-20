@@ -260,7 +260,7 @@ export default function BusinessApp() {
                     <p className="text-[10px] text-gray-500">관리자가 등록한 광고가 노출됩니다</p>
                   </div>
                 </div>
-                <PolicyForm question="카테고리별 배너 노출 규칙은? (위치/개수/기간)" screen="업체" area="카테고리 광고 배너" />
+                <p className="text-[10px] text-amber-600 mt-1">→ 소비자 화면 &gt; 홈에 질문으로 표기</p>
               </div>
               <p className="text-sm font-bold mb-3">&lsquo;{categoryCat}&rsquo; 스튜디오 {catFiltered.length}곳</p>
               {catFiltered.map(s => (
@@ -341,11 +341,6 @@ export default function BusinessApp() {
               <button onClick={() => { setScreen("mypage"); setTab("my"); }} className="text-sm text-gray-400 mb-3">← 돌아가기</button>
               <h2 className="text-base font-bold mb-4">실적 대시보드</h2>
 
-              <div className="policy-area p-3 mb-4">
-                <PolicyBadge label="실적 대시보드 세부 규칙 미확정" />
-                <PolicyForm question="조회 기간 범위는? (최근 3개월 / 1년 / 커스텀)" screen="업체" area="대시보드 조회 기간" />
-                <PolicyForm question="그래프 종류는? (라인 / 바 / 혼합)" screen="업체" area="대시보드 그래프 종류" />
-              </div>
 
               {/* Summary */}
               <div className="grid grid-cols-3 gap-2 mb-5">
@@ -757,8 +752,7 @@ export default function BusinessApp() {
                 <div className="policy-area p-3 mb-4">
                   <PolicyBadge label="취소/환불 정책 미확정" />
                   <p className="text-sm font-medium mt-2 mb-2 text-red-700">고객이 취소를 요청했습니다</p>
-                  <PolicyForm question="취소 수락 시 환불 금액 기준은? (기간별 환불율)" screen="업체" area="취소 환불 금액" />
-                  <PolicyForm question="업체 귀책 취소 시 페널티는? (수수료 부과 여부)" screen="업체" area="업체 취소 페널티" />
+                  <p className="text-[10px] text-amber-600 mt-1">→ 소비자 화면 &gt; 내 예약에 질문으로 표기</p>
                   <div className="flex gap-2 mt-2">
                     <button onClick={() => handleBookingAction(selectedBooking.id, "reject")}
                       className="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-xl text-sm font-medium">거절</button>
@@ -832,10 +826,10 @@ export default function BusinessApp() {
               {/* 업체 마이페이지 미확정 사항 — IA/명세서 기반 */}
               <div className="policy-area p-3 mb-4">
                 <PolicyBadge label="업체 마이페이지 정책 미확정" />
-                <PolicyForm question="업체 가입 승인 심사 기준은? (사업자 확인 + 포트폴리오 품질 기준)" screen="업체" area="입점 심사 기준" />
                 <PolicyForm question="업체 계정 정지/해제 기준은? (위반 사항, 재활성화 절차)" screen="업체" area="계정 정지 기준" />
-                <PolicyForm question="예약 취소/환불 시 업체 측 처리 흐름은? (취소 수락/거절 권한, 환불 프로세스)" screen="업체" area="업체 취소/환불 처리" />
-                <PolicyForm question="정산 주기 및 기준일은? (월 단위, 기준일, 최소 정산 금액)" screen="업체" area="정산 주기" />
+                <p className="text-[10px] text-amber-600 mt-1">• 입점 심사 → 어드민 웹 &gt; 업체 관리에 질문으로 표기</p>
+                <p className="text-[10px] text-amber-600">• 취소/환불 → 소비자 화면 &gt; 내 예약에 질문으로 표기</p>
+                <p className="text-[10px] text-amber-600">• 정산 주기 → 업체 화면 &gt; 정산 내역에 질문으로 표기</p>
               </div>
 
               <div className="space-y-0">
