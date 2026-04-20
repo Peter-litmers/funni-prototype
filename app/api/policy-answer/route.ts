@@ -54,6 +54,21 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export async function DELETE(req: NextRequest) {
+  if (!isKvConfigured()) return NextResponse.json({ error: "KV not configured" }, { status: 503 });
+  try {
+    const id = req.nextUrl.searchParams.get("id");
+    if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+    const item = await kv.get<PolicyAnswer>(itemKey(id));
+    if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    await kv.del(itemKey(id));
+    await kv.lrem(KEY_INDEX, 0, id);
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    return NextResponse.json({ error: String(e) }, { status: 400 });
+  }
+}
+
 export async function PATCH(req: NextRequest) {
   if (!isKvConfigured()) return NextResponse.json({ error: "KV not configured" }, { status: 503 });
   try {
