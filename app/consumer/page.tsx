@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import PolicyForm from "../components/PolicyForm";
 import {
@@ -10,6 +10,38 @@ import {
 
 function PolicyBadge({ label }: { label: string }) {
   return <span className="policy-badge">⚠️ {label}</span>;
+}
+
+const BANNERS = [
+  { title: "봄맞이 스튜디오 할인 이벤트", desc: "3월~5월 프로필 촬영 20% 할인", gradient: "from-violet-100 to-purple-50", border: "border-violet-200/50" },
+  { title: "웨딩 시즌 특별 패키지", desc: "웨딩스냅 + 본식촬영 세트 할인", gradient: "from-pink-100 to-rose-50", border: "border-pink-200/50" },
+  { title: "바디프로필 인기 스튜디오 TOP5", desc: "성수·강남 지역 추천 스튜디오", gradient: "from-blue-100 to-cyan-50", border: "border-blue-200/50" },
+];
+
+function BannerSlider() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setIdx(prev => (prev + 1) % BANNERS.length), 3000);
+    return () => clearInterval(timer);
+  }, []);
+  return (
+    <div className="px-4 mt-3 mb-2">
+      <div className="overflow-hidden rounded-xl">
+        <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${idx * 100}%)` }}>
+          {BANNERS.map((b, i) => (
+            <div key={i} className={`min-w-full bg-gradient-to-r ${b.gradient} rounded-xl p-4 relative border ${b.border}`}>
+              <span className="absolute top-2 right-2 text-[9px] bg-gray-500/60 text-white px-1.5 py-0.5 rounded">AD</span>
+              <p className="text-sm font-bold text-gray-900 mb-0.5">{b.title}</p>
+              <p className="text-[10px] text-gray-600">{b.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="flex justify-center gap-1 mt-2">
+        {BANNERS.map((_, i) => <button key={i} onClick={() => setIdx(i)} className={`w-1.5 h-1.5 rounded-full transition-all ${i === idx ? "bg-primary w-4" : "bg-gray-300"}`} />)}
+      </div>
+    </div>
+  );
 }
 
 const CATEGORIES = [
@@ -310,16 +342,7 @@ export default function ConsumerApp() {
               </div>
 
               {/* 메인 배너 (REQ-113 / IA-A05: 메인 화면 배너 이미지 영역) */}
-              <div className="px-4 mt-3 mb-2">
-                <div className="bg-gradient-to-r from-violet-100 to-purple-50 rounded-xl p-4 relative overflow-hidden border border-violet-200/50">
-                  <span className="absolute top-2 right-2 text-[9px] bg-gray-500/60 text-white px-1.5 py-0.5 rounded">AD</span>
-                  <p className="text-sm font-bold text-gray-900 mb-0.5">봄맞이 스튜디오 할인 이벤트</p>
-                  <p className="text-[10px] text-gray-600">3월~5월 프로필 촬영 20% 할인</p>
-                  <div className="flex gap-1 mt-2">
-                    {[0,1,2].map(i => <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === 0 ? "bg-primary" : "bg-gray-300"}`} />)}
-                  </div>
-                </div>
-              </div>
+              <BannerSlider />
 
               {/* Filters + Sort (REQ-106) */}
               <div className="px-4 mt-3 mb-2">
