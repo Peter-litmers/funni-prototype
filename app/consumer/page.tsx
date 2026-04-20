@@ -139,6 +139,9 @@ export default function ConsumerApp() {
   const [detailEntryCat, setDetailEntryCat] = useState<string>(""); // 탐색 진입 카테고리
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
+  const [editingReviewIdx, setEditingReviewIdx] = useState<number | null>(null);
+  const [editReviewRating, setEditReviewRating] = useState(5);
+  const [editReviewText, setEditReviewText] = useState("");
 
   const touchStartX = useRef(0);
   const historyStack = useRef<{ s: Screen; t: Tab }[]>([]);
@@ -707,7 +710,6 @@ export default function ConsumerApp() {
                 <PolicyBadge label="취소/환불 정책 미확정" />
                 <PolicyForm question="예약 취소 시 환불 기준은? (7일 전/3일 전/당일/노쇼 각각 환불율)" screen="소비자" area="취소/환불 정책" />
                 <PolicyForm question="취소 수수료 부과 기준은? (업체/소비자 귀책 구분)" screen="소비자" area="취소 수수료" />
-                <PolicyForm question="환불 처리 소요 기간은? (PG사 환불 프로세스)" screen="소비자" area="환불 처리 기간" />
               </div>
             </div>
           )}
@@ -732,16 +734,41 @@ export default function ConsumerApp() {
           )}
 
           {/* ===== MY REVIEWS (IA-053) ===== */}
-          {screen === "myReviews" && (
+          {screen === "myReviews" && editingReviewIdx === null && (
             <div className="p-4">
               <h2 className="text-base font-bold mb-4">내 리뷰 관리</h2>
               {MY_REVIEWS_DATA.map((r, i) => (
                 <div key={i} className="bg-gray-50 rounded-xl p-4 mb-3">
                   <div className="flex justify-between items-start mb-2"><div><p className="text-sm font-bold">{r.studio}</p><p className="text-xs text-gray-400 mt-0.5">{r.date}</p></div><span className="text-xs text-yellow-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span></div>
                   <p className="text-xs text-gray-600">{r.text}</p>
-                  <div className="flex justify-end gap-2 mt-3 pt-2 border-t border-gray-100"><button className="text-[10px] text-gray-400 px-2 py-1">수정</button><button className="text-[10px] text-red-400 px-2 py-1">삭제</button></div>
+                  <div className="flex justify-end gap-2 mt-3 pt-2 border-t border-gray-100">
+                    <button onClick={() => { setEditingReviewIdx(i); setEditReviewRating(r.rating); setEditReviewText(r.text); }} className="text-[10px] text-primary px-2 py-1 font-medium">수정</button>
+                    <button className="text-[10px] text-red-400 px-2 py-1">삭제</button>
+                  </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* ===== MY REVIEW EDIT ===== */}
+          {screen === "myReviews" && editingReviewIdx !== null && (
+            <div className="p-4">
+              <h2 className="text-base font-bold mb-4">리뷰 수정</h2>
+              <div className="bg-gray-50 rounded-xl p-4 mb-6"><p className="text-sm font-bold">{MY_REVIEWS_DATA[editingReviewIdx].studio}</p><p className="text-xs text-gray-400 mt-0.5">{MY_REVIEWS_DATA[editingReviewIdx].date}</p></div>
+              <div className="mb-6">
+                <p className="text-sm font-medium mb-3">별점</p>
+                <div className="flex gap-2 justify-center">{[1,2,3,4,5].map(star => <button key={star} onClick={() => setEditReviewRating(star)} className="text-3xl">{star <= editReviewRating ? "★" : "☆"}</button>)}</div>
+                <p className="text-center text-xs text-gray-400 mt-2">{editReviewRating}점</p>
+              </div>
+              <div className="mb-6">
+                <p className="text-sm font-medium mb-2">리뷰 내용</p>
+                <textarea value={editReviewText} onChange={e => setEditReviewText(e.target.value)} className="w-full bg-gray-50 rounded-xl p-4 text-sm outline-none resize-none border border-gray-200 focus:border-primary" rows={5} />
+                <p className="text-right text-[10px] text-gray-400 mt-1">{editReviewText.length}/500</p>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => setEditingReviewIdx(null)} className="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-medium text-sm">취소</button>
+                <button onClick={() => setEditingReviewIdx(null)} className="flex-1 bg-primary text-white py-3 rounded-xl font-bold text-sm">수정 완료</button>
+              </div>
             </div>
           )}
 

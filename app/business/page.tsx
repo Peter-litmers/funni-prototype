@@ -81,27 +81,23 @@ export default function BusinessApp() {
   const [selectedStudio, setSelectedStudio] = useState(STUDIOS[0]);
   const [categoryCat, setCategoryCat] = useState("프로필");
   const [prevScreen, setPrevScreen] = useState<Screen>("home");
+  const historyStack = useRef<{ s: Screen; t: Tab }[]>([]);
 
+  const navigate = (to: Screen) => {
+    historyStack.current.push({ s: screen, t: tab });
+    setPrevScreen(screen);
+    setScreen(to);
+  };
   const goBack = () => {
     if (screen === "home") return;
-    const map: Record<string, { s: Screen; t: typeof tab }> = {
-      category: { s: "home", t: "home" },
-      mypage: { s: "home", t: "home" },
-      detail: { s: prevScreen === "category" ? "category" : "home", t: prevScreen === "category" ? "category" : "home" },
-      register: { s: "mypage", t: "my" },
-      bookings: { s: "mypage", t: "my" },
-      bookingDetail: { s: "bookings", t: "my" },
-      settlement: { s: "mypage", t: "my" },
-      notifications: { s: "mypage", t: "my" },
-      dashboard: { s: "mypage", t: "my" },
-      bizInfo: { s: "mypage", t: "my" },
-      reviews: { s: "mypage", t: "my" },
-      bizSignup: { s: "mypage", t: "my" },
-      approvalWaiting: { s: "mypage", t: "my" },
-      login: { s: "home", t: "home" },
-    };
-    const target = map[screen] || { s: "home" as Screen, t: "home" as typeof tab };
-    setScreen(target.s); setTab(target.t);
+    const prev = historyStack.current.pop();
+    if (prev) {
+      setScreen(prev.s);
+      setTab(prev.t);
+    } else {
+      setScreen("home");
+      setTab("home");
+    }
   };
   const [adIdx, setAdIdx] = useState(0);
   const [showManualModal, setShowManualModal] = useState(false);
@@ -156,7 +152,7 @@ export default function BusinessApp() {
                   <span className="text-primary text-sm font-medium ml-1">비즈니스</span>
                 </button>
               </div>
-              <button onClick={() => { setScreen("notifications"); setHasNotif(false); }} className="relative text-gray-500 p-1">
+              <button onClick={() => { navigate("notifications"); setHasNotif(false); }} className="relative text-gray-500 p-1">
                 <Bell size={20} strokeWidth={1.5} />
                 {hasNotif && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
               </button>
@@ -172,7 +168,7 @@ export default function BusinessApp() {
               {/* 업체 모드 토스트 */}
               <div className="bg-primary/5 border-b border-primary/10 px-4 py-2 flex items-center justify-between">
                 <span className="text-[10px] text-primary font-medium">🏢 업체 계정 · 탐색만 가능 (예약·결제 불가)</span>
-                <button onClick={() => { setScreen("dashboard"); setTab("my"); }} className="text-[10px] text-primary underline">내 대시보드 →</button>
+                <button onClick={() => { navigate("dashboard"); setTab("my"); }} className="text-[10px] text-primary underline">내 대시보드 →</button>
               </div>
 
               {/* 프리미엄 광고 (REQ-112) */}
@@ -181,7 +177,7 @@ export default function BusinessApp() {
                 <div className="mt-1 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
                   <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${adIdx * 100}%)` }}>
                     {STUDIOS.slice(0, 3).map((s, i) => (
-                      <div key={i} onClick={() => { setSelectedStudio(s); setScreen("detail"); }} className="min-w-full cursor-pointer">
+                      <div key={i} onClick={() => { setSelectedStudio(s); navigate("detail"); }} className="min-w-full cursor-pointer">
                         <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-4 flex gap-3 items-center relative">
                           <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
                           <div className="w-16 h-16 bg-white/60 rounded-lg flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={24} strokeWidth={1.5} /></div>
@@ -223,7 +219,7 @@ export default function BusinessApp() {
               </div>
               <div className="px-4">
                 {STUDIOS.map(s => (
-                  <div key={s.id} onClick={() => { setSelectedStudio(s); setScreen("detail"); }}
+                  <div key={s.id} onClick={() => { setSelectedStudio(s); navigate("detail"); }}
                     className="w-full flex gap-3 py-4 border-b border-gray-50 cursor-pointer">
                     <div className="relative w-[88px] h-[88px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center shrink-0 text-gray-400">
                       <ImageIcon size={28} strokeWidth={1.5} />
@@ -276,7 +272,7 @@ export default function BusinessApp() {
               </div>
               <p className="text-sm font-bold mb-3">&lsquo;{categoryCat}&rsquo; 스튜디오 {catFiltered.length}곳</p>
               {catFiltered.map(s => (
-                <div key={s.id} onClick={() => { setSelectedStudio(s); setScreen("detail"); }}
+                <div key={s.id} onClick={() => { setSelectedStudio(s); navigate("detail"); }}
                   className="flex gap-3 py-3 border-b border-gray-50 cursor-pointer">
                   <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={22} strokeWidth={1.5} /></div>
                   <div>
@@ -359,7 +355,7 @@ export default function BusinessApp() {
           {/* ===== DASHBOARD (IA-063 실적 대시보드) ===== */}
           {screen === "dashboard" && (
             <div className="p-4">
-              <button onClick={() => { setScreen("mypage"); setTab("my"); }} className="text-sm text-gray-400 mb-3">← 돌아가기</button>
+              <button onClick={goBack} className="text-sm text-gray-400 mb-3">← 돌아가기</button>
               <h2 className="text-base font-bold mb-4">실적 대시보드</h2>
 
 
@@ -373,7 +369,7 @@ export default function BusinessApp() {
                   <p className="text-[10px] text-gray-500 mb-1">이번 달</p>
                   <p className="text-sm font-bold text-green-600 truncate">₩{(totalRevenue / 10000).toFixed(0)}<span className="text-[10px] font-normal">만원</span></p>
                 </div>
-                <button onClick={() => { setScreen("bookings"); setBookingFilter("취소요청"); }}
+                <button onClick={() => { navigate("bookings"); setBookingFilter("취소요청"); }}
                   className="bg-red-50 rounded-2xl p-3 border border-red-100 text-center">
                   <p className="text-[10px] text-gray-500 mb-1">취소 요청</p>
                   <p className="text-xl font-bold text-red-500">{bookings.filter(b => b.status === "취소요청").length}<span className="text-[10px] font-normal ml-0.5">건</span></p>
@@ -401,7 +397,7 @@ export default function BusinessApp() {
               {todayBookings.length === 0 ? (
                 <div className="text-center py-8 bg-gray-50 rounded-xl mb-4"><p className="text-sm text-gray-400">오늘 예약이 없습니다</p></div>
               ) : todayBookings.map(b => (
-                <button key={b.id} onClick={() => { setSelectedBooking(b); setScreen("bookingDetail"); }}
+                <button key={b.id} onClick={() => { setSelectedBooking(b); navigate("bookingDetail"); }}
                   className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl mb-2 text-left">
                   <div className="w-11 h-11 bg-primary/10 rounded-full flex items-center justify-center text-primary"><Camera size={18} strokeWidth={1.5} /></div>
                   <div className="flex-1">
@@ -420,7 +416,7 @@ export default function BusinessApp() {
           {/* ===== BIZ INFO (IA-065 업체 기본정보 수정) ===== */}
           {screen === "bizInfo" && (
             <div className="p-4">
-              <button onClick={() => { setScreen("mypage"); setTab("my"); }} className="text-sm text-gray-400 mb-3">← 돌아가기</button>
+              <button onClick={goBack} className="text-sm text-gray-400 mb-3">← 돌아가기</button>
               <h2 className="text-base font-bold mb-4">업체 기본정보 수정</h2>
               <div className="space-y-3">
                 <div><p className="text-xs text-gray-500 mb-1">업체명</p><input type="text" defaultValue="루미에르 스튜디오" className="w-full bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-200" /></div>
@@ -441,7 +437,7 @@ export default function BusinessApp() {
                 <button key={n.id} onClick={() => {
                   if (!n.action) return;
                   if (n.action.filter) setBookingFilter(n.action.filter);
-                  setScreen(n.action.screen);
+                  navigate(n.action.screen);
                   setTab("my");
                 }}
                   className="flex gap-3 py-3 border-b border-gray-50 w-full text-left hover:bg-gray-50 cursor-pointer">
@@ -706,12 +702,17 @@ export default function BusinessApp() {
                   <p className="text-sm text-gray-400">해당 날짜에 예약이 없습니다</p>
                 </div>
               ) : (
-                <div className="policy-area p-2">
-                  {bookingFilter === "취소요청" && <PolicyBadge label="취소/환불 정책 미확정" />}
-                  <div className="mt-1 space-y-2">
+                <div>
+                  {bookingFilter === "취소요청" && (
+                    <div className="policy-area p-2 mb-2">
+                      <PolicyBadge label="취소/환불 정책 미확정" />
+                      <p className="text-[10px] text-amber-600 mt-1">→ 소비자 화면 &gt; 내 예약에 질문으로 표기</p>
+                    </div>
+                  )}
+                  <div className="space-y-2">
                     {filteredBookings.map(b => (
-                      <button key={b.id} onClick={() => { setSelectedBooking(b); setScreen("bookingDetail"); }}
-                        className="w-full bg-white rounded-xl p-3 border border-gray-100 flex justify-between items-center text-left">
+                      <button key={b.id} onClick={() => { setSelectedBooking(b); navigate("bookingDetail"); }}
+                        className="w-full bg-gray-50 rounded-xl p-3 border border-gray-100 flex justify-between items-center text-left">
                         <div>
                           <p className="text-sm font-medium">{b.name}</p>
                           <p className="text-xs text-gray-400">{b.cat} · {b.time}</p>
@@ -737,7 +738,7 @@ export default function BusinessApp() {
           {/* ===== BOOKING DETAIL ===== */}
           {screen === "bookingDetail" && (
             <div className="p-4">
-              <button onClick={() => setScreen("bookings")} className="text-sm text-gray-400 mb-3">← 예약 관리</button>
+              <button onClick={goBack} className="text-sm text-gray-400 mb-3">← 예약 관리</button>
               <h2 className="text-base font-bold mb-4">예약 상세</h2>
 
               <div className="bg-gray-50 rounded-xl p-4 mb-4">
@@ -809,13 +810,13 @@ export default function BusinessApp() {
 
               {/* Quick Menu — 업체 마이페이지 전용 메뉴 (IA Group 07) */}
               <div className="grid grid-cols-2 gap-2 mb-2">
-                <button onClick={() => { setScreen("register"); }}
+                <button onClick={() => { navigate("register"); }}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <Home size={20} strokeWidth={1.5} className="text-gray-700" />
                   <p className="text-sm font-medium mt-1">내 스튜디오 관리</p>
                   <p className="text-[10px] text-gray-400">IA-060 · 등록/수정/삭제</p>
                 </button>
-                <button onClick={() => { setScreen("bookings"); }}
+                <button onClick={() => { navigate("bookings"); }}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <Calendar size={20} strokeWidth={1.5} className="text-gray-700" />
                   <p className="text-sm font-medium mt-1">내 예약 달력</p>
@@ -823,13 +824,13 @@ export default function BusinessApp() {
                 </button>
               </div>
               <div className="grid grid-cols-2 gap-2 mb-2">
-                <button onClick={() => setScreen("bizInfo")}
+                <button onClick={() => navigate("bizInfo")}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <Building2 size={20} strokeWidth={1.5} className="text-gray-700" />
                   <p className="text-sm font-medium mt-1">업체 기본정보</p>
                   <p className="text-[10px] text-gray-400">IA-065 · 기본정보 수정</p>
                 </button>
-                <button onClick={() => setScreen("settlement")}
+                <button onClick={() => navigate("settlement")}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <DollarSign size={20} strokeWidth={1.5} className="text-gray-700" />
                   <p className="text-sm font-medium mt-1">정산 내역</p>
@@ -837,7 +838,7 @@ export default function BusinessApp() {
                 </button>
               </div>
               <div className="grid grid-cols-1 gap-2 mb-4">
-                <button onClick={() => setScreen("dashboard")}
+                <button onClick={() => navigate("dashboard")}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <BarChart3 size={20} strokeWidth={1.5} className="text-gray-700" />
                   <p className="text-sm font-medium mt-1">실적 대시보드</p>
@@ -856,7 +857,7 @@ export default function BusinessApp() {
 
               <div className="space-y-0">
                 {[
-                  { label: "리뷰 관리", action: () => setScreen("reviews") },
+                  { label: "리뷰 관리", action: () => navigate("reviews") },
                   { label: "고객센터", action: () => {} },
                   { label: "로그아웃", action: () => setScreen("login") },
                 ].map(m => (
@@ -927,7 +928,7 @@ export default function BusinessApp() {
           {/* ===== REVIEWS (REQ-111 업체 리뷰 답변) ===== */}
           {screen === "reviews" && (
             <div className="p-4">
-              <button onClick={() => { setScreen("mypage"); setTab("my"); }} className="text-sm text-gray-400 mb-3">← 돌아가기</button>
+              <button onClick={goBack} className="text-sm text-gray-400 mb-3">← 돌아가기</button>
               <h2 className="text-base font-bold mb-4">리뷰 관리</h2>
 
               {[
@@ -979,7 +980,7 @@ export default function BusinessApp() {
               <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm mb-4">로그인</button>
 
               <div className="flex items-center gap-4 text-xs text-gray-400 mb-6">
-                <button onClick={() => setScreen("bizSignup")}>업체 회원가입</button>
+                <button onClick={() => navigate("bizSignup")}>업체 회원가입</button>
                 <span>|</span>
                 <button>비밀번호 찾기</button>
               </div>
@@ -991,7 +992,7 @@ export default function BusinessApp() {
           {/* ===== BIZ SIGNUP (IA-002) ===== */}
           {screen === "bizSignup" && (
             <div className="p-4">
-              <button onClick={() => setScreen("mypage")} className="text-sm text-gray-400 mb-4">← 돌아가기</button>
+              <button onClick={goBack} className="text-sm text-gray-400 mb-4">← 돌아가기</button>
               <h2 className="text-base font-bold mb-1">업체 회원가입</h2>
               <p className="text-xs text-gray-400 mb-6">사업자 계정 · 승인 후 이용 가능</p>
 
@@ -1011,7 +1012,7 @@ export default function BusinessApp() {
                 <p className="text-[10px] text-gray-400 mt-1">사진만 가능 · 동영상 불가</p>
               </div>
 
-              <button onClick={() => setScreen("approvalWaiting")} className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm mb-3">가입 신청</button>
+              <button onClick={() => navigate("approvalWaiting")} className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm mb-3">가입 신청</button>
             </div>
           )}
 
