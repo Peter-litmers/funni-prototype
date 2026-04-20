@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import PolicyForm from "../components/PolicyForm";
 import {
@@ -10,6 +10,38 @@ import {
 
 function PolicyBadge({ label }: { label: string }) {
   return <span className="policy-badge">⚠️ {label}</span>;
+}
+
+const BANNERS = [
+  { title: "봄맞이 스튜디오 할인 이벤트", desc: "3월~5월 프로필 촬영 20% 할인", gradient: "from-violet-100 to-purple-50", border: "border-violet-200/50" },
+  { title: "웨딩 시즌 특별 패키지", desc: "웨딩스냅 + 본식촬영 세트 할인", gradient: "from-pink-100 to-rose-50", border: "border-pink-200/50" },
+  { title: "바디프로필 인기 스튜디오 TOP5", desc: "성수·강남 지역 추천 스튜디오", gradient: "from-blue-100 to-cyan-50", border: "border-blue-200/50" },
+];
+
+function BannerSlider() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setIdx(prev => (prev + 1) % BANNERS.length), 3000);
+    return () => clearInterval(timer);
+  }, []);
+  return (
+    <div className="px-4 mt-3 mb-2">
+      <div className="overflow-hidden rounded-xl">
+        <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${idx * 100}%)` }}>
+          {BANNERS.map((b, i) => (
+            <div key={i} className={`min-w-full bg-gradient-to-r ${b.gradient} rounded-xl p-4 relative border ${b.border}`}>
+              <span className="absolute top-2 right-2 text-[9px] bg-gray-500/60 text-white px-1.5 py-0.5 rounded">AD</span>
+              <p className="text-sm font-bold text-gray-900 mb-0.5">{b.title}</p>
+              <p className="text-[10px] text-gray-600">{b.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="flex justify-center gap-1 mt-2">
+        {BANNERS.map((_, i) => <button key={i} onClick={() => setIdx(i)} className={`w-1.5 h-1.5 rounded-full transition-all ${i === idx ? "bg-primary w-4" : "bg-gray-300"}`} />)}
+      </div>
+    </div>
+  );
 }
 
 type Screen = "home" | "category" | "detail" | "register" | "bookings" | "bookingDetail" | "settlement" | "notifications" | "studioView" | "mypage" | "bizSignup" | "approvalWaiting" | "dashboard" | "bizInfo" | "reviews" | "login";
@@ -39,17 +71,20 @@ const STUDIOS = [
 
 const KEYWORDS = ["강남 프로필", "성수 바디프로필", "웨딩 스냅", "증명사진", "제품 촬영"];
 
-const ALL_BOOKINGS = [
-  { id: 1, date: 10, name: "김철수", cat: "프로필", time: "10:00~12:00", price: 100000, status: "확정" },
-  { id: 2, date: 10, name: "이영희", cat: "바디프로필", time: "14:00~16:00", price: 160000, status: "확정" },
-  { id: 3, date: 10, name: "박지민", cat: "프로필", time: "17:00~19:00", price: 100000, status: "확정" },
-  { id: 4, date: 11, name: "최수현", cat: "프로필", time: "10:00~12:00", price: 100000, status: "취소요청" },
-  { id: 5, date: 11, name: "정다은", cat: "바디프로필", time: "13:00~15:00", price: 160000, status: "확정" },
-  { id: 6, date: 12, name: "한소희", cat: "프로필", time: "15:00~17:00", price: 100000, status: "완료" },
-  { id: 7, date: 13, name: "오진우", cat: "바디프로필", time: "10:00~13:00", price: 240000, status: "확정" },
-  { id: 8, date: 15, name: "윤서연", cat: "프로필", time: "11:00~13:00", price: 100000, status: "확정" },
-  { id: 9, date: 20, name: "강민지", cat: "바디프로필", time: "14:00~16:00", price: 160000, status: "취소요청" },
-  { id: 10, date: 25, name: "임재현", cat: "프로필", time: "16:00~18:00", price: 100000, status: "확정" },
+const ALL_BOOKINGS: { id: number; month: number; date: number; name: string; cat: string; time: string; price: number; status: string; isManual?: boolean }[] = [
+  { id: 1, month: 5, date: 10, name: "김철수", cat: "프로필", time: "10:00~12:00", price: 100000, status: "확정" },
+  { id: 2, month: 5, date: 10, name: "이영희", cat: "바디프로필", time: "14:00~16:00", price: 160000, status: "확정" },
+  { id: 3, month: 5, date: 10, name: "박지민", cat: "프로필", time: "17:00~19:00", price: 100000, status: "확정" },
+  { id: 4, month: 5, date: 11, name: "최수현", cat: "프로필", time: "10:00~12:00", price: 100000, status: "취소요청" },
+  { id: 5, month: 5, date: 11, name: "정다은", cat: "바디프로필", time: "13:00~15:00", price: 160000, status: "확정" },
+  { id: 6, month: 5, date: 12, name: "한소희", cat: "프로필", time: "15:00~17:00", price: 100000, status: "완료" },
+  { id: 7, month: 5, date: 13, name: "오진우", cat: "바디프로필", time: "10:00~13:00", price: 240000, status: "확정" },
+  { id: 8, month: 5, date: 15, name: "윤서연", cat: "프로필", time: "11:00~13:00", price: 100000, status: "확정" },
+  { id: 9, month: 5, date: 20, name: "강민지", cat: "바디프로필", time: "14:00~16:00", price: 160000, status: "취소요청" },
+  { id: 10, month: 5, date: 25, name: "임재현", cat: "프로필", time: "16:00~18:00", price: 100000, status: "확정" },
+  { id: 11, month: 4, date: 5, name: "송예진", cat: "프로필", time: "10:00~12:00", price: 100000, status: "완료" },
+  { id: 12, month: 4, date: 12, name: "류현우", cat: "바디프로필", time: "14:00~16:00", price: 160000, status: "완료" },
+  { id: 13, month: 4, date: 18, name: "장미래", cat: "웨딩", time: "10:00~14:00", price: 400000, status: "완료" },
 ];
 
 const NOTIFICATIONS: { id: number; type: string; text: string; time: string; action?: { screen: Screen; filter?: BookingFilter } }[] = [
@@ -72,6 +107,8 @@ export default function BusinessApp() {
   const [tab, setTab] = useState<Tab>("home");
   const [selectedCats, setSelectedCats] = useState<string[]>(["프로필", "바디프로필"]);
   const [calDate, setCalDate] = useState(10);
+  const [calMonth, setCalMonth] = useState(5); // 1~12
+  const [calYear, setCalYear] = useState(2026);
   const [bookingFilter, setBookingFilter] = useState<BookingFilter>("전체");
   const [selectedBooking, setSelectedBooking] = useState(ALL_BOOKINGS[0]);
   const [bookings, setBookings] = useState(ALL_BOOKINGS);
@@ -119,10 +156,11 @@ export default function BusinessApp() {
     setSelectedCats(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
   };
 
-  const todayBookings = bookings.filter(b => b.date === 10 && b.status !== "완료");
-  const dateBookings = bookings.filter(b => b.date === calDate);
+  const todayBookings = bookings.filter(b => b.month === 5 && b.date === 10 && b.status !== "완료");
+  const monthBookings = bookings.filter(b => b.month === calMonth);
+  const dateBookings = monthBookings.filter(b => b.date === calDate);
   const filteredBookings = bookingFilter === "전체" ? dateBookings : dateBookings.filter(b => b.status === bookingFilter);
-  const datesWithBookings = [...new Set(bookings.map(b => b.date))];
+  const datesWithBookings = [...new Set(monthBookings.map(b => b.date))];
 
   const totalRevenue = bookings.filter(b => b.status === "완료" || b.status === "확정").reduce((s, b) => s + b.price, 0);
   const pendingAmount = bookings.filter(b => b.status === "확정").reduce((s, b) => s + b.price, 0);
@@ -201,17 +239,8 @@ export default function BusinessApp() {
                 </div>
               </div>
 
-              {/* 메인 배너 (REQ-113 / IA-A05: 메인 화면 배너 이미지 영역) */}
-              <div className="px-4 mt-3 mb-2">
-                <div className="bg-gradient-to-r from-violet-100 to-purple-50 rounded-xl p-4 relative overflow-hidden border border-violet-200/50">
-                  <span className="absolute top-2 right-2 text-[9px] bg-gray-500/60 text-white px-1.5 py-0.5 rounded">AD</span>
-                  <p className="text-sm font-bold text-gray-900 mb-0.5">봄맞이 스튜디오 할인 이벤트</p>
-                  <p className="text-[10px] text-gray-600">3월~5월 프로필 촬영 20% 할인</p>
-                  <div className="flex gap-1 mt-2">
-                    {[0,1,2].map(i => <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === 0 ? "bg-primary" : "bg-gray-300"}`} />)}
-                  </div>
-                </div>
-              </div>
+              {/* 메인 배너 (REQ-113 / IA-A05) */}
+              <BannerSlider />
 
               {/* 추천 스튜디오 */}
               <div className="px-4 mt-3 mb-2">
@@ -672,13 +701,19 @@ export default function BusinessApp() {
               {/* Calendar */}
               <div className="bg-gray-50 rounded-xl p-3 mb-4 border border-gray-100">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium">2026년 5월</span>
+                  <button onClick={() => { if (calMonth === 1) { setCalMonth(12); setCalYear(y => y - 1); } else setCalMonth(m => m - 1); setCalDate(1); }}
+                    className="w-7 h-7 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 text-sm">‹</button>
+                  <span className="text-sm font-medium">{calYear}년 {calMonth}월</span>
+                  <button onClick={() => { if (calMonth === 12) { setCalMonth(1); setCalYear(y => y + 1); } else setCalMonth(m => m + 1); setCalDate(1); }}
+                    className="w-7 h-7 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 text-sm">›</button>
                 </div>
                 <div className="grid grid-cols-7 gap-1 text-center text-[10px]">
                   {["일", "월", "화", "수", "목", "금", "토"].map(d => <span key={d} className="text-gray-400 py-1">{d}</span>)}
-                  {Array.from({ length: 31 }).map((_, i) => {
+                  {/* 첫째 날 요일 오프셋 */}
+                  {Array.from({ length: new Date(calYear, calMonth - 1, 1).getDay() }).map((_, i) => <span key={`empty-${i}`} />)}
+                  {Array.from({ length: new Date(calYear, calMonth, 0).getDate() }).map((_, i) => {
                     const d = i + 1;
-                    const hasBooking = datesWithBookings.includes(d);
+                    const hasBooking = calMonth === 5 && calYear === 2026 && datesWithBookings.includes(d);
                     const isSelected = calDate === d;
                     return (
                       <button key={i} onClick={() => setCalDate(d)}
@@ -695,7 +730,7 @@ export default function BusinessApp() {
               </div>
 
               {/* Date Bookings */}
-              <p className="text-xs text-gray-500 mb-2 font-medium">5월 {calDate}일 예약 ({filteredBookings.length}건)</p>
+              <p className="text-xs text-gray-500 mb-2 font-medium">{calMonth}월 {calDate}일 예약 ({filteredBookings.length}건)</p>
 
               {filteredBookings.length === 0 ? (
                 <div className="text-center py-8 bg-gray-50 rounded-xl">
@@ -723,6 +758,7 @@ export default function BusinessApp() {
                             b.status === "취소요청" ? "bg-red-100 text-red-700" :
                             b.status === "완료" ? "bg-gray-200 text-gray-500" :
                             b.status === "취소완료" ? "bg-gray-200 text-gray-400" :
+                            b.status === "수기" ? "bg-amber-100 text-amber-700" :
                             "bg-green-100 text-green-700"
                           }`}>{b.status}</span>
                           <span className="text-xs text-gray-300">›</span>
@@ -1065,7 +1101,26 @@ export default function BusinessApp() {
                     className="w-full bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-200 resize-none" />
                 </div>
               </div>
-              <button onClick={() => { setShowManualModal(false); setManualDate(""); setManualTime(""); setManualMemo(""); }}
+              <button onClick={() => {
+                if (!manualDate || !manualTime) { alert("날짜와 시간을 입력하세요"); return; }
+                const d = new Date(manualDate);
+                const newBooking = {
+                  id: Date.now(),
+                  month: d.getMonth() + 1,
+                  date: d.getDate(),
+                  name: manualMemo.split(/[,\s]/)[0] || "수기 일정",
+                  cat: "수기",
+                  time: manualTime + "~",
+                  price: 0,
+                  status: "수기",
+                  isManual: true,
+                };
+                setBookings(prev => [...prev, newBooking]);
+                setCalMonth(d.getMonth() + 1);
+                setCalYear(d.getFullYear());
+                setCalDate(d.getDate());
+                setShowManualModal(false); setManualDate(""); setManualTime(""); setManualMemo("");
+              }}
                 className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm mt-4">일정 추가</button>
             </div>
           </div>
