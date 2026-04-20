@@ -63,19 +63,20 @@ const STUDIOS: {
   price: number; rating: number; reviews: number; phone: string;
   createdAt: string; location: string;
   portfolios: StudioCategoryPortfolio;
+  vatIncluded: boolean;
 }[] = [
   { id: 1, name: "루미에르 스튜디오", cats: ["프로필"], desc: "프로필촬영, 증명사진, 프로필영상, 이력서사진", area: "서울 강남구", price: 50000, rating: 4.8, reviews: 124, phone: "02-1234-5678", createdAt: "2026-04-10", location: "서울특별시 강남구 역삼동 123-4",
-    portfolios: { "프로필": [1,2,3,4,5,6] } },
+    portfolios: { "프로필": [1,2,3,4,5,6] }, vatIncluded: true },
   { id: 2, name: "선셋 포토랩", cats: ["바디프로필"], desc: "바디프로필, 커플촬영, 다이어트기록", area: "서울 성수동", price: 80000, rating: 4.9, reviews: 89, phone: "02-2345-6789", createdAt: "2026-03-28", location: "서울특별시 성동구 성수동 45-6",
-    portfolios: { "바디프로필": [1,2,3,4,5,6] } },
+    portfolios: { "바디프로필": [1,2,3,4,5,6] }, vatIncluded: false },
   { id: 3, name: "블룸 웨딩 스튜디오", cats: ["웨딩"], desc: "웨딩스냅, 본식촬영, 야외웨딩", area: "서울 잠실", price: 200000, rating: 4.7, reviews: 56, phone: "02-3456-7890", createdAt: "2026-04-05", location: "서울특별시 송파구 잠실동 78-9",
-    portfolios: { "웨딩": [1,2,3,4,5,6] } },
+    portfolios: { "웨딩": [1,2,3,4,5,6] }, vatIncluded: true },
   { id: 4, name: "미니미 키즈포토", cats: ["돌잔치"], desc: "돌잔치촬영, 백일사진, 가족사진", area: "경기 판교", price: 120000, rating: 4.6, reviews: 34, phone: "031-456-7890", createdAt: "2026-03-15", location: "경기도 성남시 분당구 판교동 12-3",
-    portfolios: { "돌잔치": [1,2,3,4,5,6] } },
+    portfolios: { "돌잔치": [1,2,3,4,5,6] }, vatIncluded: true },
   { id: 5, name: "프로덕트 랩", cats: ["제품"], desc: "제품촬영, 음식사진, 상세페이지, 스틸컷", area: "서울 홍대", price: 40000, rating: 4.5, reviews: 67, phone: "02-4567-8901", createdAt: "2026-04-12", location: "서울특별시 마포구 홍대입구 45-6",
-    portfolios: { "제품": [1,2,3,4,5,6] } },
+    portfolios: { "제품": [1,2,3,4,5,6] }, vatIncluded: false },
   { id: 6, name: "무브 필름랩", cats: ["영상"], desc: "유튜브촬영, 광고영상, 인터뷰", area: "서울 합정", price: 60000, rating: 4.7, reviews: 45, phone: "02-5678-9012", createdAt: "2026-04-08", location: "서울특별시 마포구 합정동 78-9",
-    portfolios: { "영상": [1,2,3,4,5,6] } },
+    portfolios: { "영상": [1,2,3,4,5,6] }, vatIncluded: true },
 ];
 
 const HAIR_MAKEUP_OPTIONS = [
@@ -405,7 +406,7 @@ export default function ConsumerApp() {
                       <p className="text-xs text-gray-400 mt-0.5">{s.area}</p>
                       <div className="flex items-center gap-1 mt-1.5">
                         <span className="text-sm font-bold text-gray-900">₩{s.price.toLocaleString()}</span>
-                        <span className="text-xs text-gray-400">/ 시간 · VAT 포함</span>
+                        <span className="text-xs text-gray-400">/ 시간 · {s.vatIncluded ? "VAT 포함" : "VAT 별도"}</span>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-yellow-500">★ {s.rating}</span>
@@ -496,12 +497,12 @@ export default function ConsumerApp() {
                   <span className="text-xs text-gray-400">리뷰 {selectedStudio.reviews}개</span>
                 </div>
 
-                {/* 가격표 (VAT 포함) */}
+                {/* 가격표 */}
                 <div className="bg-gray-50 rounded-xl p-4 mb-4">
                   <p className="text-xs text-gray-500 mb-2 font-medium">촬영 가격</p>
                   <div className="flex items-center gap-2">
                     <span className="text-lg font-bold">₩{selectedStudio.price.toLocaleString()}</span>
-                    <span className="text-xs text-gray-400">/ 시간 · VAT 포함</span>
+                    <span className="text-xs text-gray-400">/ 시간 · {selectedStudio.vatIncluded ? "VAT 포함" : "VAT 별도"}</span>
                   </div>
                 </div>
 
