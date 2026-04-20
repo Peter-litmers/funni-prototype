@@ -42,13 +42,10 @@ export default function FeedbackOverlay({ pageUrl }: Props) {
   const [pendingPoint, setPendingPoint] = useState<{ x: number; y: number; nearbyText: string } | null>(null);
   const [title, setTitle] = useState("");
   const [comment, setComment] = useState("");
-  const [author, setAuthor] = useState("");
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<Feedback | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editComment, setEditComment] = useState("");
-  const [draggingId, setDraggingId] = useState<string | null>(null);
-
   const load = async () => {
     try {
       setLoading(true);
@@ -115,7 +112,7 @@ export default function FeedbackOverlay({ pageUrl }: Props) {
           y: pendingPoint.y,
           title: title.trim(),
           comment: comment.trim(),
-          author: author.trim() || "익명",
+          author: "고객사",
           nearbyText: pendingPoint.nearbyText,
           deepLink,
         }),
@@ -123,7 +120,7 @@ export default function FeedbackOverlay({ pageUrl }: Props) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "저장 실패");
       setPendingPoint(null);
-      setTitle(""); setComment(""); setAuthor("");
+      setTitle(""); setComment("");
       await load();
     } catch (e) {
       alert(`저장 실패: ${e}`);
@@ -134,7 +131,7 @@ export default function FeedbackOverlay({ pageUrl }: Props) {
 
   const cancel = () => {
     setPendingPoint(null);
-    setTitle(""); setComment(""); setAuthor("");
+    setTitle(""); setComment("");
   };
 
   const deleteItem = async (id: string) => {
@@ -172,54 +169,6 @@ export default function FeedbackOverlay({ pageUrl }: Props) {
     }
   };
 
-  // 드래그로 핀 이동
-  const startDrag = (id: string, e: React.PointerEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    setDraggingId(id);
-    setFocusedId(null);
-  };
-
-  useEffect(() => {
-    if (!draggingId) return;
-    const onMove = (e: PointerEvent) => {
-      const docWidth = document.documentElement.scrollWidth;
-      const docHeight = document.documentElement.scrollHeight;
-      const xPct = ((e.pageX) / docWidth) * 100;
-      const yPct = ((e.pageY) / docHeight) * 100;
-      setItems(prev => prev.map(f => f.id === draggingId ? { ...f, x: xPct, y: yPct } : f));
-    };
-    const onUp = async () => {
-      const moved = items.find(f => f.id === draggingId);
-      setDraggingId(null);
-      if (moved) {
-        // 이동 확정 API 호출
-        try {
-          await fetch(`/api/feedback`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: moved.id, x: moved.x, y: moved.y }),
-          });
-        } catch {}
-      }
-    };
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
-    return () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-    };
-  }, [draggingId, items]);
-
-  // 문서 높이를 기준으로 핀을 절대 위치에 배치
-  const PinContainer = ({ children }: { children: React.ReactNode }) => {
-    return (
-      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 9997 }}>
-        {children}
-      </div>
-    );
-  };
-
   return (
     <>
       {/* Placing 모드 오버레이 (크로스헤어) */}
@@ -240,10 +189,9 @@ export default function FeedbackOverlay({ pageUrl }: Props) {
             style={{ left: `${f.x}%`, top: `${f.y}%`, transform: "translate(-50%, -100%)" }}
           >
             <button
-              onPointerDown={(e) => startDrag(f.id, e)}
-              onClick={(e) => { e.stopPropagation(); if (!draggingId) setFocusedId(focusedId === f.id ? null : f.id); }}
-              className={`transition-transform ${draggingId === f.id ? "scale-125 cursor-grabbing" : "hover:scale-110 cursor-grab"}`}
-              title="드래그로 이동 · 클릭으로 내용 보기"
+              onClick={(e) => { e.stopPropagation(); setFocusedId(focusedId === f.id ? null : f.id); }}
+              className="transition-transform hover:scale-110 cursor-pointer"
+              title="클릭으로 내용 보기"
             >
               <div className="relative">
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-lg border-2 border-white ${f.processed ? "bg-green-500" : "bg-primary"}`}>
@@ -268,7 +216,6 @@ export default function FeedbackOverlay({ pageUrl }: Props) {
                   <button onClick={() => startEdit(f)} className="flex-1 text-[10px] text-gray-600 bg-gray-100 py-1 rounded">수정</button>
                   <button onClick={() => deleteItem(f.id)} className="flex-1 text-[10px] text-red-500 bg-red-50 py-1 rounded">삭제</button>
                 </div>
-                <p className="text-[9px] text-gray-400 mt-1.5 text-center">💡 핀을 드래그하면 위치를 옮길 수 있어요</p>
               </div>
             )}
           </div>
@@ -293,8 +240,6 @@ export default function FeedbackOverlay({ pageUrl }: Props) {
                 className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm outline-none border border-gray-200" autoFocus />
               <textarea placeholder="어떤 부분인가요? 개선 제안, 버그, 질문 등" value={comment} onChange={e => setComment(e.target.value)} rows={4}
                 className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm outline-none border border-gray-200 resize-none" />
-              <input type="text" placeholder="작성자 (선택)" value={author} onChange={e => setAuthor(e.target.value)}
-                className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm outline-none border border-gray-200" />
             </div>
             <div className="flex gap-2 mt-4">
               <button onClick={cancel} className="flex-1 bg-gray-100 text-gray-600 py-2 rounded-lg text-sm">취소</button>

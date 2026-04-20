@@ -1050,7 +1050,7 @@ export default function BusinessApp() {
           ))}
         </div>}
       </div>
-      <FeedbackOverlay pageUrl="business" />
+      <FeedbackOverlay pageUrl={`business/${screen}`} />
     </div>
   );
 }
