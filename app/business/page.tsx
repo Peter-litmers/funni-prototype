@@ -205,6 +205,18 @@ export default function BusinessApp() {
                 </div>
               </div>
 
+              {/* 메인 배너 (REQ-113 / IA-A05: 메인 화면 배너 이미지 영역) */}
+              <div className="px-4 mt-3 mb-2">
+                <div className="bg-gradient-to-r from-violet-100 to-purple-50 rounded-xl p-4 relative overflow-hidden border border-violet-200/50">
+                  <span className="absolute top-2 right-2 text-[9px] bg-gray-500/60 text-white px-1.5 py-0.5 rounded">AD</span>
+                  <p className="text-sm font-bold text-gray-900 mb-0.5">봄맞이 스튜디오 할인 이벤트</p>
+                  <p className="text-[10px] text-gray-600">3월~5월 프로필 촬영 20% 할인</p>
+                  <div className="flex gap-1 mt-2">
+                    {[0,1,2].map(i => <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === 0 ? "bg-primary" : "bg-gray-300"}`} />)}
+                  </div>
+                </div>
+              </div>
+
               {/* 추천 스튜디오 */}
               <div className="px-4 mt-3 mb-2">
                 <p className="font-bold text-base mb-2">추천 스튜디오</p>
