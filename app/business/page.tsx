@@ -52,12 +52,12 @@ const ALL_BOOKINGS = [
   { id: 10, date: 25, name: "임재현", cat: "프로필", time: "16:00~18:00", price: 100000, status: "확정" },
 ];
 
-const NOTIFICATIONS = [
-  { id: 1, type: "booking", text: "김철수님이 5/10 프로필 촬영을 예약했습니다", time: "10분 전" },
-  { id: 2, type: "cancel", text: "최수현님이 5/11 예약 취소를 요청했습니다", time: "30분 전" },
-  { id: 3, type: "review", text: "한소희님이 리뷰를 작성했습니다 ★★★★★", time: "2시간 전" },
-  { id: 4, type: "settlement", text: "4월 2주차 정산이 완료되었습니다 (₩450,000)", time: "1일 전" },
-  { id: 5, type: "booking", text: "오진우님이 5/13 바디프로필 촬영을 예약했습니다", time: "2일 전" },
+const NOTIFICATIONS: { id: number; type: string; text: string; time: string; action?: { screen: Screen; filter?: BookingFilter } }[] = [
+  { id: 1, type: "booking", text: "김철수님이 5/10 프로필 촬영을 예약했습니다", time: "10분 전", action: { screen: "bookings", filter: "확정" } },
+  { id: 2, type: "cancel", text: "최수현님이 5/11 예약 취소를 요청했습니다", time: "30분 전", action: { screen: "bookings", filter: "취소요청" } },
+  { id: 3, type: "review", text: "한소희님이 리뷰를 작성했습니다 ★★★★★", time: "2시간 전", action: { screen: "reviews" } },
+  { id: 4, type: "settlement", text: "4월 2주차 정산이 완료되었습니다 (₩450,000)", time: "1일 전", action: { screen: "settlement" } },
+  { id: 5, type: "booking", text: "오진우님이 5/13 바디프로필 촬영을 예약했습니다", time: "2일 전", action: { screen: "bookings", filter: "확정" } },
 ];
 
 const SETTLEMENTS = [
@@ -417,7 +417,13 @@ export default function BusinessApp() {
             <div className="p-4">
               <h2 className="text-base font-bold mb-4">알림</h2>
               {NOTIFICATIONS.map(n => (
-                <div key={n.id} className="flex gap-3 py-3 border-b border-gray-50">
+                <button key={n.id} onClick={() => {
+                  if (!n.action) return;
+                  if (n.action.filter) setBookingFilter(n.action.filter);
+                  setScreen(n.action.screen);
+                  setTab("my");
+                }}
+                  className="flex gap-3 py-3 border-b border-gray-50 w-full text-left hover:bg-gray-50 cursor-pointer">
                   <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
                     n.type === "booking" ? "bg-primary/10 text-primary" : n.type === "cancel" ? "bg-red-50 text-red-500" : n.type === "review" ? "bg-yellow-50 text-yellow-600" : "bg-green-50 text-green-600"
                   }`}>
@@ -427,7 +433,8 @@ export default function BusinessApp() {
                     <p className="text-sm text-gray-700">{n.text}</p>
                     <p className="text-[10px] text-gray-400 mt-0.5">{n.time}</p>
                   </div>
-                </div>
+                  <span className="text-gray-300 text-xs mt-2 shrink-0">›</span>
+                </button>
               ))}
             </div>
           )}

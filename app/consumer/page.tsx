@@ -63,11 +63,11 @@ const PRICE_RANGES = [
 
 const BOOKED_TIMES = ["10:00", "11:00", "15:00"];
 
-const CONSUMER_NOTIFICATIONS = [
-  { id: 1, type: "booking", text: "루미에르 스튜디오 예약이 확정되었습니다", time: "10분 전", read: false },
-  { id: 2, type: "remind", text: "내일 선셋 포토랩 촬영이 있습니다", time: "1시간 전", read: false },
-  { id: 3, type: "review", text: "프로덕트 랩 촬영은 어떠셨나요? 리뷰를 남겨주세요", time: "3시간 전", read: true },
-  { id: 4, type: "booking", text: "블룸 웨딩 스튜디오 예약이 확정되었습니다", time: "1일 전", read: true },
+const CONSUMER_NOTIFICATIONS: { id: number; type: string; text: string; time: string; read: boolean; action?: { screen: Screen; tab?: Tab; reviewTarget?: string } }[] = [
+  { id: 1, type: "booking", text: "루미에르 스튜디오 예약이 확정되었습니다", time: "10분 전", read: false, action: { screen: "myBookings", tab: "mypage" } },
+  { id: 2, type: "remind", text: "내일 선셋 포토랩 촬영이 있습니다", time: "1시간 전", read: false, action: { screen: "myBookings", tab: "mypage" } },
+  { id: 3, type: "review", text: "프로덕트 랩 촬영은 어떠셨나요? 리뷰를 남겨주세요", time: "3시간 전", read: true, action: { screen: "reviewWrite", tab: "mypage", reviewTarget: "프로덕트 랩" } },
+  { id: 4, type: "booking", text: "블룸 웨딩 스튜디오 예약이 확정되었습니다", time: "1일 전", read: true, action: { screen: "myBookings", tab: "mypage" } },
   { id: 5, type: "system", text: "퍼니 앱이 업데이트되었습니다", time: "3일 전", read: true },
 ];
 
@@ -929,8 +929,15 @@ export default function ConsumerApp() {
               <h2 className="text-base font-bold mb-4">알림</h2>
               {CONSUMER_NOTIFICATIONS.map(n => {
                 const IconComp = n.type === "booking" ? Calendar : n.type === "remind" ? Clock : n.type === "review" ? Star : Bell;
+                const handleClick = () => {
+                  if (!n.action) return;
+                  if (n.action.reviewTarget) { setReviewTarget(n.action.reviewTarget); setReviewRating(5); setReviewText(""); }
+                  if (n.action.tab) setTab(n.action.tab);
+                  navigate(n.action.screen);
+                };
                 return (
-                  <div key={n.id} className={`flex gap-3 py-3.5 border-b border-gray-50 ${n.read ? "opacity-60" : ""}`}>
+                  <button key={n.id} onClick={handleClick}
+                    className={`flex gap-3 py-3.5 border-b border-gray-50 w-full text-left ${n.read ? "opacity-60" : ""} ${n.action ? "hover:bg-gray-50 cursor-pointer" : ""}`}>
                     <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center shrink-0 text-gray-500">
                       <IconComp size={16} strokeWidth={1.5} />
                     </div>
@@ -939,7 +946,8 @@ export default function ConsumerApp() {
                       <p className="text-[10px] text-gray-400 mt-1">{n.time}</p>
                     </div>
                     {!n.read && <span className="w-2 h-2 bg-primary rounded-full mt-2 shrink-0" />}
-                  </div>
+                    {n.action && <span className="text-gray-300 text-xs mt-2 shrink-0">›</span>}
+                  </button>
                 );
               })}
             </div>
