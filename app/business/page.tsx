@@ -312,10 +312,19 @@ export default function BusinessApp() {
                 <div className="mb-4">
                   <p className="text-xs text-gray-500 mb-2 font-medium">리뷰</p>
                   <div className="space-y-2">
-                    {[{ name: "김**", rating: 5, text: "분위기 너무 좋아요!" }, { name: "이**", rating: 4, text: "시설이 깔끔해요" }].map((r, i) => (
+                    {[
+                      { name: "김**", rating: 5, text: "분위기 너무 좋아요!", reply: "감사합니다! 다음에도 좋은 촬영 하겠습니다." },
+                      { name: "이**", rating: 4, text: "시설이 깔끔해요", reply: null },
+                    ].map((r, i) => (
                       <div key={i} className="bg-gray-50 rounded-lg p-3">
                         <div className="flex items-center gap-2 mb-1"><span className="text-xs font-medium">{r.name}</span><span className="text-xs text-yellow-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span></div>
                         <p className="text-xs text-gray-600">{r.text}</p>
+                        {r.reply && (
+                          <div className="bg-white rounded-lg p-2.5 mt-2 border border-gray-100">
+                            <p className="text-[10px] text-primary font-medium mb-0.5">업체 답변</p>
+                            <p className="text-xs text-gray-600">{r.reply}</p>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

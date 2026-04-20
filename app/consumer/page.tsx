@@ -522,10 +522,19 @@ export default function ConsumerApp() {
                   <div className="mt-2">
                     <p className="text-sm font-medium mb-2">리뷰 {selectedStudio.reviews}개</p>
                     <div className="space-y-2">
-                      {[{ name: "김**", rating: 5, text: "분위기 너무 좋아요! 사진 결과물도 만족합니다" }, { name: "이**", rating: 4, text: "접근성이 좋고 시설이 깔끔해요" }].map((r, i) => (
+                      {[
+                        { name: "김**", rating: 5, text: "분위기 너무 좋아요! 사진 결과물도 만족합니다", reply: "감사합니다! 다음에도 좋은 촬영 하겠습니다." },
+                        { name: "이**", rating: 4, text: "접근성이 좋고 시설이 깔끔해요", reply: null },
+                      ].map((r, i) => (
                         <div key={i} className="bg-white rounded-lg p-3 border border-gray-100">
                           <div className="flex items-center gap-2 mb-1"><span className="text-xs font-medium">{r.name}</span><span className="text-xs text-yellow-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span></div>
                           <p className="text-xs text-gray-600">{r.text}</p>
+                          {r.reply && (
+                            <div className="bg-gray-50 rounded-lg p-2.5 mt-2 border border-gray-100">
+                              <p className="text-[10px] text-primary font-medium mb-0.5">업체 답변</p>
+                              <p className="text-xs text-gray-600">{r.reply}</p>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
