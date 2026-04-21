@@ -260,6 +260,8 @@ export default function AdminWeb() {
                 {[
                   { action: "새 업체 가입 요청", detail: "선셋 포토랩", time: "10분 전" },
                   { action: "예약 취소", detail: "김철수 → 루미에르", time: "30분 전" },
+                  { action: "업체 취소 기록", detail: "블룸 웨딩 스튜디오 · 2026.04.18 · 누적 2회", time: "50분 전" },
+                  { action: "노쇼 기록", detail: "펫모먼츠 스튜디오 · 2026.04.12 · 소비자 1회", time: "55분 전" },
                   { action: "리뷰 신고", detail: "부적절한 내용", time: "1시간 전" },
                 ].map((a, i) => (
                   <div key={i} className="flex items-center gap-3 py-2 border-b border-gray-50">
@@ -286,6 +288,8 @@ export default function AdminWeb() {
               <PolicyBadge label="입점 정책 미확정" />
               <p className="text-[10px] text-gray-500 mt-1">• 입점 방식: 관리자 수동 검토 (REQ-115 확정)</p>
               <p className="text-[10px] text-gray-500">• 필수 서류: 사업자등록번호 + 포트폴리오 사진 (REQ-102 확정)</p>
+              <p className="text-[10px] text-gray-500">• 승인 거절 사유 전달: 이메일 + 앱 알림</p>
+              <p className="text-[10px] text-gray-500">• 재신청 제한: 횟수/대기기간 없이 차단 여부 운영 검토</p>
               <PolicyForm question="퇴점(입점 해제) 기준은? (위반 횟수, 경고 절차)" screen="어드민" area="퇴점 기준" />
             </div>
 
@@ -621,6 +625,10 @@ export default function AdminWeb() {
         {tab === "bookings" && (
           <div>
             <h2 className="text-xl font-bold mb-6">예약 관리</h2>
+            <div className="mb-4 rounded-xl bg-amber-50 p-4 text-[11px] text-amber-700">
+              <p>업체 취소는 100% 환불 대상이며, 취소 날짜와 누적 횟수를 어드민에서 추적합니다.</p>
+              <p className="mt-1">노쇼 건도 동일하게 날짜/횟수 단위로 기록해 추후 이용정지 정책에 활용할 수 있습니다.</p>
+            </div>
 
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
               <div className="p-4 border-b border-gray-100 flex gap-2">

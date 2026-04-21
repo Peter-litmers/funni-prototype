@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Camera, Dumbbell, Heart, Cake, PawPrint, Briefcase, Users,
+  Camera, Dumbbell, Heart, Cake, PawPrint, Briefcase, Users, Sparkles,
   Home, LayoutGrid, User, Bell, Phone, MapPin, Star, Pencil, Check,
   CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal
 } from "lucide-react";
@@ -21,7 +21,7 @@ const CATEGORIES = [
   { name: "전체", Icon: LayoutGrid },
   { name: "프로필", Icon: Camera },
   { name: "바디프로필", Icon: Dumbbell },
-  { name: "웨딩", Icon: Heart },
+  { name: "웨딩", Icon: Sparkles },
   { name: "가족", Icon: Cake },
   { name: "반려동물", Icon: PawPrint },
   { name: "비즈니스", Icon: Briefcase },
@@ -52,7 +52,7 @@ const HOME_AD_PAGES = [
 const HOME_CATEGORY_GRID = [
   { name: "프로필", Icon: Camera },
   { name: "바디프로필", Icon: Dumbbell },
-  { name: "웨딩", Icon: Heart },
+  { name: "웨딩", Icon: Sparkles },
   { name: "가족", Icon: Cake },
   { name: "반려동물", Icon: PawPrint },
   { name: "비즈니스", Icon: Briefcase },
@@ -133,8 +133,8 @@ const COMPLETED_BOOKINGS = [
   { studio: "패밀리 모먼츠", date: "2026.03.22 (토)", time: "10:00~12:00", cat: "가족", price: "₩240,000", status: "완료", canReview: false },
 ];
 const CANCELLED_BOOKINGS = [
-  { studio: "펫모먼츠 스튜디오", date: "2026.04.15 (화)", time: "15:00~17:00", cat: "반려동물", price: "₩120,000", status: "취소됨", reason: "소비자 취소" },
-  { studio: "루미에르 스튜디오", date: "2026.03.28 (금)", time: "10:00~12:00", cat: "프로필", price: "₩100,000", status: "취소됨", reason: "업체 사유" },
+  { studio: "펫모먼츠 스튜디오", date: "2026.04.15 (화)", time: "15:00~17:00", cat: "반려동물", price: "₩120,000", status: "취소됨", reason: "소비자 취소 · 촬영 1일 전 취소로 50% 환불" },
+  { studio: "루미에르 스튜디오", date: "2026.03.28 (금)", time: "10:00~12:00", cat: "프로필", price: "₩100,000", status: "취소됨", reason: "업체 취소 · 100% 환불 처리" },
 ];
 const MY_REVIEWS_DATA = [
   { studio: "블룸 웨딩 스튜디오", date: "2026.04.06", rating: 5, text: "정말 만족스러운 촬영이었습니다. 결과물도 훌륭해요!" },
@@ -896,6 +896,12 @@ export default function ConsumerApp() {
                 ))}
               </div>
               {bookingFilter === "완료" && <p className="text-[11px] text-gray-400 mb-3">리뷰는 업체가 촬영 건을 완료 처리한 시점부터 2주 이내 작성할 수 있습니다.</p>}
+              {bookingFilter === "취소" && (
+                <div className="mb-3 rounded-xl bg-rose-50 p-3 text-[11px] text-rose-500">
+                  <p>소비자 취소 환불 기준: 7일 전 전액 환불 · 3~6일 전 20% · 1~2일 전 50% · 당일 80%</p>
+                  <p className="mt-1">업체 취소는 100% 환불되며, 취소 이력은 어드민 웹에 누적 기록됩니다.</p>
+                </div>
+              )}
               {filteredBookings.length === 0 ? <div className="text-center py-12"><p className="text-gray-400 text-sm">해당 예약이 없습니다</p></div> : filteredBookings.map((b, i) => (
                 <div key={i} className={`bg-gray-50 rounded-xl p-4 mb-3 ${bookingFilter === "취소" ? "opacity-60" : ""}`}>
                   <div className="flex justify-between items-start mb-2">

@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Camera, Dumbbell, Heart, Cake, PawPrint, Briefcase, Users,
+  Camera, Dumbbell, Heart, Cake, PawPrint, Briefcase, Users, Sparkles,
   Home, LayoutGrid, User, Bell, Phone, Calendar, MapPin, Search, SlidersHorizontal,
   DollarSign, BarChart3, Building2, ImageIcon, X, Star
 } from "lucide-react";
@@ -28,7 +28,7 @@ const CATEGORIES = [
   { name: "전체", Icon: LayoutGrid },
   { name: "프로필", Icon: Camera },
   { name: "바디프로필", Icon: Dumbbell },
-  { name: "웨딩", Icon: Heart },
+  { name: "웨딩", Icon: Sparkles },
   { name: "가족", Icon: Cake },
   { name: "반려동물", Icon: PawPrint },
   { name: "비즈니스", Icon: Briefcase },
@@ -59,7 +59,7 @@ const HOME_AD_PAGES = [
 const HOME_CATEGORY_GRID = [
   { name: "프로필", Icon: Camera },
   { name: "바디프로필", Icon: Dumbbell },
-  { name: "웨딩", Icon: Heart },
+  { name: "웨딩", Icon: Sparkles },
   { name: "가족", Icon: Cake },
   { name: "반려동물", Icon: PawPrint },
   { name: "비즈니스", Icon: Briefcase },
