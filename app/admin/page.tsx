@@ -546,7 +546,7 @@ export default function AdminWeb() {
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-white rounded-xl shadow-sm p-4">
                 <h3 className="text-sm font-bold mb-3">종류별 카테고리</h3>
-                {["프로필", "바디프로필", "웨딩", "가족", "반려동물", "비즈니스", "커플", "우정"].map((c, i) => (
+                {["프로필", "바디프로필", "웨딩", "가족", "반려동물", "비즈니스", "커플", "아기"].map((c, i) => (
                   <div key={c} className="flex items-center justify-between py-2.5 border-b border-gray-50">
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-gray-400 w-5">{i + 1}</span>

@@ -68,18 +68,18 @@ const HOME_CATEGORY_GRID = [
 ];
 
 const STUDIOS = [
-  { id: 1, name: "루미에르 스튜디오", cat: "프로필", desc: "프로필촬영, 임직원 프로필, 이력서사진", area: "서울 강남구", price: "50,000", rating: 4.8, reviews: 124, phone: "02-1234-5678", paymentCount: 302, distanceKm: 1.2 },
-  { id: 2, name: "선셋 포토랩", cat: "바디프로필", desc: "바디프로필, 커플촬영, 운동기록", area: "서울 성수동", price: "80,000", rating: 4.9, reviews: 89, phone: "02-2345-6789", paymentCount: 287, distanceKm: 3.8 },
-  { id: 3, name: "블룸 웨딩 스튜디오", cat: "웨딩", desc: "웨딩스냅, 본식촬영, 야외웨딩", area: "서울 잠실", price: "200,000", rating: 4.7, reviews: 56, phone: "02-3456-7890", paymentCount: 190, distanceKm: 6.1 },
-  { id: 4, name: "패밀리 모먼츠", cat: "가족", desc: "가족사진, 3대 가족 스냅, 주말 촬영", area: "경기 일산", price: "130,000", rating: 4.5, reviews: 31, phone: "031-9234-5678", paymentCount: 57, distanceKm: 23.1 },
-  { id: 5, name: "펫모먼츠 스튜디오", cat: "반려동물", desc: "반려동물 촬영, 반려 가족 스냅, 맞춤 소품 제공", area: "서울 망원동", price: "90,000", rating: 4.7, reviews: 44, phone: "02-4567-8901", paymentCount: 154, distanceKm: 8.4 },
-  { id: 6, name: "브랜드컷 스튜디오", cat: "비즈니스", desc: "브랜드 프로필, 팀 촬영, 대표 인터뷰컷", area: "서울 합정", price: "60,000", rating: 4.7, reviews: 45, phone: "02-5678-9012", paymentCount: 118, distanceKm: 7.9 },
-  { id: 7, name: "베이비데이 스튜디오", cat: "아기", desc: "아기 촬영, 성장 스냅, 컨셉 프로필", area: "서울 신촌", price: "70,000", rating: 4.6, reviews: 28, phone: "02-6789-0123", paymentCount: 84, distanceKm: 5.1 },
-  { id: 8, name: "아이덴티티 프로필", cat: "프로필", desc: "취업 프로필, 개인 브랜딩 촬영, 이력서 사진", area: "서울 종로구", price: "30,000", rating: 4.4, reviews: 52, phone: "02-7890-1234", paymentCount: 111, distanceKm: 4.4 },
-  { id: 9, name: "커플모먼트 스튜디오", cat: "커플", desc: "커플촬영, 기념일 스냅, 데이트 사진", area: "서울 연남동", price: "110,000", rating: 4.8, reviews: 39, phone: "02-8901-2345", paymentCount: 92, distanceKm: 9.1 },
-  { id: 10, name: "프라이빗 웨딩하우스", cat: "웨딩", desc: "셀프웨딩, 프라이빗 촬영, 웨딩 스냅", area: "서울 청담동", price: "260,000", rating: 4.9, reviews: 21, phone: "02-9012-3456", paymentCount: 61, distanceKm: 2.8 },
-  { id: 11, name: "비즈니스 데이랩", cat: "비즈니스", desc: "사내 프로필, 팀 스냅, 워크숍 단체 촬영", area: "서울 서초구", price: "95,000", rating: 4.7, reviews: 18, phone: "02-9123-4567", paymentCount: 49, distanceKm: 7.3 },
-  { id: 12, name: "바디에디션 랩", cat: "바디프로필", desc: "바디 프로필, 운동기록 촬영, 피트니스 브랜딩", area: "서울 성신여대", price: "150,000", rating: 4.8, reviews: 26, phone: "02-9345-6789", paymentCount: 73, distanceKm: 11.6 },
+  { id: 1, name: "루미에르 스튜디오", cat: "프로필", desc: "프로필촬영, 임직원 프로필, 이력서사진", area: "서울 강남구", price: "50,000", rating: 4.8, reviews: 124, phone: "02-1234-5678", travelAvailable: true, paymentCount: 302, distanceKm: 1.2 },
+  { id: 2, name: "선셋 포토랩", cat: "바디프로필", desc: "바디프로필, 커플촬영, 운동기록", area: "서울 성수동", price: "80,000", rating: 4.9, reviews: 89, phone: "02-2345-6789", travelAvailable: false, paymentCount: 287, distanceKm: 3.8 },
+  { id: 3, name: "블룸 웨딩 스튜디오", cat: "웨딩", desc: "웨딩스냅, 본식촬영, 야외웨딩", area: "서울 잠실", price: "200,000", rating: 4.7, reviews: 56, phone: "02-3456-7890", travelAvailable: true, paymentCount: 190, distanceKm: 6.1 },
+  { id: 4, name: "패밀리 모먼츠", cat: "가족", desc: "가족사진, 3대 가족 스냅, 주말 촬영", area: "경기 일산", price: "130,000", rating: 4.5, reviews: 31, phone: "031-9234-5678", travelAvailable: false, paymentCount: 57, distanceKm: 23.1 },
+  { id: 5, name: "펫모먼츠 스튜디오", cat: "반려동물", desc: "반려동물 촬영, 반려 가족 스냅, 맞춤 소품 제공", area: "서울 망원동", price: "90,000", rating: 4.7, reviews: 44, phone: "02-4567-8901", travelAvailable: true, paymentCount: 154, distanceKm: 8.4 },
+  { id: 6, name: "브랜드컷 스튜디오", cat: "비즈니스", desc: "브랜드 프로필, 팀 촬영, 대표 인터뷰컷", area: "서울 합정", price: "60,000", rating: 4.7, reviews: 45, phone: "02-5678-9012", travelAvailable: false, paymentCount: 118, distanceKm: 7.9 },
+  { id: 7, name: "베이비데이 스튜디오", cat: "아기", desc: "아기 촬영, 성장 스냅, 컨셉 프로필", area: "서울 신촌", price: "70,000", rating: 4.6, reviews: 28, phone: "02-6789-0123", travelAvailable: false, paymentCount: 84, distanceKm: 5.1 },
+  { id: 8, name: "아이덴티티 프로필", cat: "프로필", desc: "취업 프로필, 개인 브랜딩 촬영, 이력서 사진", area: "서울 종로구", price: "30,000", rating: 4.4, reviews: 52, phone: "02-7890-1234", travelAvailable: false, paymentCount: 111, distanceKm: 4.4 },
+  { id: 9, name: "커플모먼트 스튜디오", cat: "커플", desc: "커플촬영, 기념일 스냅, 데이트 사진", area: "서울 연남동", price: "110,000", rating: 4.8, reviews: 39, phone: "02-8901-2345", travelAvailable: true, paymentCount: 92, distanceKm: 9.1 },
+  { id: 10, name: "프라이빗 웨딩하우스", cat: "웨딩", desc: "셀프웨딩, 프라이빗 촬영, 웨딩 스냅", area: "서울 청담동", price: "260,000", rating: 4.9, reviews: 21, phone: "02-9012-3456", travelAvailable: true, paymentCount: 61, distanceKm: 2.8 },
+  { id: 11, name: "비즈니스 데이랩", cat: "비즈니스", desc: "사내 프로필, 팀 스냅, 워크숍 단체 촬영", area: "서울 서초구", price: "95,000", rating: 4.7, reviews: 18, phone: "02-9123-4567", travelAvailable: true, paymentCount: 49, distanceKm: 7.3 },
+  { id: 12, name: "바디에디션 랩", cat: "바디프로필", desc: "바디 프로필, 운동기록 촬영, 피트니스 브랜딩", area: "서울 성신여대", price: "150,000", rating: 4.8, reviews: 26, phone: "02-9345-6789", travelAvailable: false, paymentCount: 73, distanceKm: 11.6 },
 ];
 
 const ALL_BOOKINGS: { id: number; month: number; date: number; name: string; cat: string; time: string; price: number; status: string; isManual?: boolean }[] = [
@@ -410,6 +410,7 @@ export default function BusinessApp() {
                       <div className="p-3">
                         <p className="truncate text-sm font-semibold text-gray-900">{studio.name}</p>
                         <p className="mt-1 text-[11px] text-gray-400">{studio.area}</p>
+                        {studio.travelAvailable && <p className="mt-1 text-[10px] font-medium text-primary">출장 가능</p>}
                         <div className="mt-2 flex items-center justify-between text-[11px]">
                           <span className="font-bold text-gray-900">₩{parseStudioPrice(studio.price).toLocaleString()}</span>
                           <span className="text-yellow-500">★ {studio.rating}</span>
@@ -446,6 +447,7 @@ export default function BusinessApp() {
                       <div className="p-3">
                         <p className="truncate text-sm font-semibold text-gray-900">{studio.name}</p>
                         <p className="mt-1 text-[11px] text-gray-400">{studio.area}</p>
+                        {studio.travelAvailable && <p className="mt-1 text-[10px] font-medium text-primary">출장 가능</p>}
                         <div className="mt-2 flex items-center justify-between text-[11px] text-gray-500">
                           <span>결제 {studio.paymentCount}건</span>
                           <span className="text-yellow-500">★ {studio.rating}</span>
@@ -544,6 +546,7 @@ export default function BusinessApp() {
                       <p className="font-bold text-sm text-gray-900">{s.name}</p>
                       <p className="text-xs text-gray-400 mt-0.5 truncate">{s.desc}</p>
                       <p className="text-xs text-gray-400 mt-0.5">{s.area}</p>
+                      {s.travelAvailable && <p className="text-[10px] font-medium text-primary mt-1">출장 가능</p>}
                       <div className="flex items-center gap-1 mt-1.5">
                         <span className="text-sm font-bold text-gray-900">₩{parseStudioPrice(s.price).toLocaleString()}</span>
                         <span className="text-xs text-gray-400">/ 시간 · VAT 포함</span>
@@ -610,6 +613,7 @@ export default function BusinessApp() {
                   <div>
                     <p className="text-sm font-medium">{s.name}</p>
                     <p className="text-xs text-gray-400">{s.cat} · {s.area}</p>
+                    {s.travelAvailable && <p className="text-[10px] font-medium text-primary mt-1">출장 가능</p>}
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-sm font-bold">₩{s.price}</span>
                       <span className="text-xs text-yellow-500">★ {s.rating}</span>
@@ -631,9 +635,10 @@ export default function BusinessApp() {
               <div className="p-4">
                 <h2 className="text-lg font-bold mb-0.5">{selectedStudio.name}</h2>
                 <p className="text-xs text-gray-400">{selectedStudio.area}</p>
-                <div className="flex items-center gap-2 mt-1 mb-4">
+                <div className="flex items-center gap-2 mt-1 mb-4 flex-wrap">
                   <span className="text-xs text-yellow-500">★ {selectedStudio.rating}</span>
                   <span className="text-xs text-gray-400">리뷰 {selectedStudio.reviews}개</span>
+                  {selectedStudio.travelAvailable && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">출장 가능</span>}
                 </div>
 
                 <div className="bg-gray-50 rounded-xl p-4 mb-4">
