@@ -11,13 +11,8 @@ import {
 function BrandMark() {
   return (
     <div className="flex items-center gap-2">
-      <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-white">
-        <Image src="/photopop-logo.png" alt="포토팟 로고" width={44} height={44} className="h-full w-full object-contain p-1" />
-      </div>
-      <div>
-        <p className="text-[11px] font-medium text-gray-400">Photo Studio Booking</p>
-        <p className="text-lg font-bold tracking-tight text-gray-900">포토팟</p>
-      </div>
+      <Image src="/photopop-logo.png" alt="포토팟 로고" width={40} height={40} className="h-10 w-10 object-contain" />
+      <p className="text-lg font-bold tracking-tight text-gray-900">포토팟</p>
     </div>
   );
 }
@@ -344,20 +339,9 @@ export default function ConsumerApp() {
           {screen === "home" && (
             <div className="pb-6">
               <div className="px-4 pt-2">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-[11px] text-gray-400">포토팟 큐레이션</p>
-                    <h2 className="mt-1 text-xl font-bold leading-tight text-gray-900">오늘의 촬영에 맞는 스튜디오를 찾아보세요</h2>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setScreen("mypage");
-                      setTab("mypage");
-                    }}
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600"
-                  >
-                    <User size={18} strokeWidth={1.7} />
-                  </button>
+                <div>
+                  <p className="text-[11px] text-gray-400">포토팟 큐레이션</p>
+                  <h2 className="mt-1 text-xl font-bold leading-tight text-gray-900">오늘의 촬영에 맞는 스튜디오를 찾아보세요</h2>
                 </div>
 
                 <div className="mt-4 flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-3">
@@ -1200,7 +1184,7 @@ export default function ConsumerApp() {
           <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">
             {[
               { key: "home" as Tab, Icon: Home, label: "홈", s: "home" as Screen },
-              { key: "category" as Tab, Icon: LayoutGrid, label: "탐색", s: "category" as Screen },
+              { key: "category" as Tab, Icon: LayoutGrid, label: "카테고리", s: "category" as Screen },
               { key: "mypage" as Tab, Icon: User, label: "MY", s: "mypage" as Screen },
             ].map(t => (
               <button key={t.key} onClick={() => { setTab(t.key); setScreen(t.s); }}
