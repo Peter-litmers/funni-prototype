@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Camera, Dumbbell, Heart, Cake, Package, Video, MoreHorizontal,
+  Camera, Dumbbell, Heart, Cake, PawPrint, Briefcase, Users,
   Home, LayoutGrid, User, Bell, Phone, Calendar, MapPin, Search, SlidersHorizontal,
   DollarSign, BarChart3, Building2, ImageIcon, X, Star
 } from "lucide-react";
@@ -29,50 +29,57 @@ const CATEGORIES = [
   { name: "프로필", Icon: Camera },
   { name: "바디프로필", Icon: Dumbbell },
   { name: "웨딩", Icon: Heart },
-  { name: "돌잔치", Icon: Cake },
-  { name: "제품", Icon: Package },
-  { name: "영상", Icon: Video },
-  { name: "기타", Icon: MoreHorizontal },
+  { name: "가족", Icon: Cake },
+  { name: "반려동물", Icon: PawPrint },
+  { name: "비즈니스", Icon: Briefcase },
+  { name: "커플", Icon: Heart },
+  { name: "우정", Icon: Users },
 ];
 
-const HOME_KEYWORDS = ["인기", "웨딩", "프로필", "가족", "커플", "셀프촬영"];
+const HOME_KEYWORDS = ["인기", "웨딩", "프로필", "가족", "반려동물", "비즈니스"];
 
 const HOME_AD_PAGES = [
   [
     { title: "로맨틱 웨딩", subtitle: "대표 추천 노출", tone: "from-rose-100 to-pink-100" },
     { title: "프로필 촬영", subtitle: "인기 작가 큐레이션", tone: "from-pink-50 to-rose-100" },
-    { title: "가족 스냅", subtitle: "시즌 추천 스튜디오", tone: "from-orange-50 to-rose-100" },
+    { title: "가족 촬영", subtitle: "주말 예약 인기", tone: "from-orange-50 to-rose-100" },
   ],
   [
     { title: "커플 촬영", subtitle: "야외 스냅 추천", tone: "from-fuchsia-50 to-pink-100" },
-    { title: "졸업 사진", subtitle: "캠퍼스 스냅 특집", tone: "from-rose-50 to-orange-100" },
+    { title: "우정 스냅", subtitle: "친구와 남기는 기록", tone: "from-rose-50 to-orange-100" },
     { title: "바디프로필", subtitle: "성수 인기 스튜디오", tone: "from-pink-100 to-rose-200" },
   ],
   [
-    { title: "브랜드 촬영", subtitle: "제품/룩북 촬영", tone: "from-rose-50 to-pink-100" },
-    { title: "증명 사진", subtitle: "당일 보정 가능", tone: "from-neutral-100 to-stone-100" },
-    { title: "키즈 촬영", subtitle: "가족 패키지 추천", tone: "from-pink-50 to-amber-50" },
+    { title: "비즈니스 촬영", subtitle: "브랜드/팀 프로필 추천", tone: "from-rose-50 to-pink-100" },
+    { title: "반려동물 촬영", subtitle: "반려 가족과 함께", tone: "from-neutral-100 to-stone-100" },
+    { title: "가족 패키지", subtitle: "3인 이상 촬영 추천", tone: "from-pink-50 to-amber-50" },
   ],
 ];
 
 const HOME_CATEGORY_GRID = [
-  { name: "웨딩", Icon: Heart },
   { name: "프로필", Icon: Camera },
-  { name: "피아노", Icon: Video },
-  { name: "가족사진", Icon: Cake },
+  { name: "바디프로필", Icon: Dumbbell },
+  { name: "웨딩", Icon: Heart },
+  { name: "가족", Icon: Cake },
+  { name: "반려동물", Icon: PawPrint },
+  { name: "비즈니스", Icon: Briefcase },
   { name: "커플", Icon: Heart },
-  { name: "졸업", Icon: LayoutGrid },
-  { name: "증명", Icon: Package },
-  { name: "바디", Icon: Dumbbell },
+  { name: "우정", Icon: Users },
 ];
 
 const STUDIOS = [
-  { id: 1, name: "루미에르 스튜디오", cat: "프로필", desc: "프로필촬영, 증명사진, 프로필영상", area: "서울 강남구", price: "50,000", rating: 4.8, reviews: 124, phone: "02-1234-5678", paymentCount: 302, distanceKm: 1.2 },
+  { id: 1, name: "루미에르 스튜디오", cat: "프로필", desc: "프로필촬영, 임직원 프로필, 이력서사진", area: "서울 강남구", price: "50,000", rating: 4.8, reviews: 124, phone: "02-1234-5678", paymentCount: 302, distanceKm: 1.2 },
   { id: 2, name: "선셋 포토랩", cat: "바디프로필", desc: "바디프로필, 커플촬영, 운동기록", area: "서울 성수동", price: "80,000", rating: 4.9, reviews: 89, phone: "02-2345-6789", paymentCount: 287, distanceKm: 3.8 },
   { id: 3, name: "블룸 웨딩 스튜디오", cat: "웨딩", desc: "웨딩스냅, 본식촬영, 야외웨딩", area: "서울 잠실", price: "200,000", rating: 4.7, reviews: 56, phone: "02-3456-7890", paymentCount: 190, distanceKm: 6.1 },
-  { id: 4, name: "미니미 키즈포토", cat: "돌잔치", desc: "돌잔치촬영, 백일사진, 가족사진", area: "경기 판교", price: "120,000", rating: 4.6, reviews: 34, phone: "031-456-7890", paymentCount: 96, distanceKm: 19.5 },
-  { id: 5, name: "프로덕트 랩", cat: "제품", desc: "제품촬영, 음식사진, 상세페이지", area: "서울 홍대", price: "40,000", rating: 4.5, reviews: 67, phone: "02-4567-8901", paymentCount: 154, distanceKm: 8.4 },
-  { id: 6, name: "무브 필름랩", cat: "영상", desc: "유튜브촬영, 광고영상, 인터뷰", area: "서울 합정", price: "60,000", rating: 4.7, reviews: 45, phone: "02-5678-9012", paymentCount: 118, distanceKm: 7.9 },
+  { id: 4, name: "패밀리 모먼츠", cat: "가족", desc: "가족사진, 3대 가족 스냅, 주말 촬영", area: "경기 일산", price: "130,000", rating: 4.5, reviews: 31, phone: "031-9234-5678", paymentCount: 57, distanceKm: 23.1 },
+  { id: 5, name: "펫모먼츠 스튜디오", cat: "반려동물", desc: "반려동물 촬영, 반려 가족 스냅, 맞춤 소품 제공", area: "서울 망원동", price: "90,000", rating: 4.7, reviews: 44, phone: "02-4567-8901", paymentCount: 154, distanceKm: 8.4 },
+  { id: 6, name: "브랜드컷 스튜디오", cat: "비즈니스", desc: "브랜드 프로필, 팀 촬영, 대표 인터뷰컷", area: "서울 합정", price: "60,000", rating: 4.7, reviews: 45, phone: "02-5678-9012", paymentCount: 118, distanceKm: 7.9 },
+  { id: 7, name: "프렌즈데이 스튜디오", cat: "우정", desc: "우정촬영, 졸업 전 스냅, 컨셉 프로필", area: "서울 신촌", price: "70,000", rating: 4.6, reviews: 28, phone: "02-6789-0123", paymentCount: 84, distanceKm: 5.1 },
+  { id: 8, name: "아이덴티티 프로필", cat: "프로필", desc: "취업 프로필, 개인 브랜딩 촬영, 이력서 사진", area: "서울 종로구", price: "30,000", rating: 4.4, reviews: 52, phone: "02-7890-1234", paymentCount: 111, distanceKm: 4.4 },
+  { id: 9, name: "커플모먼트 스튜디오", cat: "커플", desc: "커플촬영, 기념일 스냅, 데이트 사진", area: "서울 연남동", price: "110,000", rating: 4.8, reviews: 39, phone: "02-8901-2345", paymentCount: 92, distanceKm: 9.1 },
+  { id: 10, name: "프라이빗 웨딩하우스", cat: "웨딩", desc: "셀프웨딩, 프라이빗 촬영, 웨딩 스냅", area: "서울 청담동", price: "260,000", rating: 4.9, reviews: 21, phone: "02-9012-3456", paymentCount: 61, distanceKm: 2.8 },
+  { id: 11, name: "비즈니스 데이랩", cat: "비즈니스", desc: "사내 프로필, 팀 스냅, 워크숍 단체 촬영", area: "서울 서초구", price: "95,000", rating: 4.7, reviews: 18, phone: "02-9123-4567", paymentCount: 49, distanceKm: 7.3 },
+  { id: 12, name: "바디에디션 랩", cat: "바디프로필", desc: "바디 프로필, 운동기록 촬영, 피트니스 브랜딩", area: "서울 성신여대", price: "150,000", rating: 4.8, reviews: 26, phone: "02-9345-6789", paymentCount: 73, distanceKm: 11.6 },
 ];
 
 const ALL_BOOKINGS: { id: number; month: number; date: number; name: string; cat: string; time: string; price: number; status: string; isManual?: boolean }[] = [
@@ -165,9 +172,9 @@ export default function BusinessApp() {
       if (activeKeyword === "인기") return true;
       if (activeKeyword === "웨딩") return s.cat === "웨딩";
       if (activeKeyword === "프로필") return s.cat === "프로필";
-      if (activeKeyword === "가족") return s.desc.includes("가족");
-      if (activeKeyword === "커플") return s.desc.includes("커플");
-      if (activeKeyword === "셀프촬영") return s.desc.includes("영상") || s.desc.includes("프로필");
+      if (activeKeyword === "가족") return s.cat === "가족";
+      if (activeKeyword === "반려동물") return s.cat === "반려동물";
+      if (activeKeyword === "비즈니스") return s.cat === "비즈니스";
       return true;
     })
     .filter(s => {
@@ -364,7 +371,7 @@ export default function BusinessApp() {
                     <button
                       key={category.name}
                       onClick={() => {
-                        setCategoryCat(category.name === "가족사진" ? "돌잔치" : category.name);
+                        setCategoryCat(category.name);
                         setScreen("category");
                         setTab("category");
                       }}
@@ -803,7 +810,7 @@ export default function BusinessApp() {
                 <div>
                   <label className="text-xs text-gray-500 mb-1.5 block font-medium">카테고리 (복수 선택)</label>
                   <div className="flex flex-wrap gap-2">
-                    {["프로필", "바디프로필", "웨딩", "돌잔치", "제품", "영상"].map(c => (
+                    {["프로필", "바디프로필", "웨딩", "가족", "반려동물", "비즈니스", "커플", "우정"].map(c => (
                       <button key={c} onClick={() => toggleCat(c)}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                           selectedCats.includes(c) ? "bg-primary text-white border-primary" : "bg-white text-gray-400 border-gray-200"
@@ -1202,10 +1209,11 @@ export default function BusinessApp() {
                 <p className="text-2xl font-bold text-primary mt-0.5">₩{pendingAmount.toLocaleString()}</p>
                 <div className="mt-3 grid grid-cols-2 gap-2 text-[10px]">
                   <div className="bg-white rounded-lg p-2"><span className="text-gray-400">수수료율</span><br/><span className="text-gray-700 font-medium">플랫폼 10%</span></div>
-                  <div className="bg-white rounded-lg p-2"><span className="text-gray-400">정산 방식</span><br/><span className="text-gray-700 font-medium">주간 자동 정산</span></div>
-                  <div className="bg-white rounded-lg p-2"><span className="text-gray-400">정산 단위</span><br/><span className="text-gray-700 font-medium">주간 일괄 지급</span></div>
-                  <div className="bg-white rounded-lg p-2"><span className="text-gray-400">환불 반영</span><br/><span className="text-gray-700 font-medium">다음 정산 차감</span></div>
+                  <div className="bg-white rounded-lg p-2"><span className="text-gray-400">정산 방식</span><br/><span className="text-gray-700 font-medium">월 기준, 주별 조회 가능</span></div>
+                  <div className="bg-white rounded-lg p-2"><span className="text-gray-400">정산 단위</span><br/><span className="text-gray-700 font-medium">업체별 일괄 정산</span></div>
+                  <div className="bg-white rounded-lg p-2"><span className="text-gray-400">환불 반영</span><br/><span className="text-gray-700 font-medium">결제 방식별 정책 확인 예정</span></div>
                 </div>
+                <p className="mt-3 text-[11px] text-gray-400">예약 시 받은 예약금도 정산 대상에 포함됩니다.</p>
               </div>
 
               <h3 className="text-xs font-medium text-gray-500 mb-2">정산 기록</h3>
@@ -1236,6 +1244,7 @@ export default function BusinessApp() {
             <div className="p-4">
               <button onClick={goBack} className="text-sm text-gray-400 mb-3">← 돌아가기</button>
               <h2 className="text-base font-bold mb-4">리뷰 관리</h2>
+              <p className="text-[11px] text-gray-400 mb-3">소비자 리뷰 등록 후 1주 이내 답글 작성이 가능합니다.</p>
 
               {[
                 { author: "김**", rating: 5, text: "분위기 너무 좋아요! 사진 결과물도 만족합니다", date: "2026.04.10", replied: true, reply: "감사합니다! 다음에도 좋은 촬영 하겠습니다." },
@@ -1259,7 +1268,7 @@ export default function BusinessApp() {
                     </div>
                   ) : (
                     <button className="w-full bg-white border border-gray-200 rounded-lg py-2 text-xs text-gray-500 hover:border-primary hover:text-primary transition-all">
-                      답글 작성
+                      답글 작성 (1주 이내)
                     </button>
                   )}
                 </div>
@@ -1275,7 +1284,8 @@ export default function BusinessApp() {
               <p className="text-xs text-gray-400 mb-10">스튜디오 대관·예약 플랫폼</p>
 
               <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-[#FEE500] text-[#191919] py-3 rounded-xl font-bold text-sm mb-2 flex items-center justify-center gap-2">💬 카카오로 로그인</button>
-              <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-[#03C75A] text-white py-3 rounded-xl font-bold text-sm mb-6 flex items-center justify-center gap-2">🟢 네이버로 로그인</button>
+              <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-[#03C75A] text-white py-3 rounded-xl font-bold text-sm mb-2 flex items-center justify-center gap-2">🟢 네이버로 로그인</button>
+              <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-white border border-gray-200 text-gray-700 py-3 rounded-xl font-bold text-sm mb-6 flex items-center justify-center gap-2">G 구글로 로그인</button>
 
               <div className="flex items-center gap-4 w-full mb-6">
                 <div className="flex-1 h-px bg-gray-200" /><span className="text-xs text-gray-400">또는</span><div className="flex-1 h-px bg-gray-200" />

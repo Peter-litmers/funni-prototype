@@ -305,9 +305,9 @@ export default function AdminWeb() {
                   {[
                     { name: "루미에르 스튜디오", cats: "프로필, 바디프로필", area: "강남", status: "운영중", photos: 24 },
                     { name: "선셋 포토랩", cats: "바디프로필", area: "성수", status: "승인대기", photos: 12 },
-                    { name: "블룸 웨딩홀", cats: "웨딩, 돌잔치", area: "잠실", status: "운영중", photos: 30 },
-                    { name: "프로덕트 랩", cats: "제품", area: "홍대", status: "정지", photos: 18 },
-                    { name: "무브 필름랩", cats: "영상", area: "합정", status: "운영중", photos: 15 },
+                    { name: "블룸 웨딩홀", cats: "웨딩, 커플", area: "잠실", status: "운영중", photos: 30 },
+                    { name: "브랜드컷 스튜디오", cats: "비즈니스", area: "홍대", status: "정지", photos: 18 },
+                    { name: "펫모먼츠 스튜디오", cats: "반려동물, 가족", area: "합정", status: "운영중", photos: 15 },
                   ].map((b, i) => (
                     <tr key={i} className="border-t border-gray-50">
                       <td className="p-4 font-medium">{b.name}</td>
@@ -351,12 +351,12 @@ export default function AdminWeb() {
             <h2 className="text-xl font-bold mb-6">정산 관리</h2>
 
             <div className="policy-area p-4 mb-6">
-              <PolicyBadge label="정산 정책 미확정" />
-              <PolicyForm question="정산 대상 조회 기준은? (완료된 예약만 / 확정 포함)" screen="어드민" area="정산 대상 기준" />
-              <PolicyForm question="정산 단위는? (업체별 일괄 vs 건별 선택)" screen="어드민" area="정산 단위" />
-              <p className="text-[10px] text-gray-500 mt-1">• 수수료 차감: 관리자 수동 정산 (REQ-119 확정)</p>
-              <p className="text-[10px] text-gray-500">• 수수료 차등: 기본 10%, 업체별 override (REQ-119 확정)</p>
-              <PolicyForm question="정산 후 환불 발생 시 처리는? (다음 정산 차감 vs 별도 처리)" screen="어드민" area="정산 후 환불 처리" />
+              <PolicyBadge label="정산 정책 반영" />
+              <p className="text-[10px] text-gray-500 mt-1">• 정산 대상: 예약 시 받은 예약금 포함</p>
+              <p className="text-[10px] text-gray-500">• 정산 기준: 월별 기준, 주별 조회 가능</p>
+              <p className="text-[10px] text-gray-500">• 정산 단위: 업체별 일괄 정산</p>
+              <p className="text-[10px] text-gray-500">• 수수료 차등: 기본 10%, 업체별 override</p>
+              <p className="text-[10px] text-gray-500">• 환불 반영: 토스페이먼츠 결제 방식별 정책 정리 후 반영 예정</p>
             </div>
 
             {/* Settlement Table */}
@@ -388,7 +388,7 @@ export default function AdminWeb() {
                     {[
                       { name: "루미에르 스튜디오", count: 8, base: "₩580,000", options: "₩100,000", total: "₩680,000", customFee: "", fee: "10%", net: "₩612,000" },
                       { name: "블룸 웨딩홀", count: 3, base: "₩450,000", options: "₩70,000", total: "₩520,000", customFee: "8%", fee: "8%", net: "₩478,400" },
-                      { name: "프로덕트 랩", count: 12, base: "₩340,000", options: "₩0", total: "₩340,000", customFee: "", fee: "10%", net: "₩306,000" },
+                      { name: "브랜드컷 스튜디오", count: 12, base: "₩340,000", options: "₩0", total: "₩340,000", customFee: "", fee: "10%", net: "₩306,000" },
                     ].map((s, i) => (
                       <tr key={i} className="border-t border-gray-50">
                         <td className="p-3"><input type="checkbox" /></td>
@@ -420,8 +420,10 @@ export default function AdminWeb() {
             </div>
 
             <div className="policy-area p-4 mb-6">
-              <PolicyBadge label="광고 정책 미확정" />
-              <p className="text-[10px] text-amber-600 mt-1">→ 소비자 화면 &gt; 홈에 질문으로 표기 (구좌 수, 기간 단위, 과금 방식)</p>
+              <PolicyBadge label="광고 정책 반영" />
+              <p className="text-[10px] text-gray-500 mt-1">• 프리미엄 영역: 정사각형 3개 × 3페이지</p>
+              <p className="text-[10px] text-gray-500">• 노출 기간: 월간, 시작일/종료일 상세 설정</p>
+              <p className="text-[10px] text-gray-500">• 배너 순서: 로테이션</p>
             </div>
 
             {/* 현재 노출 중인 광고 스튜디오 (REQ-112 상단 노출) */}
@@ -446,7 +448,7 @@ export default function AdminWeb() {
                     { order: 1, studio: "루미에르 스튜디오", cat: "프로필", period: "04.01~04.30", status: "노출중" },
                     { order: 2, studio: "선셋 포토랩", cat: "바디프로필", period: "04.15~05.15", status: "노출중" },
                     { order: 3, studio: "블룸 웨딩 스튜디오", cat: "웨딩", period: "04.10~05.10", status: "노출중" },
-                    { order: 4, studio: "프로덕트 랩", cat: "제품", period: "05.01~05.31", status: "대기" },
+                    { order: 4, studio: "브랜드컷 스튜디오", cat: "비즈니스", period: "05.01~05.31", status: "대기" },
                   ].map((a, i) => (
                     <tr key={i} className="border-t border-gray-50">
                       <td className="p-4"><div className="flex items-center gap-1"><span className="font-mono text-xs text-gray-400">#{a.order}</span><button className="text-[10px] text-gray-400">▲</button><button className="text-[10px] text-gray-400">▼</button></div></td>
@@ -540,7 +542,7 @@ export default function AdminWeb() {
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-white rounded-xl shadow-sm p-4">
                 <h3 className="text-sm font-bold mb-3">종류별 카테고리</h3>
-                {["웨딩", "프로필", "바디프로필", "돌잔치", "제품", "영상", "기타"].map((c, i) => (
+                {["프로필", "바디프로필", "웨딩", "가족", "반려동물", "비즈니스", "커플", "우정"].map((c, i) => (
                   <div key={c} className="flex items-center justify-between py-2.5 border-b border-gray-50">
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-gray-400 w-5">{i + 1}</span>
@@ -597,7 +599,7 @@ export default function AdminWeb() {
                 <tbody>
                   {[
                     { title: "프로필 촬영 특가", position: "메인 상단", period: "04.01~04.30", status: "노출중" },
-                    { title: "바디프로필 시즌", position: "카테고리", period: "04.15~05.15", status: "노출중" },
+                    { title: "반려동물 촬영전", position: "카테고리", period: "04.15~05.15", status: "노출중" },
                     { title: "웨딩 촬영 패키지", position: "메인 중간", period: "05.01~05.31", status: "대기" },
                   ].map((b, i) => (
                     <tr key={i} className="border-t border-gray-50">
@@ -643,8 +645,8 @@ export default function AdminWeb() {
                     { id: "B-2026-0142", consumer: "김포토", studio: "루미에르", date: "05.10 14:00", amount: "₩100,000", status: "확정" },
                     { id: "B-2026-0141", consumer: "이촬영", studio: "선셋 포토랩", date: "05.18 10:00", amount: "₩160,000", status: "확정" },
                     { id: "B-2026-0140", consumer: "박스튜", studio: "블룸 웨딩", date: "05.25 10:00", amount: "₩800,000", status: "대기" },
-                    { id: "B-2026-0135", consumer: "최민지", studio: "프로덕트 랩", date: "04.20 13:00", amount: "₩80,000", status: "완료" },
-                    { id: "B-2026-0130", consumer: "한소희", studio: "무브 필름랩", date: "04.15 15:00", amount: "₩120,000", status: "취소" },
+                    { id: "B-2026-0135", consumer: "최민지", studio: "브랜드컷 스튜디오", date: "04.20 13:00", amount: "₩80,000", status: "완료" },
+                    { id: "B-2026-0130", consumer: "한소희", studio: "펫모먼츠 스튜디오", date: "04.15 15:00", amount: "₩120,000", status: "취소" },
                   ].map((b, i) => (
                     <tr key={i} className="border-t border-gray-50">
                       <td className="p-4 font-mono text-xs text-gray-400">{b.id}</td>
@@ -687,8 +689,8 @@ export default function AdminWeb() {
                     { id: "P-0142", consumer: "김포토", studio: "루미에르", date: "05.08", amount: "₩100,000", status: "결제완료" },
                     { id: "P-0141", consumer: "이촬영", studio: "선셋 포토랩", date: "05.05", amount: "₩160,000", status: "결제완료" },
                     { id: "P-0140", consumer: "박스튜", studio: "블룸 웨딩", date: "04.03", amount: "₩800,000", status: "결제완료" },
-                    { id: "P-0135", consumer: "최민지", studio: "프로덕트 랩", date: "04.18", amount: "₩80,000", status: "결제완료" },
-                    { id: "P-0130", consumer: "한소희", studio: "무브 필름랩", date: "04.13", amount: "₩120,000", status: "환불완료" },
+                    { id: "P-0135", consumer: "최민지", studio: "브랜드컷 스튜디오", date: "04.18", amount: "₩80,000", status: "결제완료" },
+                    { id: "P-0130", consumer: "한소희", studio: "펫모먼츠 스튜디오", date: "04.13", amount: "₩120,000", status: "환불완료" },
                   ].map((p, i) => (
                     <tr key={i} className="border-t border-gray-50">
                       <td className="p-4 font-mono text-xs text-gray-400">{p.id}</td>
@@ -732,7 +734,7 @@ export default function AdminWeb() {
                     { studio: "루미에르", author: "이**", rating: 4, text: "접근성이 좋고 시설이 깔끔해요", date: "04.08" },
                     { studio: "선셋 포토랩", author: "박**", rating: 5, text: "바디프로필 전문! 조명이 정말 좋습니다", date: "04.05" },
                     { studio: "블룸 웨딩", author: "최**", rating: 3, text: "가격 대비 보통이었어요", date: "04.02" },
-                    { studio: "프로덕트 랩", author: "한**", rating: 5, text: "제품 사진 퀄리티가 기대 이상이에요", date: "03.28" },
+                    { studio: "브랜드컷 스튜디오", author: "한**", rating: 5, text: "팀 프로필 결과물이 기대 이상이에요", date: "03.28" },
                   ].map((r, i) => (
                     <tr key={i} className="border-t border-gray-50">
                       <td className="p-4 font-medium">{r.studio}</td>

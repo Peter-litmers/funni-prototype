@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Camera, Dumbbell, Heart, Cake, Package, Video, MoreHorizontal,
+  Camera, Dumbbell, Heart, Cake, PawPrint, Briefcase, Users,
   Home, LayoutGrid, User, Bell, Phone, MapPin, Star, Pencil, Check,
   CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal
 } from "lucide-react";
@@ -22,41 +22,42 @@ const CATEGORIES = [
   { name: "프로필", Icon: Camera },
   { name: "바디프로필", Icon: Dumbbell },
   { name: "웨딩", Icon: Heart },
-  { name: "돌잔치", Icon: Cake },
-  { name: "제품", Icon: Package },
-  { name: "영상", Icon: Video },
-  { name: "기타", Icon: MoreHorizontal },
+  { name: "가족", Icon: Cake },
+  { name: "반려동물", Icon: PawPrint },
+  { name: "비즈니스", Icon: Briefcase },
+  { name: "커플", Icon: Heart },
+  { name: "우정", Icon: Users },
 ];
 
-const HOME_KEYWORDS = ["인기", "웨딩", "프로필", "가족", "커플", "셀프촬영"];
+const HOME_KEYWORDS = ["인기", "웨딩", "프로필", "가족", "반려동물", "비즈니스"];
 
 const HOME_AD_PAGES = [
   [
     { title: "로맨틱 웨딩", subtitle: "대표 추천 노출", tone: "from-rose-100 to-pink-100" },
     { title: "프로필 촬영", subtitle: "인기 작가 큐레이션", tone: "from-pink-50 to-rose-100" },
-    { title: "가족 스냅", subtitle: "시즌 추천 스튜디오", tone: "from-orange-50 to-rose-100" },
+    { title: "가족 촬영", subtitle: "주말 예약 인기", tone: "from-orange-50 to-rose-100" },
   ],
   [
     { title: "커플 촬영", subtitle: "야외 스냅 추천", tone: "from-fuchsia-50 to-pink-100" },
-    { title: "졸업 사진", subtitle: "캠퍼스 스냅 특집", tone: "from-rose-50 to-orange-100" },
+    { title: "우정 스냅", subtitle: "친구와 남기는 기록", tone: "from-rose-50 to-orange-100" },
     { title: "바디프로필", subtitle: "성수 인기 스튜디오", tone: "from-pink-100 to-rose-200" },
   ],
   [
-    { title: "브랜드 촬영", subtitle: "제품/룩북 촬영", tone: "from-rose-50 to-pink-100" },
-    { title: "증명 사진", subtitle: "당일 보정 가능", tone: "from-neutral-100 to-stone-100" },
-    { title: "키즈 촬영", subtitle: "가족 패키지 추천", tone: "from-pink-50 to-amber-50" },
+    { title: "비즈니스 촬영", subtitle: "브랜드/팀 프로필 추천", tone: "from-rose-50 to-pink-100" },
+    { title: "반려동물 촬영", subtitle: "반려 가족과 함께", tone: "from-neutral-100 to-stone-100" },
+    { title: "가족 패키지", subtitle: "3인 이상 촬영 추천", tone: "from-pink-50 to-amber-50" },
   ],
 ];
 
 const HOME_CATEGORY_GRID = [
-  { name: "웨딩", Icon: Heart },
   { name: "프로필", Icon: Camera },
-  { name: "피아노", Icon: Video },
-  { name: "가족사진", Icon: Cake },
+  { name: "바디프로필", Icon: Dumbbell },
+  { name: "웨딩", Icon: Heart },
+  { name: "가족", Icon: Cake },
+  { name: "반려동물", Icon: PawPrint },
+  { name: "비즈니스", Icon: Briefcase },
   { name: "커플", Icon: Heart },
-  { name: "졸업", Icon: LayoutGrid },
-  { name: "증명", Icon: Package },
-  { name: "바디", Icon: Dumbbell },
+  { name: "우정", Icon: Users },
 ];
 
 // 카테고리별 포트폴리오 (REQ-106: 탐색 경로의 카테고리에 맞는 사진만 표시)
@@ -71,18 +72,30 @@ const STUDIOS: {
   paymentCount: number;
   distanceKm: number;
 }[] = [
-  { id: 1, name: "루미에르 스튜디오", cats: ["프로필"], desc: "프로필촬영, 증명사진, 프로필영상, 이력서사진", area: "서울 강남구", price: 50000, rating: 4.8, reviews: 124, phone: "02-1234-5678", createdAt: "2026-04-10", location: "서울특별시 강남구 역삼동 123-4",
-    portfolios: { "프로필": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 302, distanceKm: 1.2 },
-  { id: 2, name: "선셋 포토랩", cats: ["바디프로필"], desc: "바디프로필, 커플촬영, 다이어트기록", area: "서울 성수동", price: 80000, rating: 4.9, reviews: 89, phone: "02-2345-6789", createdAt: "2026-03-28", location: "서울특별시 성동구 성수동 45-6",
-    portfolios: { "바디프로필": [1,2,3,4,5,6] }, vatIncluded: false, paymentCount: 287, distanceKm: 3.8 },
+  { id: 1, name: "루미에르 스튜디오", cats: ["프로필", "비즈니스"], desc: "프로필촬영, 임직원 프로필, 이력서사진", area: "서울 강남구", price: 50000, rating: 4.8, reviews: 124, phone: "02-1234-5678", createdAt: "2026-04-10", location: "서울특별시 강남구 역삼동 123-4",
+    portfolios: { "프로필": [1,2,3,4,5,6], "비즈니스": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 302, distanceKm: 1.2 },
+  { id: 2, name: "선셋 포토랩", cats: ["바디프로필", "커플"], desc: "바디프로필, 커플촬영, 운동기록", area: "서울 성수동", price: 80000, rating: 4.9, reviews: 89, phone: "02-2345-6789", createdAt: "2026-03-28", location: "서울특별시 성동구 성수동 45-6",
+    portfolios: { "바디프로필": [1,2,3,4,5,6], "커플": [1,2,3,4,5,6] }, vatIncluded: false, paymentCount: 287, distanceKm: 3.8 },
   { id: 3, name: "블룸 웨딩 스튜디오", cats: ["웨딩"], desc: "웨딩스냅, 본식촬영, 야외웨딩", area: "서울 잠실", price: 200000, rating: 4.7, reviews: 56, phone: "02-3456-7890", createdAt: "2026-04-05", location: "서울특별시 송파구 잠실동 78-9",
     portfolios: { "웨딩": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 190, distanceKm: 6.1 },
-  { id: 4, name: "미니미 키즈포토", cats: ["돌잔치"], desc: "돌잔치촬영, 백일사진, 가족사진", area: "경기 판교", price: 120000, rating: 4.6, reviews: 34, phone: "031-456-7890", createdAt: "2026-03-15", location: "경기도 성남시 분당구 판교동 12-3",
-    portfolios: { "돌잔치": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 96, distanceKm: 19.5 },
-  { id: 5, name: "프로덕트 랩", cats: ["제품"], desc: "제품촬영, 음식사진, 상세페이지, 스틸컷", area: "서울 홍대", price: 40000, rating: 4.5, reviews: 67, phone: "02-4567-8901", createdAt: "2026-04-12", location: "서울특별시 마포구 홍대입구 45-6",
-    portfolios: { "제품": [1,2,3,4,5,6] }, vatIncluded: false, paymentCount: 154, distanceKm: 8.4 },
-  { id: 6, name: "무브 필름랩", cats: ["영상"], desc: "유튜브촬영, 광고영상, 인터뷰", area: "서울 합정", price: 60000, rating: 4.7, reviews: 45, phone: "02-5678-9012", createdAt: "2026-04-08", location: "서울특별시 마포구 합정동 78-9",
-    portfolios: { "영상": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 118, distanceKm: 7.9 },
+  { id: 4, name: "패밀리 모먼츠", cats: ["가족"], desc: "가족사진, 3대 가족 스냅, 주말 촬영", area: "경기 일산", price: 130000, rating: 4.5, reviews: 31, phone: "031-9234-5678", createdAt: "2026-04-06", location: "경기도 고양시 일산동구 장항동 101-9",
+    portfolios: { "가족": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 57, distanceKm: 23.1 },
+  { id: 5, name: "펫모먼츠 스튜디오", cats: ["반려동물", "가족"], desc: "반려동물 촬영, 반려 가족 스냅, 맞춤 소품 제공", area: "서울 망원동", price: 90000, rating: 4.7, reviews: 44, phone: "02-4567-8901", createdAt: "2026-04-12", location: "서울특별시 마포구 망원동 45-6",
+    portfolios: { "반려동물": [1,2,3,4,5,6], "가족": [1,2,3,4,5,6] }, vatIncluded: false, paymentCount: 154, distanceKm: 8.4 },
+  { id: 6, name: "브랜드컷 스튜디오", cats: ["비즈니스", "프로필"], desc: "브랜드 프로필, 팀 촬영, 대표 인터뷰컷", area: "서울 합정", price: 60000, rating: 4.7, reviews: 45, phone: "02-5678-9012", createdAt: "2026-04-08", location: "서울특별시 마포구 합정동 78-9",
+    portfolios: { "비즈니스": [1,2,3,4,5,6], "프로필": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 118, distanceKm: 7.9 },
+  { id: 7, name: "프렌즈데이 스튜디오", cats: ["우정", "프로필"], desc: "우정촬영, 졸업 전 스냅, 컨셉 프로필", area: "서울 신촌", price: 70000, rating: 4.6, reviews: 28, phone: "02-6789-0123", createdAt: "2026-04-14", location: "서울특별시 서대문구 신촌동 21-3",
+    portfolios: { "우정": [1,2,3,4,5,6], "프로필": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 84, distanceKm: 5.1 },
+  { id: 8, name: "아이덴티티 프로필", cats: ["프로필"], desc: "취업 프로필, 증명용 프로필, 개인 브랜딩 촬영", area: "서울 종로구", price: 30000, rating: 4.4, reviews: 52, phone: "02-7890-1234", createdAt: "2026-04-09", location: "서울특별시 종로구 관철동 14-7",
+    portfolios: { "프로필": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 111, distanceKm: 4.4 },
+  { id: 9, name: "커플모먼트 스튜디오", cats: ["커플"], desc: "커플촬영, 기념일 스냅, 데이트 사진", area: "서울 연남동", price: 110000, rating: 4.8, reviews: 39, phone: "02-8901-2345", createdAt: "2026-04-03", location: "서울특별시 마포구 연남동 33-12",
+    portfolios: { "커플": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 92, distanceKm: 9.1 },
+  { id: 10, name: "프라이빗 웨딩하우스", cats: ["웨딩"], desc: "프라이빗 웨딩, 실내 촬영, 웨딩 스냅", area: "서울 청담동", price: 260000, rating: 4.9, reviews: 21, phone: "02-9012-3456", createdAt: "2026-04-16", location: "서울특별시 강남구 청담동 55-1",
+    portfolios: { "웨딩": [1,2,3,4,5,6] }, vatIncluded: false, paymentCount: 61, distanceKm: 2.8 },
+  { id: 11, name: "바디에디션 랩", cats: ["바디프로필"], desc: "바디 프로필, 운동기록 촬영, 피트니스 브랜딩", area: "서울 성신여대", price: 150000, rating: 4.8, reviews: 26, phone: "02-9345-6789", createdAt: "2026-04-13", location: "서울특별시 성북구 동선동 45-2",
+    portfolios: { "바디프로필": [1,2,3,4,5,6] }, vatIncluded: false, paymentCount: 73, distanceKm: 11.6 },
+  { id: 12, name: "비즈니스 데이랩", cats: ["비즈니스", "우정"], desc: "사내 프로필, 팀 스냅, 워크숍 단체 촬영", area: "서울 서초구", price: 95000, rating: 4.7, reviews: 18, phone: "02-9123-4567", createdAt: "2026-04-11", location: "서울특별시 서초구 서초동 88-4",
+    portfolios: { "비즈니스": [1,2,3,4,5,6], "우정": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 49, distanceKm: 7.3 },
 ];
 
 const HAIR_MAKEUP_OPTIONS = [
@@ -104,7 +117,7 @@ const BOOKED_TIMES = ["10:00", "11:00", "15:00"];
 const CONSUMER_NOTIFICATIONS: { id: number; type: string; text: string; time: string; read: boolean; action?: { screen: Screen; tab?: Tab; reviewTarget?: string } }[] = [
   { id: 1, type: "booking", text: "루미에르 스튜디오 예약이 확정되었습니다", time: "10분 전", read: false, action: { screen: "myBookings", tab: "mypage" } },
   { id: 2, type: "remind", text: "내일 선셋 포토랩 촬영이 있습니다", time: "1시간 전", read: false, action: { screen: "myBookings", tab: "mypage" } },
-  { id: 3, type: "review", text: "프로덕트 랩 촬영은 어떠셨나요? 리뷰를 남겨주세요", time: "3시간 전", read: true, action: { screen: "reviewWrite", tab: "mypage", reviewTarget: "프로덕트 랩" } },
+  { id: 3, type: "review", text: "브랜드컷 스튜디오 촬영은 어떠셨나요? 리뷰를 남겨주세요", time: "3시간 전", read: true, action: { screen: "reviewWrite", tab: "mypage", reviewTarget: "브랜드컷 스튜디오" } },
   { id: 4, type: "booking", text: "블룸 웨딩 스튜디오 예약이 확정되었습니다", time: "1일 전", read: true, action: { screen: "myBookings", tab: "mypage" } },
   { id: 5, type: "system", text: "포토팟 앱이 업데이트되었습니다", time: "3일 전", read: true },
 ];
@@ -115,33 +128,33 @@ const UPCOMING_BOOKINGS = [
   { studio: "블룸 웨딩 스튜디오", date: "2026.05.25 (일)", time: "10:00~14:00", cat: "웨딩", price: "₩800,000", status: "대기" },
 ];
 const COMPLETED_BOOKINGS = [
-  { studio: "프로덕트 랩", date: "2026.04.20 (일)", time: "13:00~15:00", cat: "제품", price: "₩80,000", status: "완료", canReview: true },
+  { studio: "브랜드컷 스튜디오", date: "2026.04.20 (일)", time: "13:00~15:00", cat: "비즈니스", price: "₩80,000", status: "완료", canReview: true },
   { studio: "블룸 웨딩 스튜디오", date: "2026.04.05 (토)", time: "10:00~14:00", cat: "웨딩", price: "₩800,000", status: "완료", canReview: false },
-  { studio: "미니미 키즈포토", date: "2026.03.22 (토)", time: "10:00~12:00", cat: "돌잔치", price: "₩240,000", status: "완료", canReview: false },
+  { studio: "패밀리 모먼츠", date: "2026.03.22 (토)", time: "10:00~12:00", cat: "가족", price: "₩240,000", status: "완료", canReview: false },
 ];
 const CANCELLED_BOOKINGS = [
-  { studio: "무브 필름랩", date: "2026.04.15 (화)", time: "15:00~17:00", cat: "영상", price: "₩120,000", status: "취소됨", reason: "소비자 취소" },
+  { studio: "펫모먼츠 스튜디오", date: "2026.04.15 (화)", time: "15:00~17:00", cat: "반려동물", price: "₩120,000", status: "취소됨", reason: "소비자 취소" },
   { studio: "루미에르 스튜디오", date: "2026.03.28 (금)", time: "10:00~12:00", cat: "프로필", price: "₩100,000", status: "취소됨", reason: "업체 사유" },
 ];
 const MY_REVIEWS_DATA = [
   { studio: "블룸 웨딩 스튜디오", date: "2026.04.06", rating: 5, text: "정말 만족스러운 촬영이었습니다. 결과물도 훌륭해요!" },
-  { studio: "미니미 키즈포토", date: "2026.03.23", rating: 4, text: "아이가 편안하게 촬영할 수 있었어요. 스태프가 친절합니다." },
-  { studio: "프로덕트 랩", date: "2026.03.10", rating: 5, text: "제품 사진 퀄리티가 기대 이상이에요. 재방문 예정!" },
+  { studio: "패밀리 모먼츠", date: "2026.03.23", rating: 4, text: "가족 모두 편안하게 촬영할 수 있었어요. 스태프가 친절합니다." },
+  { studio: "브랜드컷 스튜디오", date: "2026.03.10", rating: 5, text: "팀 프로필 결과물이 기대 이상이에요. 재방문 예정입니다!" },
 ];
 const PAYMENT_HISTORY = [
   { studio: "루미에르 스튜디오", date: "2026.05.08", amount: "₩100,000", method: "카드", status: "결제완료" },
   { studio: "선셋 포토랩", date: "2026.05.05", amount: "₩160,000", method: "카드", status: "결제완료" },
   { studio: "블룸 웨딩 스튜디오", date: "2026.04.03", amount: "₩800,000", method: "카카오페이", status: "결제완료" },
-  { studio: "프로덕트 랩", date: "2026.04.18", amount: "₩80,000", method: "카드", status: "결제완료" },
-  { studio: "무브 필름랩", date: "2026.04.13", amount: "₩120,000", method: "카드", status: "환불완료" },
+  { studio: "브랜드컷 스튜디오", date: "2026.04.18", amount: "₩80,000", method: "카드", status: "결제완료" },
+  { studio: "펫모먼츠 스튜디오", date: "2026.04.13", amount: "₩120,000", method: "카드", status: "환불완료" },
 ];
 const ALL_MY_BOOKINGS_FOR_MYPAGE = [
   { studio: "루미에르 스튜디오", date: "2026.05.10 (토) 14:00~16:00", cat: "프로필 촬영", status: "확정" },
   { studio: "선셋 포토랩", date: "2026.05.18 (일) 10:00~12:00", cat: "바디프로필", status: "확정" },
   { studio: "블룸 웨딩 스튜디오", date: "2026.05.25 (일) 10:00~14:00", cat: "웨딩", status: "대기" },
-  { studio: "프로덕트 랩", date: "2026.04.20 (일) 13:00~15:00", cat: "제품", status: "완료" },
-  { studio: "미니미 키즈포토", date: "2026.04.12 (토) 10:00~12:00", cat: "돌잔치", status: "완료" },
-  { studio: "무브 필름랩", date: "2026.04.05 (토) 15:00~17:00", cat: "영상", status: "취소" },
+  { studio: "브랜드컷 스튜디오", date: "2026.04.20 (일) 13:00~15:00", cat: "비즈니스", status: "완료" },
+  { studio: "패밀리 모먼츠", date: "2026.04.12 (토) 10:00~12:00", cat: "가족", status: "완료" },
+  { studio: "펫모먼츠 스튜디오", date: "2026.04.05 (토) 15:00~17:00", cat: "반려동물", status: "취소" },
   { studio: "블룸 웨딩 스튜디오", date: "2026.03.22 (토) 10:00~14:00", cat: "웨딩", status: "완료" },
 ];
 
@@ -165,6 +178,7 @@ export default function ConsumerApp() {
   const [adIdx, setAdIdx] = useState(0);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
+  const [reviewPhotos, setReviewPhotos] = useState<number[]>([]);
   const [reviewTarget, setReviewTarget] = useState("");
   const [myBookingPage, setMyBookingPage] = useState(0);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -182,6 +196,9 @@ export default function ConsumerApp() {
   const [editingReviewIdx, setEditingReviewIdx] = useState<number | null>(null);
   const [editReviewRating, setEditReviewRating] = useState(5);
   const [editReviewText, setEditReviewText] = useState("");
+  const [editReviewPhotos, setEditReviewPhotos] = useState<number[]>([]);
+  const [deleteRequestIdx, setDeleteRequestIdx] = useState<number | null>(null);
+  const [deleteRequestReason, setDeleteRequestReason] = useState("");
 
   const touchStartX = useRef(0);
   const historyStack = useRef<{ s: Screen; t: Tab }[]>([]);
@@ -208,9 +225,9 @@ export default function ConsumerApp() {
       if (activeKeyword === "인기") return true;
       if (activeKeyword === "웨딩") return s.cats.includes("웨딩");
       if (activeKeyword === "프로필") return s.cats.includes("프로필");
-      if (activeKeyword === "가족") return s.desc.includes("가족");
-      if (activeKeyword === "커플") return s.desc.includes("커플");
-      if (activeKeyword === "셀프촬영") return s.desc.includes("영상") || s.desc.includes("프로필");
+      if (activeKeyword === "가족") return s.cats.includes("가족");
+      if (activeKeyword === "반려동물") return s.cats.includes("반려동물");
+      if (activeKeyword === "비즈니스") return s.cats.includes("비즈니스");
       return true;
     })
     .filter(s => {
@@ -266,8 +283,8 @@ export default function ConsumerApp() {
   const toggleOption = (id: number) => setSelectedOptions(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
   const timeIdx = TIMES.indexOf(selectedTime);
-  const endTime = TIMES[Math.min(timeIdx + 2, TIMES.length - 1)] || "22:00";
-  const basePrice = selectedStudio.price * 2;
+  const endTime = TIMES[Math.min(timeIdx + 1, TIMES.length - 1)] || "22:00";
+  const basePrice = selectedStudio.price;
   const optionsTotal = selectedOptions.reduce((sum, id) => sum + (HAIR_MAKEUP_OPTIONS.find(o => o.id === id)?.price || 0), 0);
   const totalPrice = basePrice + optionsTotal;
 
@@ -307,6 +324,8 @@ export default function ConsumerApp() {
     setDetailEntryCat(fromCat || "");
     navigate("detail");
   };
+  const addReviewPhoto = () => setReviewPhotos(prev => prev.length >= 5 ? prev : [...prev, Date.now()]);
+  const addEditReviewPhoto = () => setEditReviewPhotos(prev => prev.length >= 5 ? prev : [...prev, Date.now()]);
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8 px-4">
@@ -424,7 +443,7 @@ export default function ConsumerApp() {
                     <button
                       key={category.name}
                       onClick={() => {
-                        setCategoryCat(category.name === "가족사진" ? "돌잔치" : category.name);
+                        setCategoryCat(category.name);
                         setScreen("category");
                         setTab("category");
                       }}
@@ -836,13 +855,14 @@ export default function ConsumerApp() {
               </div>
               <div className="space-y-3 mb-4 px-1">
                 <div className="flex justify-between text-sm"><span className="text-gray-500">날짜</span><span className="font-medium">2026.05.{selectedDate} ({["목","금","토","일","월","화","수"][selectedDate - 8]})</span></div>
-                <div className="flex justify-between text-sm"><span className="text-gray-500">시간</span><span className="font-medium">{selectedTime} ~ {endTime} (2시간)</span></div>
+                <div className="flex justify-between text-sm"><span className="text-gray-500">시간</span><span className="font-medium">{selectedTime} ~ {endTime} (1시간)</span></div>
                 <div className="flex justify-between text-sm"><span className="text-gray-500">촬영 비용</span><span className="font-medium">₩{basePrice.toLocaleString()}</span></div>
                 {selectedOptions.length > 0 && selectedOptions.map(id => {
                   const opt = HAIR_MAKEUP_OPTIONS.find(o => o.id === id);
                   return opt ? <div key={id} className="flex justify-between text-sm"><span className="text-gray-500">{opt.name}</span><span className="font-medium">+₩{opt.price.toLocaleString()}</span></div> : null;
                 })}
                 <div className="flex justify-between text-sm border-t border-gray-100 pt-3"><span className="text-gray-500 font-bold">총 금액</span><span className="font-bold text-primary text-base">₩{totalPrice.toLocaleString()}</span></div>
+                <p className="text-[11px] text-gray-400 pt-1">예약금 결제 후 업체 승인 시 확정되며, 48시간 내 미승인 시 자동 취소됩니다.</p>
               </div>
 
               <button onClick={() => navigate("done")} className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm">결제하기 · 토스페이먼츠</button>
@@ -853,14 +873,15 @@ export default function ConsumerApp() {
           {screen === "done" && (
             <div className="p-6 flex flex-col items-center justify-center" style={{ minHeight: 500 }}>
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary"><CheckCircle2 size={48} strokeWidth={1.5} /></div>
-              <h2 className="text-lg font-bold mb-1">예약 완료!</h2>
+              <h2 className="text-lg font-bold mb-1">예약 요청 완료!</h2>
               <p className="text-sm text-gray-500">{selectedStudio.name}</p>
               <p className="text-xs text-gray-400 mb-6">2026.05.{selectedDate} {selectedTime} ~ {endTime}</p>
               <div className="bg-primary/5 rounded-xl p-4 w-full mb-4 border border-primary/10">
-                <p className="text-xs text-primary font-medium">토스페이먼츠 결제 완료</p>
+                <p className="text-xs text-primary font-medium">토스페이먼츠 예약금 결제 완료</p>
                 <p className="text-sm font-bold text-gray-900 mt-1">₩{totalPrice.toLocaleString()}</p>
+                <p className="text-[11px] text-gray-500 mt-2">업체 승인 후 예약이 확정되며, 48시간 내 미승인 시 자동 취소됩니다.</p>
               </div>
-              <button onClick={() => { setScreen("myBookings"); setTab("mypage"); }} className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium text-sm mb-2">예약 내역 확인</button>
+              <button onClick={() => { setScreen("myBookings"); setTab("mypage"); }} className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium text-sm mb-2">예약 요청 내역 확인</button>
               <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm">홈으로</button>
             </div>
           )}
@@ -874,6 +895,7 @@ export default function ConsumerApp() {
                   <button key={f} onClick={() => setBookingFilter(f)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${bookingFilter === f ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{f} {f === "예정" ? UPCOMING_BOOKINGS.length : f === "완료" ? COMPLETED_BOOKINGS.length : CANCELLED_BOOKINGS.length}</button>
                 ))}
               </div>
+              {bookingFilter === "완료" && <p className="text-[11px] text-gray-400 mb-3">리뷰는 업체가 촬영 건을 완료 처리한 시점부터 2주 이내 작성할 수 있습니다.</p>}
               {filteredBookings.length === 0 ? <div className="text-center py-12"><p className="text-gray-400 text-sm">해당 예약이 없습니다</p></div> : filteredBookings.map((b, i) => (
                 <div key={i} className={`bg-gray-50 rounded-xl p-4 mb-3 ${bookingFilter === "취소" ? "opacity-60" : ""}`}>
                   <div className="flex justify-between items-start mb-2">
@@ -883,7 +905,7 @@ export default function ConsumerApp() {
                   <div className="flex justify-between items-center pt-2 border-t border-gray-100">
                     <span className="text-sm font-bold">{b.price}</span>
                     {bookingFilter === "완료" && (b as { canReview?: boolean }).canReview && (
-                      <button onClick={() => { setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); navigate("reviewWrite"); }} className="text-xs text-primary font-medium">리뷰 작성 →</button>
+                      <button onClick={() => { setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); setReviewPhotos([]); navigate("reviewWrite"); }} className="text-xs text-primary font-medium">리뷰 작성 →</button>
                     )}
                     {bookingFilter === "취소" && <span className="text-[10px] text-gray-400">{(b as { reason?: string }).reason}</span>}
                   </div>
@@ -904,10 +926,28 @@ export default function ConsumerApp() {
               </div>
               <div className="mb-6">
                 <p className="text-sm font-medium mb-2">리뷰 내용</p>
-                <textarea value={reviewText} onChange={e => setReviewText(e.target.value)} placeholder="촬영 경험을 공유해주세요" className="w-full bg-gray-50 rounded-xl p-4 text-sm outline-none resize-none border border-gray-200 focus:border-primary" rows={5} />
-                <p className="text-right text-[10px] text-gray-400 mt-1">{reviewText.length}/500</p>
+                <textarea value={reviewText} onChange={e => setReviewText(e.target.value)} maxLength={300} placeholder="촬영 경험을 30자 이상 작성해주세요" className="w-full bg-gray-50 rounded-xl p-4 text-sm outline-none resize-none border border-gray-200 focus:border-primary" rows={5} />
+                <div className="mt-1 flex items-center justify-between gap-3">
+                  <p className="text-[10px] text-gray-400">완료 처리 후 2주 이내 작성 가능 · 사진 최대 5장 · 삭제는 요청 후 승인</p>
+                  <p className="text-[10px] text-gray-400 shrink-0">{reviewText.length}/300</p>
+                </div>
               </div>
-              <button onClick={() => { setScreen("myBookings"); setTab("mypage"); }} className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm">리뷰 등록</button>
+              <div className="mb-6">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-sm font-medium">리뷰 사진</p>
+                  <span className="text-[10px] text-gray-400">{reviewPhotos.length}/5장</span>
+                </div>
+                <div className="grid grid-cols-5 gap-2">
+                  <button onClick={addReviewPhoto} disabled={reviewPhotos.length >= 5} className={`aspect-square rounded-xl border-2 border-dashed text-sm ${reviewPhotos.length >= 5 ? "border-gray-200 bg-gray-50 text-gray-300" : "border-gray-300 bg-gray-50 text-gray-400"}`}>+</button>
+                  {reviewPhotos.map(photoId => (
+                    <div key={photoId} className="relative aspect-square rounded-xl bg-gray-100">
+                      <div className="flex h-full items-center justify-center text-gray-300"><ImageIcon size={18} strokeWidth={1.5} /></div>
+                      <button onClick={() => setReviewPhotos(prev => prev.filter(id => id !== photoId))} className="absolute right-1 top-1 rounded-full bg-white px-1 text-[10px] text-gray-500 shadow">x</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <button onClick={() => { setScreen("myBookings"); setTab("mypage"); setReviewPhotos([]); }} disabled={reviewText.trim().length < 30} className={`w-full py-3.5 rounded-xl font-bold text-sm ${reviewText.trim().length >= 30 ? "bg-primary text-white" : "bg-gray-200 text-gray-400"}`}>리뷰 등록</button>
             </div>
           )}
 
@@ -920,8 +960,8 @@ export default function ConsumerApp() {
                   <div className="flex justify-between items-start mb-2"><div><p className="text-sm font-bold">{r.studio}</p><p className="text-xs text-gray-400 mt-0.5">{r.date}</p></div><span className="text-xs text-yellow-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span></div>
                   <p className="text-xs text-gray-600">{r.text}</p>
                   <div className="flex justify-end gap-2 mt-3 pt-2 border-t border-gray-100">
-                    <button onClick={() => { setEditingReviewIdx(i); setEditReviewRating(r.rating); setEditReviewText(r.text); }} className="text-[10px] text-primary px-2 py-1 font-medium">수정</button>
-                    <button className="text-[10px] text-red-400 px-2 py-1">삭제</button>
+                    <button onClick={() => { setEditingReviewIdx(i); setEditReviewRating(r.rating); setEditReviewText(r.text); setEditReviewPhotos([i + 1]); }} className="text-[10px] text-primary px-2 py-1 font-medium">수정</button>
+                    <button onClick={() => { setDeleteRequestIdx(i); setDeleteRequestReason(""); }} className="text-[10px] text-red-400 px-2 py-1">삭제 요청</button>
                   </div>
                 </div>
               ))}
@@ -940,12 +980,30 @@ export default function ConsumerApp() {
               </div>
               <div className="mb-6">
                 <p className="text-sm font-medium mb-2">리뷰 내용</p>
-                <textarea value={editReviewText} onChange={e => setEditReviewText(e.target.value)} className="w-full bg-gray-50 rounded-xl p-4 text-sm outline-none resize-none border border-gray-200 focus:border-primary" rows={5} />
-                <p className="text-right text-[10px] text-gray-400 mt-1">{editReviewText.length}/500</p>
+                <textarea value={editReviewText} onChange={e => setEditReviewText(e.target.value)} maxLength={300} className="w-full bg-gray-50 rounded-xl p-4 text-sm outline-none resize-none border border-gray-200 focus:border-primary" rows={5} />
+                <div className="mt-1 flex items-center justify-between gap-3">
+                  <p className="text-[10px] text-gray-400">30자 이상 입력해야 수정 가능 · 삭제는 요청 후 승인됩니다.</p>
+                  <p className="text-[10px] text-gray-400 shrink-0">{editReviewText.length}/300</p>
+                </div>
+              </div>
+              <div className="mb-6">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-sm font-medium">리뷰 사진</p>
+                  <span className="text-[10px] text-gray-400">{editReviewPhotos.length}/5장</span>
+                </div>
+                <div className="grid grid-cols-5 gap-2">
+                  <button onClick={addEditReviewPhoto} disabled={editReviewPhotos.length >= 5} className={`aspect-square rounded-xl border-2 border-dashed text-sm ${editReviewPhotos.length >= 5 ? "border-gray-200 bg-gray-50 text-gray-300" : "border-gray-300 bg-gray-50 text-gray-400"}`}>+</button>
+                  {editReviewPhotos.map(photoId => (
+                    <div key={photoId} className="relative aspect-square rounded-xl bg-gray-100">
+                      <div className="flex h-full items-center justify-center text-gray-300"><ImageIcon size={18} strokeWidth={1.5} /></div>
+                      <button onClick={() => setEditReviewPhotos(prev => prev.filter(id => id !== photoId))} className="absolute right-1 top-1 rounded-full bg-white px-1 text-[10px] text-gray-500 shadow">x</button>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="flex gap-2">
                 <button onClick={() => setEditingReviewIdx(null)} className="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-medium text-sm">취소</button>
-                <button onClick={() => setEditingReviewIdx(null)} className="flex-1 bg-primary text-white py-3 rounded-xl font-bold text-sm">수정 완료</button>
+                <button onClick={() => { setEditingReviewIdx(null); setEditReviewPhotos([]); }} disabled={editReviewText.trim().length < 30} className={`flex-1 py-3 rounded-xl font-bold text-sm ${editReviewText.trim().length >= 30 ? "bg-primary text-white" : "bg-gray-200 text-gray-400"}`}>수정 완료</button>
               </div>
             </div>
           )}
@@ -1026,7 +1084,8 @@ export default function ConsumerApp() {
               <p className="text-xs text-gray-400 mb-10">스튜디오 대관·예약 플랫폼</p>
 
               <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-[#FEE500] text-[#191919] py-3 rounded-xl font-bold text-sm mb-2 flex items-center justify-center gap-2">💬 카카오로 시작하기</button>
-              <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-[#03C75A] text-white py-3 rounded-xl font-bold text-sm mb-6 flex items-center justify-center gap-2">🟢 네이버로 시작하기</button>
+              <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-[#03C75A] text-white py-3 rounded-xl font-bold text-sm mb-2 flex items-center justify-center gap-2">🟢 네이버로 시작하기</button>
+              <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-white border border-gray-200 text-gray-700 py-3 rounded-xl font-bold text-sm mb-6 flex items-center justify-center gap-2">G 구글로 시작하기</button>
 
               <div className="flex items-center gap-4 w-full mb-6">
                 <div className="flex-1 h-px bg-gray-200" /><span className="text-xs text-gray-400">또는</span><div className="flex-1 h-px bg-gray-200" />
@@ -1078,7 +1137,8 @@ export default function ConsumerApp() {
 
               <p className="text-xs text-gray-400 mb-3">또는 SNS로 가입</p>
               <button className="w-full bg-[#FEE500] text-[#191919] py-3 rounded-xl font-bold text-sm mb-2">💬 카카오로 가입</button>
-              <button className="w-full bg-[#03C75A] text-white py-3 rounded-xl font-bold text-sm mb-6">🟢 네이버로 가입</button>
+              <button className="w-full bg-[#03C75A] text-white py-3 rounded-xl font-bold text-sm mb-2">🟢 네이버로 가입</button>
+              <button className="w-full bg-white border border-gray-200 text-gray-700 py-3 rounded-xl font-bold text-sm mb-6">G 구글로 가입</button>
 
               <button onClick={() => { if (agreeTerms && agreePrivacy) { setScreen("home"); setTab("home"); } }} disabled={!agreeTerms || !agreePrivacy}
                 className={`w-full py-3 rounded-xl font-bold text-sm ${agreeTerms && agreePrivacy ? "bg-primary text-white" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}>가입 완료</button>
@@ -1193,6 +1253,29 @@ export default function ConsumerApp() {
                 <span className="text-[10px]">{t.label}</span>
               </button>
             ))}
+          </div>
+        )}
+
+        {deleteRequestIdx !== null && (
+          <div className="absolute inset-0 z-30 flex items-end bg-black/45">
+            <div className="w-full rounded-t-3xl bg-white p-5 pb-8">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-base font-bold">리뷰 삭제 요청</h3>
+                <button onClick={() => { setDeleteRequestIdx(null); setDeleteRequestReason(""); }} className="text-sm text-gray-400">닫기</button>
+              </div>
+              <div className="mb-4 rounded-xl bg-gray-50 p-4">
+                <p className="text-sm font-bold">{MY_REVIEWS_DATA[deleteRequestIdx].studio}</p>
+                <p className="mt-1 text-[11px] text-gray-400">삭제는 바로 처리되지 않고, 사유 확인 후 어드민 승인으로 진행됩니다.</p>
+              </div>
+              <div className="mb-5">
+                <label className="mb-2 block text-sm font-medium">삭제 요청 사유</label>
+                <textarea value={deleteRequestReason} onChange={e => setDeleteRequestReason(e.target.value)} placeholder="삭제를 요청하는 이유를 입력해주세요" className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm outline-none focus:border-primary" rows={4} />
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => { setDeleteRequestIdx(null); setDeleteRequestReason(""); }} className="flex-1 rounded-xl bg-gray-100 py-3 text-sm font-medium text-gray-600">취소</button>
+                <button onClick={() => { setDeleteRequestIdx(null); setDeleteRequestReason(""); }} disabled={!deleteRequestReason.trim()} className={`flex-1 rounded-xl py-3 text-sm font-bold ${deleteRequestReason.trim() ? "bg-primary text-white" : "bg-gray-200 text-gray-400"}`}>삭제 요청 제출</button>
+              </div>
+            </div>
           </div>
         )}
       </div>
