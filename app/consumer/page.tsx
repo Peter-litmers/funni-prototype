@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -204,6 +204,14 @@ export default function ConsumerApp() {
   const touchStartX = useRef(0);
   const historyStack = useRef<{ s: Screen; t: Tab }[]>([]);
 
+  useEffect(() => {
+    if (screen !== "home") return;
+    const timer = window.setInterval(() => {
+      setAdIdx(prev => (prev + 1) % HOME_AD_PAGES.length);
+    }, 4000);
+    return () => window.clearInterval(timer);
+  }, [screen]);
+
   const navigate = (to: Screen) => {
     historyStack.current.push({ s: screen, t: tab });
     setScreen(to);
@@ -404,14 +412,14 @@ export default function ConsumerApp() {
                         {page.map(card => (
                           <button
                             key={card.title}
-                            className={`aspect-square rounded-2xl border border-gray-200 bg-gradient-to-br ${card.tone} p-3 text-left`}
+                            className={`h-32 rounded-2xl border border-gray-200 bg-gradient-to-br ${card.tone} p-3 text-left`}
                           >
                             <span className="inline-flex rounded-full bg-white/80 px-2 py-0.5 text-[9px] font-semibold text-gray-500">
                               AD
                             </span>
-                            <div className="mt-4">
-                              <p className="text-xs font-bold leading-tight text-gray-900">{card.title}</p>
-                              <p className="mt-1 text-[10px] leading-snug text-gray-500">{card.subtitle}</p>
+                            <div className="mt-4 flex h-[76px] flex-col">
+                              <p className="min-h-[32px] text-xs font-bold leading-tight text-gray-900">{card.title}</p>
+                              <p className="mt-1 min-h-[28px] text-[10px] leading-snug text-gray-500">{card.subtitle}</p>
                             </div>
                           </button>
                         ))}
@@ -497,8 +505,8 @@ export default function ConsumerApp() {
               <div className="mt-6">
                 <div className="mb-3 flex items-center justify-between px-4">
                   <div>
-                    <p className="text-[11px] text-gray-400">실시간 탐색 기준</p>
-                    <h3 className="text-[15px] font-bold text-gray-900">지금 인기 있는 스튜디오</h3>
+                    <p className="text-[11px] text-gray-400">결제랑 평점에 기반으로 보여줘요</p>
+                    <h3 className="text-[15px] font-bold text-gray-900">지금 많이 찾는 스튜디오</h3>
                   </div>
                   <button className="text-xs font-medium text-gray-400">전체보기</button>
                 </div>
