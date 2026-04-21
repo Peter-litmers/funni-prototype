@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Camera, Dumbbell, Heart, Cake, PawPrint, Briefcase, Users, Sparkles,
+  Camera, Dumbbell, Heart, Cake, PawPrint, Briefcase, Baby, Sparkles,
   Home, LayoutGrid, User, Bell, Phone, Calendar, MapPin, Search, SlidersHorizontal,
   DollarSign, BarChart3, Building2, ImageIcon, X, Star
 } from "lucide-react";
@@ -33,7 +33,7 @@ const CATEGORIES = [
   { name: "반려동물", Icon: PawPrint },
   { name: "비즈니스", Icon: Briefcase },
   { name: "커플", Icon: Heart },
-  { name: "우정", Icon: Users },
+  { name: "아기", Icon: Baby },
 ];
 
 const HOME_KEYWORDS = ["인기", "웨딩", "프로필", "가족", "반려동물", "비즈니스"];
@@ -46,7 +46,7 @@ const HOME_AD_PAGES = [
   ],
   [
     { title: "커플 촬영", subtitle: "야외 스냅 추천", tone: "from-fuchsia-50 to-pink-100" },
-    { title: "우정 스냅", subtitle: "친구와 남기는 기록", tone: "from-rose-50 to-orange-100" },
+    { title: "아기 촬영", subtitle: "성장 기록 남기기", tone: "from-rose-50 to-orange-100" },
     { title: "바디프로필", subtitle: "성수 인기 스튜디오", tone: "from-pink-100 to-rose-200" },
   ],
   [
@@ -64,7 +64,7 @@ const HOME_CATEGORY_GRID = [
   { name: "반려동물", Icon: PawPrint },
   { name: "비즈니스", Icon: Briefcase },
   { name: "커플", Icon: Heart },
-  { name: "우정", Icon: Users },
+  { name: "아기", Icon: Baby },
 ];
 
 const STUDIOS = [
@@ -74,7 +74,7 @@ const STUDIOS = [
   { id: 4, name: "패밀리 모먼츠", cat: "가족", desc: "가족사진, 3대 가족 스냅, 주말 촬영", area: "경기 일산", price: "130,000", rating: 4.5, reviews: 31, phone: "031-9234-5678", paymentCount: 57, distanceKm: 23.1 },
   { id: 5, name: "펫모먼츠 스튜디오", cat: "반려동물", desc: "반려동물 촬영, 반려 가족 스냅, 맞춤 소품 제공", area: "서울 망원동", price: "90,000", rating: 4.7, reviews: 44, phone: "02-4567-8901", paymentCount: 154, distanceKm: 8.4 },
   { id: 6, name: "브랜드컷 스튜디오", cat: "비즈니스", desc: "브랜드 프로필, 팀 촬영, 대표 인터뷰컷", area: "서울 합정", price: "60,000", rating: 4.7, reviews: 45, phone: "02-5678-9012", paymentCount: 118, distanceKm: 7.9 },
-  { id: 7, name: "프렌즈데이 스튜디오", cat: "우정", desc: "우정촬영, 졸업 전 스냅, 컨셉 프로필", area: "서울 신촌", price: "70,000", rating: 4.6, reviews: 28, phone: "02-6789-0123", paymentCount: 84, distanceKm: 5.1 },
+  { id: 7, name: "베이비데이 스튜디오", cat: "아기", desc: "아기 촬영, 성장 스냅, 컨셉 프로필", area: "서울 신촌", price: "70,000", rating: 4.6, reviews: 28, phone: "02-6789-0123", paymentCount: 84, distanceKm: 5.1 },
   { id: 8, name: "아이덴티티 프로필", cat: "프로필", desc: "취업 프로필, 개인 브랜딩 촬영, 이력서 사진", area: "서울 종로구", price: "30,000", rating: 4.4, reviews: 52, phone: "02-7890-1234", paymentCount: 111, distanceKm: 4.4 },
   { id: 9, name: "커플모먼트 스튜디오", cat: "커플", desc: "커플촬영, 기념일 스냅, 데이트 사진", area: "서울 연남동", price: "110,000", rating: 4.8, reviews: 39, phone: "02-8901-2345", paymentCount: 92, distanceKm: 9.1 },
   { id: 10, name: "프라이빗 웨딩하우스", cat: "웨딩", desc: "셀프웨딩, 프라이빗 촬영, 웨딩 스냅", area: "서울 청담동", price: "260,000", rating: 4.9, reviews: 21, phone: "02-9012-3456", paymentCount: 61, distanceKm: 2.8 },
@@ -810,7 +810,7 @@ export default function BusinessApp() {
                 <div>
                   <label className="text-xs text-gray-500 mb-1.5 block font-medium">카테고리 (복수 선택)</label>
                   <div className="flex flex-wrap gap-2">
-                    {["프로필", "바디프로필", "웨딩", "가족", "반려동물", "비즈니스", "커플", "우정"].map(c => (
+                    {["프로필", "바디프로필", "웨딩", "가족", "반려동물", "비즈니스", "커플", "아기"].map(c => (
                       <button key={c} onClick={() => toggleCat(c)}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                           selectedCats.includes(c) ? "bg-primary text-white border-primary" : "bg-white text-gray-400 border-gray-200"

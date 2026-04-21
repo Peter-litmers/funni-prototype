@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Camera, Dumbbell, Heart, Cake, PawPrint, Briefcase, Users, Sparkles,
+  Camera, Dumbbell, Heart, Cake, PawPrint, Briefcase, Baby, Sparkles,
   Home, LayoutGrid, User, Bell, Phone, MapPin, Star, Pencil, Check,
   CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal
 } from "lucide-react";
@@ -26,7 +26,7 @@ const CATEGORIES = [
   { name: "반려동물", Icon: PawPrint },
   { name: "비즈니스", Icon: Briefcase },
   { name: "커플", Icon: Heart },
-  { name: "우정", Icon: Users },
+  { name: "아기", Icon: Baby },
 ];
 
 const HOME_KEYWORDS = ["인기", "웨딩", "프로필", "가족", "반려동물", "비즈니스"];
@@ -39,7 +39,7 @@ const HOME_AD_PAGES = [
   ],
   [
     { title: "커플 촬영", subtitle: "야외 스냅 추천", tone: "from-fuchsia-50 to-pink-100" },
-    { title: "우정 스냅", subtitle: "친구와 남기는 기록", tone: "from-rose-50 to-orange-100" },
+    { title: "아기 촬영", subtitle: "성장 기록 남기기", tone: "from-rose-50 to-orange-100" },
     { title: "바디프로필", subtitle: "성수 인기 스튜디오", tone: "from-pink-100 to-rose-200" },
   ],
   [
@@ -57,7 +57,7 @@ const HOME_CATEGORY_GRID = [
   { name: "반려동물", Icon: PawPrint },
   { name: "비즈니스", Icon: Briefcase },
   { name: "커플", Icon: Heart },
-  { name: "우정", Icon: Users },
+  { name: "아기", Icon: Baby },
 ];
 
 // 카테고리별 포트폴리오 (REQ-106: 탐색 경로의 카테고리에 맞는 사진만 표시)
@@ -84,8 +84,8 @@ const STUDIOS: {
     portfolios: { "반려동물": [1,2,3,4,5,6], "가족": [1,2,3,4,5,6] }, vatIncluded: false, paymentCount: 154, distanceKm: 8.4 },
   { id: 6, name: "브랜드컷 스튜디오", cats: ["비즈니스", "프로필"], desc: "브랜드 프로필, 팀 촬영, 대표 인터뷰컷", area: "서울 합정", price: 60000, rating: 4.7, reviews: 45, phone: "02-5678-9012", createdAt: "2026-04-08", location: "서울특별시 마포구 합정동 78-9",
     portfolios: { "비즈니스": [1,2,3,4,5,6], "프로필": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 118, distanceKm: 7.9 },
-  { id: 7, name: "프렌즈데이 스튜디오", cats: ["우정", "프로필"], desc: "우정촬영, 졸업 전 스냅, 컨셉 프로필", area: "서울 신촌", price: 70000, rating: 4.6, reviews: 28, phone: "02-6789-0123", createdAt: "2026-04-14", location: "서울특별시 서대문구 신촌동 21-3",
-    portfolios: { "우정": [1,2,3,4,5,6], "프로필": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 84, distanceKm: 5.1 },
+  { id: 7, name: "베이비데이 스튜디오", cats: ["아기", "프로필"], desc: "아기 촬영, 성장 스냅, 컨셉 프로필", area: "서울 신촌", price: 70000, rating: 4.6, reviews: 28, phone: "02-6789-0123", createdAt: "2026-04-14", location: "서울특별시 서대문구 신촌동 21-3",
+    portfolios: { "아기": [1,2,3,4,5,6], "프로필": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 84, distanceKm: 5.1 },
   { id: 8, name: "아이덴티티 프로필", cats: ["프로필"], desc: "취업 프로필, 증명용 프로필, 개인 브랜딩 촬영", area: "서울 종로구", price: 30000, rating: 4.4, reviews: 52, phone: "02-7890-1234", createdAt: "2026-04-09", location: "서울특별시 종로구 관철동 14-7",
     portfolios: { "프로필": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 111, distanceKm: 4.4 },
   { id: 9, name: "커플모먼트 스튜디오", cats: ["커플"], desc: "커플촬영, 기념일 스냅, 데이트 사진", area: "서울 연남동", price: 110000, rating: 4.8, reviews: 39, phone: "02-8901-2345", createdAt: "2026-04-03", location: "서울특별시 마포구 연남동 33-12",
@@ -94,8 +94,8 @@ const STUDIOS: {
     portfolios: { "웨딩": [1,2,3,4,5,6] }, vatIncluded: false, paymentCount: 61, distanceKm: 2.8 },
   { id: 11, name: "바디에디션 랩", cats: ["바디프로필"], desc: "바디 프로필, 운동기록 촬영, 피트니스 브랜딩", area: "서울 성신여대", price: 150000, rating: 4.8, reviews: 26, phone: "02-9345-6789", createdAt: "2026-04-13", location: "서울특별시 성북구 동선동 45-2",
     portfolios: { "바디프로필": [1,2,3,4,5,6] }, vatIncluded: false, paymentCount: 73, distanceKm: 11.6 },
-  { id: 12, name: "비즈니스 데이랩", cats: ["비즈니스", "우정"], desc: "사내 프로필, 팀 스냅, 워크숍 단체 촬영", area: "서울 서초구", price: 95000, rating: 4.7, reviews: 18, phone: "02-9123-4567", createdAt: "2026-04-11", location: "서울특별시 서초구 서초동 88-4",
-    portfolios: { "비즈니스": [1,2,3,4,5,6], "우정": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 49, distanceKm: 7.3 },
+  { id: 12, name: "비즈니스 데이랩", cats: ["비즈니스", "아기"], desc: "사내 프로필, 가족 동반 촬영, 아기 기념 스냅", area: "서울 서초구", price: 95000, rating: 4.7, reviews: 18, phone: "02-9123-4567", createdAt: "2026-04-11", location: "서울특별시 서초구 서초동 88-4",
+    portfolios: { "비즈니스": [1,2,3,4,5,6], "아기": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 49, distanceKm: 7.3 },
 ];
 
 const HAIR_MAKEUP_OPTIONS = [
