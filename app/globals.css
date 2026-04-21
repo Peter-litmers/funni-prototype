@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-primary: #7C3AED;
-  --color-primary-light: #EDE9FE;
-  --color-primary-dark: #5B21B6;
-  --color-primary-bg: #F5F3FF;
+  --color-primary: #e85d93;
+  --color-primary-light: #fce3ec;
+  --color-primary-dark: #c43c74;
+  --color-primary-bg: #fff4f8;
   --color-warning: #F59E0B;
   --color-warning-light: #FEF3C7;
   --color-danger: #EF4444;
@@ -13,7 +13,7 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #F5F3FF;
+  background: #fff7fa;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -39,7 +39,7 @@ body {
 }
 
 .badge-best {
-  background: #7C3AED;
+  background: #e85d93;
   color: white;
   font-size: 10px;
   font-weight: 700;
@@ -59,8 +59,8 @@ body {
 .keyword-pill {
   display: inline-flex;
   align-items: center;
-  border: 1.5px solid #7C3AED;
-  color: #7C3AED;
+  border: 1.5px solid #e85d93;
+  color: #e85d93;
   font-size: 12px;
   font-weight: 500;
   padding: 4px 12px;
@@ -82,8 +82,8 @@ body {
   transition: all 0.2s;
 }
 .cat-circle.active {
-  border-color: #7C3AED;
-  background: #F5F3FF;
+  border-color: #e85d93;
+  background: #fff4f8;
 }
 
 .no-scrollbar::-webkit-scrollbar {

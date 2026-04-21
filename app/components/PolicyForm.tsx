@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { MessageSquarePlus, Send, X, Check, Pencil, Trash2, RotateCcw } from "lucide-react";
 
 type PolicyAnswer = {
@@ -86,7 +86,7 @@ export default function PolicyForm({ question, screen, area }: Props) {
     }
   };
 
-  const loadAnswers = async () => {
+  const loadAnswers = useCallback(async () => {
     try {
       const res = await fetch("/api/policy-answer", { cache: "no-store" });
       if (!res.ok) return;
@@ -96,9 +96,9 @@ export default function PolicyForm({ question, screen, area }: Props) {
       );
       setAnswers(filtered);
     } catch {}
-  };
+  }, [area, screen]);
 
-  useEffect(() => { loadAnswers(); }, [area, screen]);
+  useEffect(() => { loadAnswers(); }, [loadAnswers]);
 
   const submit = async () => {
     if (!answer.trim()) return;

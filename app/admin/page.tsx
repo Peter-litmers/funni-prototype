@@ -20,7 +20,7 @@ export default function AdminWeb() {
       {/* Top Nav */}
       <nav className="bg-gray-900 text-white px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <h1 className="text-lg font-bold">퍼니 Admin</h1>
+          <h1 className="text-lg font-bold">포토팟 Admin</h1>
           <div className="hidden md:flex gap-1">
             {[
               { key: "dashboard" as Tab, label: "대시보드" },
@@ -428,7 +428,7 @@ export default function AdminWeb() {
             <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
               <div className="p-4 border-b border-gray-100">
                 <h3 className="font-bold text-sm">현재 노출 중인 스튜디오 (프리미엄 영역)</h3>
-                <p className="text-[10px] text-gray-400 mt-0.5">메인 홈 상단 · 카테고리 페이지 상단에 '광고' 라벨로 노출</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">메인 홈 상단 · 카테고리 페이지 상단에 &lsquo;광고&rsquo; 라벨로 노출</p>
               </div>
               <table className="w-full text-sm">
                 <thead className="bg-gray-50">
@@ -507,7 +507,7 @@ export default function AdminWeb() {
                 </thead>
                 <tbody>
                   {[
-                    { name: "김퍼니", nick: "퍼니유저", type: "소비자", date: "2026.04.10", bookings: 5, status: "활성" },
+                    { name: "김포토", nick: "포토팟유저", type: "소비자", date: "2026.04.10", bookings: 5, status: "활성" },
                     { name: "이촬영", nick: "촬영러버", type: "소비자", date: "2026.04.08", bookings: 2, status: "활성" },
                     { name: "박스튜", nick: "스튜디오박", type: "소비자", date: "2026.04.05", bookings: 0, status: "활성" },
                     { name: "루미에르(주)", nick: "-", type: "업체", date: "2026.03.20", bookings: 0, status: "활성" },
@@ -516,7 +516,7 @@ export default function AdminWeb() {
                     <tr key={i} className="border-t border-gray-50">
                       <td className="p-4 font-medium">{m.name}</td>
                       <td className="p-4 text-gray-500 text-xs hidden md:table-cell">{m.nick}</td>
-                      <td className="p-4"><span className={`text-xs px-2 py-0.5 rounded-full ${m.type === "소비자" ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"}`}>{m.type}</span></td>
+                      <td className="p-4"><span className={`text-xs px-2 py-0.5 rounded-full ${m.type === "소비자" ? "bg-blue-100 text-blue-700" : "bg-primary/10 text-primary"}`}>{m.type}</span></td>
                       <td className="p-4 text-gray-500 hidden md:table-cell text-xs">{m.date}</td>
                       <td className="p-4 text-gray-500 hidden md:table-cell">{m.bookings}건</td>
                       <td className="p-4"><span className={`text-xs px-2 py-1 rounded-full ${m.status === "활성" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-500"}`}>{m.status}</span></td>
@@ -601,7 +601,7 @@ export default function AdminWeb() {
                     { title: "웨딩 촬영 패키지", position: "메인 중간", period: "05.01~05.31", status: "대기" },
                   ].map((b, i) => (
                     <tr key={i} className="border-t border-gray-50">
-                      <td className="p-4"><div className="w-16 h-10 bg-gradient-to-r from-violet-200 to-purple-200 rounded" /></td>
+                      <td className="p-4"><div className="w-16 h-10 bg-gradient-to-r from-rose-200 to-pink-200 rounded" /></td>
                       <td className="p-4 font-medium">{b.title}</td>
                       <td className="p-4 text-gray-500 hidden md:table-cell">{b.position}</td>
                       <td className="p-4 text-gray-500 hidden md:table-cell text-xs">{b.period}</td>
@@ -640,7 +640,7 @@ export default function AdminWeb() {
                 </thead>
                 <tbody>
                   {[
-                    { id: "B-2026-0142", consumer: "김퍼니", studio: "루미에르", date: "05.10 14:00", amount: "₩100,000", status: "확정" },
+                    { id: "B-2026-0142", consumer: "김포토", studio: "루미에르", date: "05.10 14:00", amount: "₩100,000", status: "확정" },
                     { id: "B-2026-0141", consumer: "이촬영", studio: "선셋 포토랩", date: "05.18 10:00", amount: "₩160,000", status: "확정" },
                     { id: "B-2026-0140", consumer: "박스튜", studio: "블룸 웨딩", date: "05.25 10:00", amount: "₩800,000", status: "대기" },
                     { id: "B-2026-0135", consumer: "최민지", studio: "프로덕트 랩", date: "04.20 13:00", amount: "₩80,000", status: "완료" },
@@ -684,7 +684,7 @@ export default function AdminWeb() {
                 </thead>
                 <tbody>
                   {[
-                    { id: "P-0142", consumer: "김퍼니", studio: "루미에르", date: "05.08", amount: "₩100,000", status: "결제완료" },
+                    { id: "P-0142", consumer: "김포토", studio: "루미에르", date: "05.08", amount: "₩100,000", status: "결제완료" },
                     { id: "P-0141", consumer: "이촬영", studio: "선셋 포토랩", date: "05.05", amount: "₩160,000", status: "결제완료" },
                     { id: "P-0140", consumer: "박스튜", studio: "블룸 웨딩", date: "04.03", amount: "₩800,000", status: "결제완료" },
                     { id: "P-0135", consumer: "최민지", studio: "프로덕트 랩", date: "04.18", amount: "₩80,000", status: "결제완료" },

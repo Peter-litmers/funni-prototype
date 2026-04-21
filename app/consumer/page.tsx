@@ -33,23 +33,23 @@ const CATEGORIES = [
   { name: "기타", Icon: MoreHorizontal },
 ];
 
-const HOME_KEYWORDS = ["인기", "웨딩", "프로필", "가족", "커플", "졸업"];
+const HOME_KEYWORDS = ["인기", "웨딩", "프로필", "가족", "커플", "셀프촬영"];
 
 const HOME_AD_PAGES = [
   [
-    { title: "로맨틱 웨딩", subtitle: "대표 추천 노출", tone: "from-gray-100 to-gray-200" },
-    { title: "프로필 촬영", subtitle: "인기 작가 큐레이션", tone: "from-gray-100 to-gray-200" },
-    { title: "가족 스냅", subtitle: "시즌 추천 스튜디오", tone: "from-gray-100 to-gray-200" },
+    { title: "로맨틱 웨딩", subtitle: "대표 추천 노출", tone: "from-rose-100 to-pink-100" },
+    { title: "프로필 촬영", subtitle: "인기 작가 큐레이션", tone: "from-pink-50 to-rose-100" },
+    { title: "가족 스냅", subtitle: "시즌 추천 스튜디오", tone: "from-orange-50 to-rose-100" },
   ],
   [
-    { title: "커플 촬영", subtitle: "야외 스냅 추천", tone: "from-gray-100 to-gray-200" },
-    { title: "졸업 사진", subtitle: "캠퍼스 스냅 특집", tone: "from-gray-100 to-gray-200" },
-    { title: "바디프로필", subtitle: "성수 인기 스튜디오", tone: "from-gray-100 to-gray-200" },
+    { title: "커플 촬영", subtitle: "야외 스냅 추천", tone: "from-fuchsia-50 to-pink-100" },
+    { title: "졸업 사진", subtitle: "캠퍼스 스냅 특집", tone: "from-rose-50 to-orange-100" },
+    { title: "바디프로필", subtitle: "성수 인기 스튜디오", tone: "from-pink-100 to-rose-200" },
   ],
   [
-    { title: "브랜드 촬영", subtitle: "제품/룩북 촬영", tone: "from-gray-100 to-gray-200" },
-    { title: "증명 사진", subtitle: "당일 보정 가능", tone: "from-gray-100 to-gray-200" },
-    { title: "키즈 촬영", subtitle: "가족 패키지 추천", tone: "from-gray-100 to-gray-200" },
+    { title: "브랜드 촬영", subtitle: "제품/룩북 촬영", tone: "from-rose-50 to-pink-100" },
+    { title: "증명 사진", subtitle: "당일 보정 가능", tone: "from-neutral-100 to-stone-100" },
+    { title: "키즈 촬영", subtitle: "가족 패키지 추천", tone: "from-pink-50 to-amber-50" },
   ],
 ];
 
@@ -215,7 +215,7 @@ export default function ConsumerApp() {
       if (activeKeyword === "프로필") return s.cats.includes("프로필");
       if (activeKeyword === "가족") return s.desc.includes("가족");
       if (activeKeyword === "커플") return s.desc.includes("커플");
-      if (activeKeyword === "졸업") return s.desc.includes("프로필") || s.desc.includes("증명");
+      if (activeKeyword === "셀프촬영") return s.desc.includes("영상") || s.desc.includes("프로필");
       return true;
     })
     .filter(s => {
@@ -346,8 +346,8 @@ export default function ConsumerApp() {
               <div className="px-4 pt-2">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-[11px] text-gray-400">스튜디오 예약 플랫폼</p>
-                    <h2 className="mt-1 text-xl font-bold leading-tight text-gray-900">어떤 스튜디오를 찾고 계신가요?</h2>
+                    <p className="text-[11px] text-gray-400">포토팟 큐레이션</p>
+                    <h2 className="mt-1 text-xl font-bold leading-tight text-gray-900">오늘의 촬영에 맞는 스튜디오를 찾아보세요</h2>
                   </div>
                   <button
                     onClick={() => {
@@ -390,7 +390,7 @@ export default function ConsumerApp() {
 
               <div className="mx-4 mt-5 rounded-3xl bg-gray-50 p-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-semibold text-gray-700">추천 스튜디오 배너</p>
+                  <p className="text-[11px] font-semibold text-gray-700">이번 주 추천 배너</p>
                   <span className="text-[10px] text-gray-400">3개 x 3페이지</span>
                 </div>
                 <div className="mt-3 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
@@ -458,8 +458,8 @@ export default function ConsumerApp() {
               <div className="mt-6">
                 <div className="mb-3 flex items-center justify-between px-4">
                   <div>
-                    <p className="text-[11px] text-gray-400">유료 / 수동 노출</p>
-                    <h3 className="text-[15px] font-bold text-gray-900">추천 스튜디오</h3>
+                    <p className="text-[11px] text-gray-400">에디터 셀렉션</p>
+                    <h3 className="text-[15px] font-bold text-gray-900">지금 추천하는 스튜디오</h3>
                   </div>
                   <button className="text-xs font-medium text-gray-400">전체보기</button>
                 </div>
@@ -492,8 +492,8 @@ export default function ConsumerApp() {
               <div className="mt-6">
                 <div className="mb-3 flex items-center justify-between px-4">
                   <div>
-                    <p className="text-[11px] text-gray-400">자동 노출</p>
-                    <h3 className="text-[15px] font-bold text-gray-900">지금 많이 찾는 스튜디오</h3>
+                    <p className="text-[11px] text-gray-400">실시간 탐색 기준</p>
+                    <h3 className="text-[15px] font-bold text-gray-900">지금 인기 있는 스튜디오</h3>
                   </div>
                   <button className="text-xs font-medium text-gray-400">전체보기</button>
                 </div>
@@ -573,7 +573,7 @@ export default function ConsumerApp() {
 
               <div className="mt-4 px-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-[15px] font-bold text-gray-900">필터 결과</h3>
+                  <h3 className="text-[15px] font-bold text-gray-900">맞춤 결과</h3>
                   <span className="text-xs text-gray-400">{finalHomeStudios.length}곳</span>
                 </div>
                 <div className="mt-3 flex gap-1.5 overflow-x-auto items-center" style={{ scrollbarWidth: 'none' }}>
@@ -659,7 +659,7 @@ export default function ConsumerApp() {
 
               {/* 스튜디오 리스트 상단 광고 배너 (REQ-113) */}
               <div className="mb-3 overflow-hidden rounded-xl">
-                <div className="bg-gradient-to-r from-violet-100 to-purple-200 rounded-xl p-4 flex items-center gap-3 relative">
+                <div className="bg-gradient-to-r from-rose-100 to-pink-200 rounded-xl p-4 flex items-center gap-3 relative">
                   <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
                   <div className="w-14 h-14 bg-white/60 rounded-lg flex items-center justify-center shrink-0 text-gray-400"><ImageIcon size={22} strokeWidth={1.5} /></div>
                   <div>
@@ -1081,12 +1081,12 @@ export default function ConsumerApp() {
               {/* 약관 동의 (REQ-101) */}
               <div className="space-y-2 mb-4 bg-gray-50 rounded-xl p-3">
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={agreeTerms} onChange={e => setAgreeTerms(e.target.checked)} className="w-4 h-4 accent-[#7C3AED]" />
+                  <input type="checkbox" checked={agreeTerms} onChange={e => setAgreeTerms(e.target.checked)} className="w-4 h-4 accent-[#E85D93]" />
                   <span className="text-xs flex-1"><span className="text-red-500">*</span> 서비스 이용약관 동의</span>
                   <span className="text-[10px] text-gray-400 underline">보기</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={agreePrivacy} onChange={e => setAgreePrivacy(e.target.checked)} className="w-4 h-4 accent-[#7C3AED]" />
+                  <input type="checkbox" checked={agreePrivacy} onChange={e => setAgreePrivacy(e.target.checked)} className="w-4 h-4 accent-[#E85D93]" />
                   <span className="text-xs flex-1"><span className="text-red-500">*</span> 개인정보 처리방침 동의</span>
                   <span className="text-[10px] text-gray-400 underline">보기</span>
                 </label>
@@ -1128,11 +1128,11 @@ export default function ConsumerApp() {
               {/* 약관 동의 */}
               <div className="space-y-2 mb-4 bg-gray-50 rounded-xl p-3">
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 accent-[#7C3AED]" />
+                  <input type="checkbox" className="w-4 h-4 accent-[#E85D93]" />
                   <span className="text-xs flex-1"><span className="text-red-500">*</span> 서비스 이용약관 동의</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 accent-[#7C3AED]" />
+                  <input type="checkbox" className="w-4 h-4 accent-[#E85D93]" />
                   <span className="text-xs flex-1"><span className="text-red-500">*</span> 개인정보 처리방침 동의</span>
                 </label>
               </div>
@@ -1200,8 +1200,8 @@ export default function ConsumerApp() {
           <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">
             {[
               { key: "home" as Tab, Icon: Home, label: "홈", s: "home" as Screen },
-              { key: "category" as Tab, Icon: LayoutGrid, label: "카테고리", s: "category" as Screen },
-              { key: "mypage" as Tab, Icon: User, label: "마이페이지", s: "mypage" as Screen },
+              { key: "category" as Tab, Icon: LayoutGrid, label: "탐색", s: "category" as Screen },
+              { key: "mypage" as Tab, Icon: User, label: "MY", s: "mypage" as Screen },
             ].map(t => (
               <button key={t.key} onClick={() => { setTab(t.key); setScreen(t.s); }}
                 className={`flex-1 flex flex-col items-center justify-center gap-0.5 ${tab === t.key ? "text-primary" : "text-gray-400"}`}>

@@ -1,14 +1,18 @@
 "use client";
 import Link from "next/link";
-import { Smartphone, Building2, MonitorCog, MessageCircle } from "lucide-react";
+import Image from "next/image";
+import { Smartphone, Building2, MonitorCog, Sparkles } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-violet-100 flex flex-col items-center justify-center p-6">
-      <div className="text-center mb-10">
-        <p className="text-sm text-primary font-medium mb-2">Interactive Prototype</p>
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">퍼니 (Funni)</h1>
-        <p className="text-base text-gray-500">촬영 스튜디오 대관·예약 O2O 플랫폼</p>
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-white flex flex-col items-center justify-center p-6">
+      <div className="mb-10 flex flex-col items-center text-center">
+        <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-[28px] bg-white shadow-sm ring-1 ring-pink-100">
+          <Image src="/photopop-logo.png" alt="포토팟 로고" width={72} height={72} className="h-[72px] w-[72px] object-contain" />
+        </div>
+        <p className="text-sm text-primary font-medium mb-2">Photopot Prototype</p>
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">포토팟</h1>
+        <p className="text-base text-gray-500">촬영 스튜디오 예약과 운영 관리를 연결하는 플랫폼</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl w-full mb-8">
@@ -34,37 +38,26 @@ export default function Home() {
         </Link>
       </div>
 
-      <div className="bg-white rounded-2xl p-5 max-w-4xl w-full border border-gray-100 shadow-sm mb-4">
+      <div className="bg-white rounded-2xl p-5 max-w-4xl w-full border border-pink-100 shadow-sm mb-4">
         <div className="flex items-center gap-2 mb-2">
           <Smartphone size={14} strokeWidth={1.5} className="text-gray-700" /><span className="text-sm font-bold text-gray-900">앱 구조</span>
         </div>
         <p className="text-xs text-gray-500 leading-relaxed">
           소비자와 업체는 <strong className="text-primary">하나의 앱</strong>에서 동작합니다.
-          하단 네비게이션 바(홈/카테고리/마이페이지)는 동일하며, 마이페이지만 계정 유형에 따라 업체 전용 메뉴로 전환됩니다.
+          하단 탭은 공통 구조를 유지하고, 마지막 탭만 계정 유형에 맞는 개인/업체 메뉴로 전환됩니다.
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl p-5 max-w-4xl w-full border border-gray-100 shadow-sm mb-4">
+      <div className="bg-white rounded-2xl p-5 max-w-4xl w-full border border-pink-100 shadow-sm">
         <div className="flex items-center gap-2 mb-2">
-          <span className="policy-badge">⚠️ 정책 미확정</span>
-          <span className="text-sm font-bold text-gray-900">표시 안내</span>
+          <Sparkles size={14} strokeWidth={1.5} className="text-primary" />
+          <span className="text-sm font-bold text-gray-900">현재 반영 범위</span>
         </div>
         <p className="text-xs text-gray-500 leading-relaxed">
-          노란 점선 테두리 영역은 <strong className="text-amber-700">고객사와 정책이 확정되어야 개발 가능한 부분</strong>입니다.
-          각 화면에서 확인하시고, 해당 항목이 결정되면 기획 확정 → 개발 착수가 가능합니다.
+          홈 구조 리디자인, 로고 교체, 브랜드 톤 정리, 소비자/업체 주요 진입 화면 리브랜딩을 우선 반영했습니다.
+          이후 검색, 예약, 상세 운영 흐름도 같은 톤으로 확장할 수 있습니다.
         </p>
       </div>
-
-      <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5 max-w-4xl w-full">
-        <div className="flex items-center gap-2 mb-2">
-          <MessageCircle size={14} strokeWidth={1.5} className="text-primary" /><span className="text-sm font-bold text-primary">질문 수정 안내</span>
-        </div>
-        <p className="text-xs text-gray-600 leading-relaxed">
-          각 화면의 <strong className="text-amber-700">정책 미확정</strong> 영역에서 질문 텍스트를 클릭하면 직접 수정할 수 있습니다.
-          수정된 질문과 답변은 <strong className="text-primary">클라우드에 저장</strong>되어 재부팅 후에도 유지됩니다.
-        </p>
-      </div>
-
     </div>
   );
 }

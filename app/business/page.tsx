@@ -174,9 +174,9 @@ export default function BusinessApp() {
           {screen === "home" && (
             <div className="pb-6">
               <div className="px-4 pt-3">
-                <p className="text-[11px] text-gray-400">업체 홈</p>
-                <h2 className="mt-1 text-xl font-bold leading-tight text-gray-900">오늘 운영 현황을 한눈에 확인하세요</h2>
-                <p className="mt-1 text-xs text-gray-500">예약 승인, 수기 일정, 정산, 리뷰 대응까지 한 화면에서 관리할 수 있게 구성했습니다.</p>
+                <p className="text-[11px] text-gray-400">비즈니스 센터</p>
+                <h2 className="mt-1 text-xl font-bold leading-tight text-gray-900">오늘 운영해야 할 항목을 빠르게 확인하세요</h2>
+                <p className="mt-1 text-xs text-gray-500">예약 승인, 일정 조율, 정산, 리뷰 응대를 한 흐름으로 관리할 수 있게 정리했습니다.</p>
               </div>
 
               <div className="mt-4 grid grid-cols-3 gap-2 px-4">
@@ -279,7 +279,7 @@ export default function BusinessApp() {
               <div className="mx-4 mt-5 rounded-3xl bg-gray-50 p-4">
                 <p className="text-[11px] font-semibold text-gray-700">운영 메모</p>
                 <p className="mt-2 text-[11px] leading-relaxed text-gray-600">
-                  예약 현황, 승인 대기 건, 정산 흐름을 빠르게 확인할 수 있도록 주요 액션 중심으로 홈을 구성했습니다.
+                  오늘 확인이 필요한 예약과 매출 흐름을 먼저 보여주고, 자주 쓰는 운영 메뉴는 바로 진입할 수 있게 배치했습니다.
                 </p>
               </div>
             </div>
@@ -580,7 +580,7 @@ export default function BusinessApp() {
                     { name: "세트 (헤어+얼굴)", defaultPrice: "70,000" },
                   ].map((opt, i) => (
                     <div key={i} className="flex items-center gap-2 mb-2">
-                      <input type="checkbox" defaultChecked={i < 2} className="w-4 h-4 accent-[#7C3AED]" />
+                      <input type="checkbox" defaultChecked={i < 2} className="w-4 h-4 accent-[#E85D93]" />
                       <span className="text-xs flex-1">{opt.name}</span>
                       <input type="text" defaultValue={`₩${opt.defaultPrice}`} className="w-24 bg-white rounded-lg px-2 py-1.5 text-xs border border-gray-200 text-right outline-none" />
                     </div>
@@ -590,11 +590,11 @@ export default function BusinessApp() {
                 {/* 출장 가능 + 부가세 (REQ-103) */}
                 <div className="flex gap-3">
                   <label className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-3 flex-1 cursor-pointer">
-                    <input type="checkbox" className="w-4 h-4 accent-[#7C3AED]" />
+                    <input type="checkbox" className="w-4 h-4 accent-[#E85D93]" />
                     <span className="text-xs">🚗 출장 가능</span>
                   </label>
                   <label className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-3 flex-1 cursor-pointer">
-                    <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#7C3AED]" />
+                    <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#E85D93]" />
                     <span className="text-xs">💰 VAT 포함</span>
                   </label>
                 </div>
@@ -1112,8 +1112,8 @@ export default function BusinessApp() {
         {screen !== "login" && <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">
           {[
             { key: "home" as Tab, Icon: Home, label: "홈", s: "home" as Screen },
-            { key: "category" as Tab, Icon: LayoutGrid, label: "카테고리", s: "category" as Screen },
-            { key: "my" as Tab, Icon: User, label: "마이페이지", s: "mypage" as Screen },
+            { key: "category" as Tab, Icon: LayoutGrid, label: "탐색", s: "category" as Screen },
+            { key: "my" as Tab, Icon: User, label: "MY", s: "mypage" as Screen },
           ].map(t => (
             <button key={t.key} onClick={() => { setTab(t.key); setScreen(t.s); }}
               className={`flex-1 flex flex-col items-center justify-center gap-0.5 ${
