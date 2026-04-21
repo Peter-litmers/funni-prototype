@@ -1,44 +1,22 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
-import PolicyForm from "../components/PolicyForm";
+import Image from "next/image";
 import {
   Camera, Dumbbell, Heart, Cake, Package, Video, MoreHorizontal,
   Home, LayoutGrid, User, Bell, Phone, MapPin, Star, Pencil, Check,
-  CheckCircle2, ImageIcon, Calendar, Clock
+  CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal
 } from "lucide-react";
 
-function PolicyBadge({ label }: { label: string }) {
-  return <span className="policy-badge">⚠️ {label}</span>;
-}
-
-const BANNERS = [
-  { title: "봄맞이 스튜디오 할인 이벤트", desc: "3월~5월 프로필 촬영 20% 할인", gradient: "from-violet-100 to-purple-50", border: "border-violet-200/50" },
-  { title: "웨딩 시즌 특별 패키지", desc: "웨딩스냅 + 본식촬영 세트 할인", gradient: "from-pink-100 to-rose-50", border: "border-pink-200/50" },
-  { title: "바디프로필 인기 스튜디오 TOP5", desc: "성수·강남 지역 추천 스튜디오", gradient: "from-blue-100 to-cyan-50", border: "border-blue-200/50" },
-];
-
-function BannerSlider() {
-  const [idx, setIdx] = useState(0);
-  useEffect(() => {
-    const timer = setInterval(() => setIdx(prev => (prev + 1) % BANNERS.length), 3000);
-    return () => clearInterval(timer);
-  }, []);
+function BrandMark() {
   return (
-    <div className="px-4 mt-3 mb-2">
-      <div className="overflow-hidden rounded-xl">
-        <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${idx * 100}%)` }}>
-          {BANNERS.map((b, i) => (
-            <div key={i} className={`min-w-full bg-gradient-to-r ${b.gradient} rounded-xl p-4 relative border ${b.border}`}>
-              <span className="absolute top-2 right-2 text-[9px] bg-gray-500/60 text-white px-1.5 py-0.5 rounded">AD</span>
-              <p className="text-sm font-bold text-gray-900 mb-0.5">{b.title}</p>
-              <p className="text-[10px] text-gray-600">{b.desc}</p>
-            </div>
-          ))}
-        </div>
+    <div className="flex items-center gap-2">
+      <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-white">
+        <Image src="/photopop-logo.png" alt="포토팟 로고" width={44} height={44} className="h-full w-full object-contain p-1" />
       </div>
-      <div className="flex justify-center gap-1 mt-2">
-        {BANNERS.map((_, i) => <button key={i} onClick={() => setIdx(i)} className={`w-1.5 h-1.5 rounded-full transition-all ${i === idx ? "bg-primary w-4" : "bg-gray-300"}`} />)}
+      <div>
+        <p className="text-[11px] font-medium text-gray-400">Photo Studio Booking</p>
+        <p className="text-lg font-bold tracking-tight text-gray-900">포토팟</p>
       </div>
     </div>
   );
@@ -55,6 +33,37 @@ const CATEGORIES = [
   { name: "기타", Icon: MoreHorizontal },
 ];
 
+const HOME_KEYWORDS = ["인기", "웨딩", "프로필", "가족", "커플", "졸업"];
+
+const HOME_AD_PAGES = [
+  [
+    { title: "로맨틱 웨딩", subtitle: "대표 추천 노출", tone: "from-gray-100 to-gray-200" },
+    { title: "프로필 촬영", subtitle: "인기 작가 큐레이션", tone: "from-gray-100 to-gray-200" },
+    { title: "가족 스냅", subtitle: "시즌 추천 스튜디오", tone: "from-gray-100 to-gray-200" },
+  ],
+  [
+    { title: "커플 촬영", subtitle: "야외 스냅 추천", tone: "from-gray-100 to-gray-200" },
+    { title: "졸업 사진", subtitle: "캠퍼스 스냅 특집", tone: "from-gray-100 to-gray-200" },
+    { title: "바디프로필", subtitle: "성수 인기 스튜디오", tone: "from-gray-100 to-gray-200" },
+  ],
+  [
+    { title: "브랜드 촬영", subtitle: "제품/룩북 촬영", tone: "from-gray-100 to-gray-200" },
+    { title: "증명 사진", subtitle: "당일 보정 가능", tone: "from-gray-100 to-gray-200" },
+    { title: "키즈 촬영", subtitle: "가족 패키지 추천", tone: "from-gray-100 to-gray-200" },
+  ],
+];
+
+const HOME_CATEGORY_GRID = [
+  { name: "웨딩", Icon: Heart },
+  { name: "프로필", Icon: Camera },
+  { name: "피아노", Icon: Video },
+  { name: "가족사진", Icon: Cake },
+  { name: "커플", Icon: Heart },
+  { name: "졸업", Icon: LayoutGrid },
+  { name: "증명", Icon: Package },
+  { name: "바디", Icon: Dumbbell },
+];
+
 // 카테고리별 포트폴리오 (REQ-106: 탐색 경로의 카테고리에 맞는 사진만 표시)
 type StudioCategoryPortfolio = Record<string, number[]>;
 
@@ -64,19 +73,21 @@ const STUDIOS: {
   createdAt: string; location: string;
   portfolios: StudioCategoryPortfolio;
   vatIncluded: boolean;
+  paymentCount: number;
+  distanceKm: number;
 }[] = [
   { id: 1, name: "루미에르 스튜디오", cats: ["프로필"], desc: "프로필촬영, 증명사진, 프로필영상, 이력서사진", area: "서울 강남구", price: 50000, rating: 4.8, reviews: 124, phone: "02-1234-5678", createdAt: "2026-04-10", location: "서울특별시 강남구 역삼동 123-4",
-    portfolios: { "프로필": [1,2,3,4,5,6] }, vatIncluded: true },
+    portfolios: { "프로필": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 302, distanceKm: 1.2 },
   { id: 2, name: "선셋 포토랩", cats: ["바디프로필"], desc: "바디프로필, 커플촬영, 다이어트기록", area: "서울 성수동", price: 80000, rating: 4.9, reviews: 89, phone: "02-2345-6789", createdAt: "2026-03-28", location: "서울특별시 성동구 성수동 45-6",
-    portfolios: { "바디프로필": [1,2,3,4,5,6] }, vatIncluded: false },
+    portfolios: { "바디프로필": [1,2,3,4,5,6] }, vatIncluded: false, paymentCount: 287, distanceKm: 3.8 },
   { id: 3, name: "블룸 웨딩 스튜디오", cats: ["웨딩"], desc: "웨딩스냅, 본식촬영, 야외웨딩", area: "서울 잠실", price: 200000, rating: 4.7, reviews: 56, phone: "02-3456-7890", createdAt: "2026-04-05", location: "서울특별시 송파구 잠실동 78-9",
-    portfolios: { "웨딩": [1,2,3,4,5,6] }, vatIncluded: true },
+    portfolios: { "웨딩": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 190, distanceKm: 6.1 },
   { id: 4, name: "미니미 키즈포토", cats: ["돌잔치"], desc: "돌잔치촬영, 백일사진, 가족사진", area: "경기 판교", price: 120000, rating: 4.6, reviews: 34, phone: "031-456-7890", createdAt: "2026-03-15", location: "경기도 성남시 분당구 판교동 12-3",
-    portfolios: { "돌잔치": [1,2,3,4,5,6] }, vatIncluded: true },
+    portfolios: { "돌잔치": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 96, distanceKm: 19.5 },
   { id: 5, name: "프로덕트 랩", cats: ["제품"], desc: "제품촬영, 음식사진, 상세페이지, 스틸컷", area: "서울 홍대", price: 40000, rating: 4.5, reviews: 67, phone: "02-4567-8901", createdAt: "2026-04-12", location: "서울특별시 마포구 홍대입구 45-6",
-    portfolios: { "제품": [1,2,3,4,5,6] }, vatIncluded: false },
+    portfolios: { "제품": [1,2,3,4,5,6] }, vatIncluded: false, paymentCount: 154, distanceKm: 8.4 },
   { id: 6, name: "무브 필름랩", cats: ["영상"], desc: "유튜브촬영, 광고영상, 인터뷰", area: "서울 합정", price: 60000, rating: 4.7, reviews: 45, phone: "02-5678-9012", createdAt: "2026-04-08", location: "서울특별시 마포구 합정동 78-9",
-    portfolios: { "영상": [1,2,3,4,5,6] }, vatIncluded: true },
+    portfolios: { "영상": [1,2,3,4,5,6] }, vatIncluded: true, paymentCount: 118, distanceKm: 7.9 },
 ];
 
 const HAIR_MAKEUP_OPTIONS = [
@@ -85,7 +96,6 @@ const HAIR_MAKEUP_OPTIONS = [
   { id: 3, name: "세트 (헤어+얼굴)", price: 70000 },
 ];
 
-const REGIONS = ["전체", "서울 강남", "서울 성수", "서울 잠실", "서울 홍대", "서울 합정", "경기 판교"];
 const PRICE_RANGES = [
   { key: "all", label: "전체", min: 0, max: Infinity },
   { key: "low", label: "5만원 이하", min: 0, max: 50000 },
@@ -101,7 +111,7 @@ const CONSUMER_NOTIFICATIONS: { id: number; type: string; text: string; time: st
   { id: 2, type: "remind", text: "내일 선셋 포토랩 촬영이 있습니다", time: "1시간 전", read: false, action: { screen: "myBookings", tab: "mypage" } },
   { id: 3, type: "review", text: "프로덕트 랩 촬영은 어떠셨나요? 리뷰를 남겨주세요", time: "3시간 전", read: true, action: { screen: "reviewWrite", tab: "mypage", reviewTarget: "프로덕트 랩" } },
   { id: 4, type: "booking", text: "블룸 웨딩 스튜디오 예약이 확정되었습니다", time: "1일 전", read: true, action: { screen: "myBookings", tab: "mypage" } },
-  { id: 5, type: "system", text: "퍼니 앱이 업데이트되었습니다", time: "3일 전", read: true },
+  { id: 5, type: "system", text: "포토팟 앱이 업데이트되었습니다", time: "3일 전", read: true },
 ];
 
 const UPCOMING_BOOKINGS = [
@@ -141,7 +151,8 @@ const ALL_MY_BOOKINGS_FOR_MYPAGE = [
 ];
 
 type Screen = "home" | "category" | "myBookings" | "detail" | "booking" | "done" | "mypage" | "reviewWrite" | "myReviews" | "paymentHistory" | "login" | "signup" | "bizSignup" | "forgotPassword" | "notifications";
-type Sort = "newest" | "rating" | "priceAsc";
+type Sort = "payments" | "rating" | "distance";
+type SecondarySort = "default" | "priceHigh" | "priceLow";
 type BookingFilter = "예정" | "완료" | "취소";
 type Tab = "home" | "category" | "mypage";
 
@@ -149,10 +160,10 @@ const TIMES = ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","
 
 export default function ConsumerApp() {
   const [screen, setScreen] = useState<Screen>("home");
-  const [prevScreenRef, setPrevScreenRef] = useState<Screen>("home");
   const [selectedStudio, setSelectedStudio] = useState(STUDIOS[0]);
   const [tab, setTab] = useState<Tab>("home");
-  const [sort, setSort] = useState<Sort>("newest");
+  const [sort, setSort] = useState<Sort>("payments");
+  const [secondarySort, setSecondarySort] = useState<SecondarySort>("default");
   const [selectedTime, setSelectedTime] = useState("14:00");
   const [selectedDate, setSelectedDate] = useState(10);
   const [bookingFilter, setBookingFilter] = useState<BookingFilter>("예정");
@@ -162,13 +173,14 @@ export default function ConsumerApp() {
   const [reviewTarget, setReviewTarget] = useState("");
   const [myBookingPage, setMyBookingPage] = useState(0);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [userName, setUserName] = useState("김퍼니");
+  const [userName, setUserName] = useState("김포토");
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
   const [categoryCat, setCategoryCat] = useState("프로필");
   const [selectedRegion, setSelectedRegion] = useState("전체");
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
   const [customPriceMin, setCustomPriceMin] = useState<string>("");
   const [customPriceMax, setCustomPriceMax] = useState<string>("");
+  const [activeKeyword, setActiveKeyword] = useState("인기");
   const [detailEntryCat, setDetailEntryCat] = useState<string>(""); // 탐색 진입 카테고리
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
@@ -181,7 +193,6 @@ export default function ConsumerApp() {
 
   const navigate = (to: Screen) => {
     historyStack.current.push({ s: screen, t: tab });
-    setPrevScreenRef(screen);
     setScreen(to);
   };
   const goBack = () => {
@@ -198,6 +209,15 @@ export default function ConsumerApp() {
 
   // 홈: 지역 + 가격대 필터 + 정렬
   const homeFiltered = STUDIOS
+    .filter(s => {
+      if (activeKeyword === "인기") return true;
+      if (activeKeyword === "웨딩") return s.cats.includes("웨딩");
+      if (activeKeyword === "프로필") return s.cats.includes("프로필");
+      if (activeKeyword === "가족") return s.desc.includes("가족");
+      if (activeKeyword === "커플") return s.desc.includes("커플");
+      if (activeKeyword === "졸업") return s.desc.includes("프로필") || s.desc.includes("증명");
+      return true;
+    })
     .filter(s => {
       if (selectedRegion === "전체" || !selectedRegion.trim()) return true;
       const kw = selectedRegion.trim().toLowerCase();
@@ -217,11 +237,27 @@ export default function ConsumerApp() {
       return s.price >= pr.min && s.price <= pr.max;
     });
   const homeSorted = [...homeFiltered].sort((a, b) => {
-    if (sort === "rating") return b.rating - a.rating;
-    if (sort === "priceAsc") return a.price - b.price;
-    // newest
-    return b.createdAt.localeCompare(a.createdAt);
+    if (sort === "rating") {
+      if (b.rating !== a.rating) return b.rating - a.rating;
+      return b.paymentCount - a.paymentCount;
+    }
+    if (sort === "distance") {
+      if (a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
+      return b.rating - a.rating;
+    }
+    if (b.paymentCount !== a.paymentCount) return b.paymentCount - a.paymentCount;
+    return b.rating - a.rating;
   });
+  const finalHomeStudios = [...homeSorted].sort((a, b) => {
+    if (secondarySort === "priceHigh") return b.price - a.price;
+    if (secondarySort === "priceLow") return a.price - b.price;
+    return 0;
+  });
+  const promotedStudios = [...STUDIOS].sort((a, b) => b.paymentCount - a.paymentCount).slice(0, 4);
+  const hotStudios = [...STUDIOS].sort((a, b) => {
+    if (b.paymentCount !== a.paymentCount) return b.paymentCount - a.paymentCount;
+    return b.rating - a.rating;
+  }).slice(0, 5);
 
   // 카테고리 탭: 카테고리 + 지역
   const catFiltered = STUDIOS
@@ -282,18 +318,16 @@ export default function ConsumerApp() {
       <Link href="/" className="text-sm text-primary mb-4 hover:underline">← 메인으로</Link>
       <h2 className="text-xl font-bold mb-6 text-gray-900">소비자 화면</h2>
 
-      <div className="w-[375px] bg-white rounded-[40px] border-[8px] border-gray-900 overflow-hidden shadow-2xl relative" style={{ height: 780 }}>
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[28px] bg-gray-900 rounded-b-2xl z-20" />
+      <div className="relative w-full max-w-[390px] overflow-hidden rounded-[28px] bg-white shadow-xl" style={{ height: 780 }}>
 
         {/* Header */}
         {showHeader && (
-          <div className="relative z-10 bg-white pt-10 pl-2 pr-4 pb-0">
+          <div className="relative z-10 bg-white pt-5 pl-4 pr-4 pb-2">
             <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center">
+              <div className="flex items-center gap-2">
                 {screen !== "home" && <button onClick={goBack} className="text-gray-500 text-lg flex items-center justify-center -mr-1">‹</button>}
                 <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center">
-                  <img src="/funni-logo.png" alt="퍼니" className="w-12 h-12" />
-                  <span className="text-xl font-bold text-primary -ml-1.5">퍼니</span>
+                  <BrandMark />
                 </button>
               </div>
               <button onClick={() => navigate("notifications")} className="text-gray-500 relative p-1">
@@ -304,74 +338,245 @@ export default function ConsumerApp() {
           </div>
         )}
 
-        <div className="overflow-y-auto bg-white" style={{ height: showHeader ? "calc(780px - 84px - 56px)" : "calc(780px - 28px - 56px)" }}>
+        <div className="overflow-y-auto bg-white" style={{ height: showHeader ? "calc(780px - 64px - 56px)" : "calc(780px - 56px)" }}>
 
           {/* ===== HOME (IA-010) ===== */}
           {screen === "home" && (
-            <div>
-              {/* 프리미엄 영역 — 광고 스튜디오 (REQ-112) */}
-              <div className="policy-area mx-4 mt-3 p-2">
-                <PolicyBadge label="광고 세부 규칙 미확정" />
-                <div className="mt-1 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+            <div className="pb-6">
+              <div className="px-4 pt-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] text-gray-400">스튜디오 예약 플랫폼</p>
+                    <h2 className="mt-1 text-xl font-bold leading-tight text-gray-900">어떤 스튜디오를 찾고 계신가요?</h2>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setScreen("mypage");
+                      setTab("mypage");
+                    }}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600"
+                  >
+                    <User size={18} strokeWidth={1.7} />
+                  </button>
+                </div>
+
+                <div className="mt-4 flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-3">
+                  <Search size={16} strokeWidth={1.8} className="text-gray-400" />
+                  <input
+                    type="text"
+                    value={selectedRegion === "전체" ? "" : selectedRegion}
+                    onChange={e => setSelectedRegion(e.target.value || "전체")}
+                    placeholder="어떤 스튜디오를 찾고 계신가요?"
+                    className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+                  />
+                </div>
+
+                <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto pb-1">
+                  {HOME_KEYWORDS.map(keyword => (
+                    <button
+                      key={keyword}
+                      onClick={() => setActiveKeyword(keyword)}
+                      className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
+                        activeKeyword === keyword
+                          ? "border-primary bg-primary/5 text-primary"
+                          : "border-gray-200 bg-white text-gray-500"
+                      }`}
+                    >
+                      {keyword}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mx-4 mt-5 rounded-3xl bg-gray-50 p-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] font-semibold text-gray-700">추천 스튜디오 배너</p>
+                  <span className="text-[10px] text-gray-400">3개 x 3페이지</span>
+                </div>
+                <div className="mt-3 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
                   <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${adIdx * 100}%)` }}>
-                    {STUDIOS.slice(0, 3).map((s, i) => (
-                      <div key={i} onClick={() => openDetail(s)} className="min-w-full cursor-pointer">
-                        <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-4 flex gap-3 items-center relative">
-                          <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
-                          <div className="w-16 h-16 bg-white/60 rounded-lg flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={24} strokeWidth={1.5} /></div>
-                          <div>
-                            <p className="text-sm font-bold text-gray-900">{s.name}</p>
-                            <p className="text-[10px] text-gray-500 mt-0.5">{s.cats.join(", ")} · {s.area}</p>
-                            <div className="flex items-center gap-1 mt-1">
-                              <span className="text-xs font-bold">₩{s.price.toLocaleString()}</span>
-                              <span className="text-[10px] text-yellow-600">★ {s.rating}</span>
+                    {HOME_AD_PAGES.map((page, pageIndex) => (
+                      <div key={pageIndex} className="grid min-w-full grid-cols-3 gap-2">
+                        {page.map(card => (
+                          <button
+                            key={card.title}
+                            className={`aspect-square rounded-2xl border border-gray-200 bg-gradient-to-br ${card.tone} p-3 text-left`}
+                          >
+                            <span className="inline-flex rounded-full bg-white/80 px-2 py-0.5 text-[9px] font-semibold text-gray-500">
+                              AD
+                            </span>
+                            <div className="mt-4">
+                              <p className="text-xs font-bold leading-tight text-gray-900">{card.title}</p>
+                              <p className="mt-1 text-[10px] leading-snug text-gray-500">{card.subtitle}</p>
                             </div>
-                          </div>
-                        </div>
+                          </button>
+                        ))}
                       </div>
                     ))}
                   </div>
-                  <div className="flex justify-center gap-1.5 mt-2">
-                    {[0,1,2].map(i => (
+                  <div className="mt-3 flex justify-center gap-1.5">
+                    {HOME_AD_PAGES.map((_, i) => (
                       <button key={i} onClick={() => setAdIdx(i)} className={`w-1.5 h-1.5 rounded-full transition-all ${i === adIdx ? "bg-primary w-4" : "bg-gray-300"}`} />
                     ))}
                   </div>
                 </div>
-                <PolicyForm question="프리미엄 영역 구좌 수는?" screen="소비자" area="광고 구좌 수" />
-                <PolicyForm question="광고 노출 기간 단위는? (주간 / 월간 / 건별)" screen="소비자" area="광고 기간 단위" />
-                <PolicyForm question="광고 과금 방식은? (고정가 / 입찰)" screen="소비자" area="광고 과금 방식" />
               </div>
 
-              {/* 메인 배너 (REQ-113 / IA-A05: 메인 화면 배너 이미지 영역) */}
-              <BannerSlider />
-
-              {/* Filters + Sort (REQ-106) */}
-              <div className="px-4 mt-3 mb-2">
-                <p className="font-bold text-base mb-2">추천 스튜디오</p>
-                {/* 정렬: 최신등록순 · 평점순 · 가격순 */}
-                <div className="flex gap-2 mb-2">
-                  {([
-                    { key: "newest" as Sort, label: "최신등록순" },
-                    { key: "rating" as Sort, label: "평점순" },
-                    { key: "priceAsc" as Sort, label: "가격 낮은순" },
-                  ]).map(s => (
-                    <button key={s.key} onClick={() => setSort(s.key)}
-                      className={`rounded-full px-3 py-1.5 text-xs border transition-all ${sort === s.key ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-200 text-gray-500"}`}>{s.label}</button>
+              <div className="mt-5 px-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-[15px] font-bold text-gray-900">카테고리</h3>
+                  <button
+                    onClick={() => {
+                      setScreen("category");
+                      setTab("category");
+                    }}
+                    className="text-xs font-medium text-gray-400"
+                  >
+                    전체보기
+                  </button>
+                </div>
+                <div className="grid grid-cols-4 gap-3">
+                  {HOME_CATEGORY_GRID.map(category => (
+                    <button
+                      key={category.name}
+                      onClick={() => {
+                        setCategoryCat(category.name === "가족사진" ? "돌잔치" : category.name);
+                        setScreen("category");
+                        setTab("category");
+                      }}
+                      className="flex flex-col items-center gap-2"
+                    >
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-700">
+                        <category.Icon size={20} strokeWidth={1.7} />
+                      </div>
+                      <span className="text-[11px] font-medium text-gray-600">{category.name}</span>
+                    </button>
                   ))}
                 </div>
-                {/* 지역 검색 */}
-                <div className="mb-1.5">
-                  <div className="flex items-center gap-1.5 bg-gray-50 rounded-full px-3 py-1.5 border border-gray-100">
-                    <MapPin size={12} strokeWidth={1.5} className="text-gray-400" />
-                    <input type="text" value={selectedRegion === "전체" ? "" : selectedRegion} onChange={e => setSelectedRegion(e.target.value || "전체")}
-                      placeholder="지역 검색 (예: 잠실)" className="flex-1 bg-transparent text-[11px] outline-none placeholder:text-gray-400" />
-                    {selectedRegion !== "전체" && (
-                      <button onClick={() => setSelectedRegion("전체")} className="text-gray-400 text-xs">✕</button>
-                    )}
+              </div>
+
+              <div className="mt-6">
+                <div className="mb-3 flex items-center justify-between px-4">
+                  <div>
+                    <p className="text-[11px] text-gray-400">유료 / 수동 노출</p>
+                    <h3 className="text-[15px] font-bold text-gray-900">추천 스튜디오</h3>
+                  </div>
+                  <button className="text-xs font-medium text-gray-400">전체보기</button>
+                </div>
+                <div className="no-scrollbar flex gap-3 overflow-x-auto px-4 pb-1">
+                  {promotedStudios.map((studio, index) => (
+                    <button
+                      key={studio.id}
+                      onClick={() => openDetail(studio)}
+                      className="w-40 shrink-0 overflow-hidden rounded-2xl border border-gray-100 bg-white text-left shadow-sm"
+                    >
+                      <div className="relative flex h-28 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400">
+                        <ImageIcon size={28} strokeWidth={1.5} />
+                        <span className="absolute left-2 top-2 rounded-full bg-white/85 px-2 py-0.5 text-[9px] font-semibold text-gray-500">
+                          AD #{index + 1}
+                        </span>
+                      </div>
+                      <div className="p-3">
+                        <p className="truncate text-sm font-semibold text-gray-900">{studio.name}</p>
+                        <p className="mt-1 text-[11px] text-gray-400">{studio.area}</p>
+                        <div className="mt-2 flex items-center justify-between text-[11px]">
+                          <span className="font-bold text-gray-900">₩{studio.price.toLocaleString()}</span>
+                          <span className="text-yellow-500">★ {studio.rating}</span>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <div className="mb-3 flex items-center justify-between px-4">
+                  <div>
+                    <p className="text-[11px] text-gray-400">자동 노출</p>
+                    <h3 className="text-[15px] font-bold text-gray-900">지금 많이 찾는 스튜디오</h3>
+                  </div>
+                  <button className="text-xs font-medium text-gray-400">전체보기</button>
+                </div>
+                <div className="no-scrollbar flex gap-3 overflow-x-auto px-4 pb-1">
+                  {hotStudios.map((studio, index) => (
+                    <button
+                      key={studio.id}
+                      onClick={() => openDetail(studio)}
+                      className="w-44 shrink-0 overflow-hidden rounded-2xl border border-gray-100 bg-white text-left shadow-sm"
+                    >
+                      <div className="relative flex h-28 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400">
+                        <ImageIcon size={28} strokeWidth={1.5} />
+                        {index < 3 && (
+                          <span className="absolute left-2 top-2 rounded-full bg-gray-900 px-2 py-0.5 text-[9px] font-semibold text-white">
+                            HOT
+                          </span>
+                        )}
+                      </div>
+                      <div className="p-3">
+                        <p className="truncate text-sm font-semibold text-gray-900">{studio.name}</p>
+                        <p className="mt-1 text-[11px] text-gray-400">{studio.area}</p>
+                        <div className="mt-2 flex items-center justify-between text-[11px] text-gray-500">
+                          <span>결제 {studio.paymentCount}건</span>
+                          <span className="text-yellow-500">★ {studio.rating}</span>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-6 px-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <SlidersHorizontal size={16} strokeWidth={1.8} className="text-gray-500" />
+                  <h3 className="text-[15px] font-bold text-gray-900">필터</h3>
+                </div>
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 p-3">
+                  <p className="text-[11px] text-gray-400">기본 정렬: 결제 많은순 → 평점순</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {([
+                      { key: "payments" as Sort, label: "결제 많은순" },
+                      { key: "rating" as Sort, label: "평점순" },
+                      { key: "distance" as Sort, label: "거리순" },
+                    ]).map(item => (
+                      <button
+                        key={item.key}
+                        onClick={() => setSort(item.key)}
+                        className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                          sort === item.key ? "bg-white text-gray-900 shadow-sm" : "bg-transparent text-gray-500"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {([
+                      { key: "default" as SecondarySort, label: "보조 정렬 없음" },
+                      { key: "priceHigh" as SecondarySort, label: "가격 높은순" },
+                      { key: "priceLow" as SecondarySort, label: "가격 낮은순" },
+                    ]).map(item => (
+                      <button
+                        key={item.key}
+                        onClick={() => setSecondarySort(item.key)}
+                        className={`rounded-full border px-3 py-1.5 text-[11px] transition-all ${
+                          secondarySort === item.key
+                            ? "border-primary bg-white text-primary"
+                            : "border-gray-200 bg-white text-gray-500"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
-                {/* 가격대 필터 (칩 + 오른쪽에 커스텀 입력) */}
-                <div className="flex gap-1.5 overflow-x-auto items-center" style={{ scrollbarWidth: 'none' }}>
+              </div>
+
+              <div className="mt-4 px-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[15px] font-bold text-gray-900">필터 결과</h3>
+                  <span className="text-xs text-gray-400">{finalHomeStudios.length}곳</span>
+                </div>
+                <div className="mt-3 flex gap-1.5 overflow-x-auto items-center" style={{ scrollbarWidth: 'none' }}>
                   {PRICE_RANGES.map(p => (
                     <button key={p.key} onClick={() => { setSelectedPriceRange(p.key); setCustomPriceMin(""); setCustomPriceMax(""); }}
                       className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] border transition-all shrink-0 ${selectedPriceRange === p.key && !customPriceMin && !customPriceMax ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-100 text-gray-400 bg-gray-50"}`}>💰 {p.label}</button>
@@ -392,11 +597,10 @@ export default function ConsumerApp() {
                 </div>
               </div>
 
-              {/* Studio List */}
               <div className="px-4">
-                {homeSorted.length === 0 ? (
+                {finalHomeStudios.length === 0 ? (
                   <div className="text-center py-12"><p className="text-gray-400 text-sm">조건에 맞는 스튜디오가 없습니다</p></div>
-                ) : homeSorted.map(s => (
+                ) : finalHomeStudios.map(s => (
                   <div key={s.id} onClick={() => openDetail(s)}
                     className="w-full flex gap-3 py-4 border-b border-gray-50 cursor-pointer">
                     <div className="w-[88px] h-[88px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={28} strokeWidth={1.5} /></div>
@@ -411,6 +615,10 @@ export default function ConsumerApp() {
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-yellow-500">★ {s.rating}</span>
                         <span className="text-xs text-gray-400">({s.reviews})</span>
+                        <span className="text-xs text-gray-300">|</span>
+                        <span className="text-xs text-gray-400">결제 {s.paymentCount}건</span>
+                        <span className="text-xs text-gray-300">|</span>
+                        <span className="text-xs text-gray-400">{s.distanceKm.toFixed(1)}km</span>
                       </div>
                     </div>
                   </div>
@@ -423,20 +631,16 @@ export default function ConsumerApp() {
           {screen === "category" && (
             <div className="p-4">
               <h2 className="text-base font-bold mb-4">카테고리</h2>
-              <div className="policy-area p-2 mb-4">
-                <PolicyBadge label="카테고리 목록 미확정" />
-                <div className="grid grid-cols-4 gap-2 mt-2">
-                  {CATEGORIES.map(c => (
-                    <button key={c.name} onClick={() => setCategoryCat(c.name)}
-                      className="flex flex-col items-center gap-1.5 py-2">
-                      <div className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all ${categoryCat === c.name ? "border-primary bg-primary/5 text-primary" : "border-gray-200 bg-white text-gray-600"}`}>
-                        <c.Icon size={20} strokeWidth={1.5} />
-                      </div>
-                      <span className={`text-[10px] ${categoryCat === c.name ? "text-primary font-semibold" : "text-gray-600"}`}>{c.name}</span>
-                    </button>
-                  ))}
-                </div>
-                <PolicyForm question="상세 카테고리 목록을 확정해주세요. (웨딩/프로필/피아노 등 대략적 방향만 논의됨)" screen="소비자" area="카테고리 목록" />
+              <div className="grid grid-cols-4 gap-2 mb-4">
+                {CATEGORIES.map(c => (
+                  <button key={c.name} onClick={() => setCategoryCat(c.name)}
+                    className="flex flex-col items-center gap-1.5 py-2">
+                    <div className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all ${categoryCat === c.name ? "border-primary bg-primary/5 text-primary" : "border-gray-200 bg-white text-gray-600"}`}>
+                      <c.Icon size={20} strokeWidth={1.5} />
+                    </div>
+                    <span className={`text-[10px] ${categoryCat === c.name ? "text-primary font-semibold" : "text-gray-600"}`}>{c.name}</span>
+                  </button>
+                ))}
               </div>
 
               {/* 지역 검색 */}
@@ -556,38 +760,29 @@ export default function ConsumerApp() {
                 </div>
 
                 {/* Reviews (IA-031) */}
-                <div className="policy-area mb-4 p-3">
-                  <PolicyBadge label="리뷰 세부 규칙 미확정" />
-                  <div className="mt-2">
-                    <p className="text-sm font-medium mb-2">리뷰 {selectedStudio.reviews}개</p>
-                    <div className="space-y-2">
-                      {[
-                        { name: "김**", rating: 5, text: "분위기 너무 좋아요! 사진 결과물도 만족합니다", reply: "감사합니다! 다음에도 좋은 촬영 하겠습니다." },
-                        { name: "이**", rating: 4, text: "접근성이 좋고 시설이 깔끔해요", reply: null },
-                      ].map((r, i) => (
-                        <div key={i} className="bg-white rounded-lg p-3 border border-gray-100">
-                          <div className="flex items-center gap-2 mb-1"><span className="text-xs font-medium">{r.name}</span><span className="text-xs text-yellow-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span></div>
-                          <p className="text-xs text-gray-600">{r.text}</p>
-                          {r.reply && (
-                            <div className="bg-gray-50 rounded-lg p-2.5 mt-2 border border-gray-100">
-                              <p className="text-[10px] text-primary font-medium mb-0.5">업체 답변</p>
-                              <p className="text-xs text-gray-600">{r.reply}</p>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-[10px] text-amber-600 mt-2">작성 기간 · 사진 첨부 · 수정/삭제 · 글자 수 제한 → 미확정</p>
-                    <PolicyForm question="리뷰 작성 가능 기간은? (촬영 후 며칠 이내?)" screen="소비자" area="리뷰 작성 기간" />
-                    <PolicyForm question="리뷰 수정/삭제가 가능한가요?" screen="소비자" area="리뷰 수정/삭제" />
+                <div className="mb-4">
+                  <p className="text-sm font-medium mb-2">리뷰 {selectedStudio.reviews}개</p>
+                  <div className="space-y-2">
+                    {[
+                      { name: "김**", rating: 5, text: "분위기 너무 좋아요! 사진 결과물도 만족합니다", reply: "감사합니다! 다음에도 좋은 촬영 하겠습니다." },
+                      { name: "이**", rating: 4, text: "접근성이 좋고 시설이 깔끔해요", reply: null },
+                    ].map((r, i) => (
+                      <div key={i} className="bg-white rounded-lg p-3 border border-gray-100">
+                        <div className="flex items-center gap-2 mb-1"><span className="text-xs font-medium">{r.name}</span><span className="text-xs text-yellow-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span></div>
+                        <p className="text-xs text-gray-600">{r.text}</p>
+                        {r.reply && (
+                          <div className="bg-gray-50 rounded-lg p-2.5 mt-2 border border-gray-100">
+                            <p className="text-[10px] text-primary font-medium mb-0.5">업체 답변</p>
+                            <p className="text-xs text-gray-600">{r.reply}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* 예약 세부 규칙 미확정 (REQ-107 보완) */}
-                <div className="policy-area mb-4 p-3">
-                  <PolicyBadge label="예약 세부 규칙 미확정" />
-                  <div className="mt-2">
-                    <p className="text-sm font-medium mb-2">날짜 선택</p>
+                <div className="mb-4">
+                  <p className="text-sm font-medium mb-2">날짜 선택</p>
                     {/* 월간 캘린더 뷰 */}
                     <div className="bg-gray-50 rounded-xl p-3">
                       <p className="text-xs font-medium text-center mb-2">2026년 5월</p>
@@ -613,32 +808,27 @@ export default function ConsumerApp() {
                         <span className="flex items-center gap-1"><span className="w-2 h-2 bg-primary/20 rounded-full" /> 예약 가능</span>
                       </div>
                     </div>
-                    <p className="text-sm font-medium mb-2 mt-3">시간 선택</p>
-                    {(() => {
-                      const isDateAvailable = [5, 10, 11, 13, 15, 18, 20, 25].includes(selectedDate);
-                      return (
-                        <>
-                          {!isDateAvailable && (
-                            <p className="text-[10px] text-red-500 mb-1.5">⚠ 선택한 날짜는 예약 불가입니다. 다른 날짜를 선택해주세요.</p>
-                          )}
-                          <div className="grid grid-cols-4 gap-1.5">
-                            {TIMES.map(t => {
-                              const booked = BOOKED_TIMES.includes(t);
-                              const disabled = !isDateAvailable || booked;
-                              return (
-                                <button key={t} onClick={() => !disabled && setSelectedTime(t)} disabled={disabled}
-                                  className={`rounded-lg py-2 text-center text-xs transition-all ${disabled ? "bg-gray-200 text-gray-300 line-through cursor-not-allowed" : selectedTime === t ? "bg-primary text-white font-bold" : "bg-gray-100 text-gray-600"}`}>{t}</button>
-                              );
-                            })}
-                          </div>
-                        </>
-                      );
-                    })()}
-                    <p className="text-[10px] text-amber-600 mt-2">최소 예약 단위 · 예약 가능 기간 · 당일 예약 · 버퍼 시간 → 미확정</p>
-                    <PolicyForm question="최소 예약 단위는? (1시간 / 30분 / 업체 자유)" screen="소비자" area="최소 예약 단위" />
-                    <PolicyForm question="예약 가능 기간은? (며칠 전부터 예약 가능?)" screen="소비자" area="예약 가능 기간" />
-                    <PolicyForm question="예약 간 버퍼 시간은? (청소/준비 시간)" screen="소비자" area="예약 버퍼 시간" />
-                  </div>
+                  <p className="text-sm font-medium mb-2 mt-3">시간 선택</p>
+                  {(() => {
+                    const isDateAvailable = [5, 10, 11, 13, 15, 18, 20, 25].includes(selectedDate);
+                    return (
+                      <>
+                        {!isDateAvailable && (
+                          <p className="text-[10px] text-red-500 mb-1.5">선택한 날짜는 예약 불가입니다. 다른 날짜를 선택해주세요.</p>
+                        )}
+                        <div className="grid grid-cols-4 gap-1.5">
+                          {TIMES.map(t => {
+                            const booked = BOOKED_TIMES.includes(t);
+                            const disabled = !isDateAvailable || booked;
+                            return (
+                              <button key={t} onClick={() => !disabled && setSelectedTime(t)} disabled={disabled}
+                                className={`rounded-lg py-2 text-center text-xs transition-all ${disabled ? "bg-gray-200 text-gray-300 line-through cursor-not-allowed" : selectedTime === t ? "bg-primary text-white font-bold" : "bg-gray-100 text-gray-600"}`}>{t}</button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {/* CTA: 예약 + 문의(전화) */}
@@ -671,19 +861,6 @@ export default function ConsumerApp() {
                 <div className="flex justify-between text-sm border-t border-gray-100 pt-3"><span className="text-gray-500 font-bold">총 금액</span><span className="font-bold text-primary text-base">₩{totalPrice.toLocaleString()}</span></div>
               </div>
 
-              <div className="policy-area mb-4 p-3">
-                <PolicyBadge label="취소/환불 정책 미확정" />
-                <div className="mt-2 space-y-1.5">
-                  <p className="text-xs text-amber-700 font-medium">취소/환불 규칙</p>
-                  <div className="grid grid-cols-2 gap-1 text-xs text-gray-400">
-                    <span>7일 전 취소</span><span className="text-amber-600 font-medium">→ ?% 환불</span>
-                    <span>3일 전 취소</span><span className="text-amber-600 font-medium">→ ?% 환불</span>
-                    <span>당일 취소</span><span className="text-amber-600 font-medium">→ ?% 환불</span>
-                    <span>노쇼</span><span className="text-amber-600 font-medium">→ ?</span>
-                  </div>
-                </div>
-                <PolicyForm question="예약 취소/환불 정책을 확정해주세요. (취소 수수료, 환불 기준 등)" screen="소비자" area="취소/환불 정책" />
-              </div>
               <button onClick={() => navigate("done")} className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm">결제하기 · 토스페이먼츠</button>
             </div>
           )}
@@ -721,7 +898,6 @@ export default function ConsumerApp() {
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-gray-100">
                     <span className="text-sm font-bold">{b.price}</span>
-                    {bookingFilter === "예정" && <div className="policy-area px-2 py-1"><span className="text-[10px] text-amber-700">⚠️ 취소 정책 미확정</span></div>}
                     {bookingFilter === "완료" && (b as { canReview?: boolean }).canReview && (
                       <button onClick={() => { setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); navigate("reviewWrite"); }} className="text-xs text-primary font-medium">리뷰 작성 →</button>
                     )}
@@ -729,12 +905,6 @@ export default function ConsumerApp() {
                   </div>
                 </div>
               ))}
-              {/* 취소/환불 정책 미확정 — REQ-108, 미확정 항목 */}
-              <div className="policy-area mt-4 p-3">
-                <PolicyBadge label="취소/환불 정책 미확정" />
-                <PolicyForm question="예약 취소 시 환불 기준은? (7일 전/3일 전/당일/노쇼 각각 환불율)" screen="소비자" area="취소/환불 정책" />
-                <PolicyForm question="취소 수수료 부과 기준은? (업체/소비자 귀책 구분)" screen="소비자" area="취소 수수료" />
-              </div>
             </div>
           )}
 
@@ -845,17 +1015,21 @@ export default function ConsumerApp() {
               </div>
 
               <div className="space-y-0">
-                {[
-                  { label: "내 예약 내역", action: () => navigate("myBookings") },
-                  { label: "내 리뷰 관리", action: () => navigate("myReviews") },
-                  { label: "결제 내역", action: () => navigate("paymentHistory") },
-                  { label: "고객센터", action: () => {} },
-                  { label: "로그아웃", action: () => navigate("login") },
-                ].map(m => (
-                  <button key={m.label} onClick={m.action} className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
-                    <span className="text-sm">{m.label}</span><span className="text-gray-300 text-xs">›</span>
-                  </button>
-                ))}
+                <button onClick={() => navigate("myBookings")} className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
+                  <span className="text-sm">내 예약 내역</span><span className="text-gray-300 text-xs">›</span>
+                </button>
+                <button onClick={() => navigate("myReviews")} className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
+                  <span className="text-sm">내 리뷰 관리</span><span className="text-gray-300 text-xs">›</span>
+                </button>
+                <button onClick={() => navigate("paymentHistory")} className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
+                  <span className="text-sm">결제 내역</span><span className="text-gray-300 text-xs">›</span>
+                </button>
+                <button className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
+                  <span className="text-sm">고객센터</span><span className="text-gray-300 text-xs">›</span>
+                </button>
+                <button onClick={() => navigate("login")} className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
+                  <span className="text-sm">로그아웃</span><span className="text-gray-300 text-xs">›</span>
+                </button>
               </div>
             </div>
           )}
@@ -863,7 +1037,8 @@ export default function ConsumerApp() {
           {/* ===== LOGIN (IA-003) ===== */}
           {screen === "login" && (
             <div className="p-6 pt-16 flex flex-col items-center">
-              <p className="text-3xl font-bold text-primary mb-2">퍼니</p>
+              <Image src="/photopop-logo.png" alt="포토팟 로고" width={88} height={88} className="mb-3 h-[88px] w-[88px] object-contain" />
+              <p className="text-3xl font-bold text-primary mb-2">포토팟</p>
               <p className="text-xs text-gray-400 mb-10">스튜디오 대관·예약 플랫폼</p>
 
               <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-[#FEE500] text-[#191919] py-3 rounded-xl font-bold text-sm mb-2 flex items-center justify-center gap-2">💬 카카오로 시작하기</button>
@@ -898,7 +1073,7 @@ export default function ConsumerApp() {
 
               <div className="space-y-3 mb-4">
                 <div><p className="text-xs text-gray-500 mb-1">이름</p><input type="text" placeholder="홍길동" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
-                <div><p className="text-xs text-gray-500 mb-1">닉네임 (앱 내 표시)</p><input type="text" placeholder="퍼니유저" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
+                <div><p className="text-xs text-gray-500 mb-1">닉네임 (앱 내 표시)</p><input type="text" placeholder="포토팟유저" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
                 <div><p className="text-xs text-gray-500 mb-1">이메일</p><input type="email" placeholder="email@example.com" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
                 <div><p className="text-xs text-gray-500 mb-1">비밀번호</p><input type="password" placeholder="8자 이상" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>
               </div>
@@ -931,12 +1106,6 @@ export default function ConsumerApp() {
             <div className="p-6 pt-16">
               <h2 className="text-lg font-bold mb-1">업체 회원가입</h2>
               <p className="text-xs text-gray-400 mb-6">사업자 계정 · 승인 후 이용 가능</p>
-
-              <div className="policy-area p-3 mb-4">
-                <PolicyBadge label="업체 입점 세부 규칙 미확정" />
-                <p className="text-[10px] text-amber-600 mt-1">→ 어드민 웹 &gt; 업체 관리에 질문으로 표기</p>
-              </div>
-
 
               <div className="space-y-3 mb-4">
                 <div><p className="text-xs text-gray-500 mb-1">업체명</p><input type="text" placeholder="스튜디오명" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none border border-gray-200" /></div>

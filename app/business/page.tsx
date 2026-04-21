@@ -1,44 +1,25 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
-import PolicyForm from "../components/PolicyForm";
+import Image from "next/image";
 import {
   Camera, Dumbbell, Heart, Cake, Package, Video, MoreHorizontal,
-  Home, LayoutGrid, User, Bell, Phone, MapPin, Calendar,
+  Home, LayoutGrid, User, Bell, Phone, Calendar,
   DollarSign, BarChart3, Building2, ImageIcon, X, Star
 } from "lucide-react";
 
-function PolicyBadge({ label }: { label: string }) {
-  return <span className="policy-badge">⚠️ {label}</span>;
-}
-
-const BANNERS = [
-  { title: "봄맞이 스튜디오 할인 이벤트", desc: "3월~5월 프로필 촬영 20% 할인", gradient: "from-violet-100 to-purple-50", border: "border-violet-200/50" },
-  { title: "웨딩 시즌 특별 패키지", desc: "웨딩스냅 + 본식촬영 세트 할인", gradient: "from-pink-100 to-rose-50", border: "border-pink-200/50" },
-  { title: "바디프로필 인기 스튜디오 TOP5", desc: "성수·강남 지역 추천 스튜디오", gradient: "from-blue-100 to-cyan-50", border: "border-blue-200/50" },
-];
-
-function BannerSlider() {
-  const [idx, setIdx] = useState(0);
-  useEffect(() => {
-    const timer = setInterval(() => setIdx(prev => (prev + 1) % BANNERS.length), 3000);
-    return () => clearInterval(timer);
-  }, []);
+function BrandMark({ business = false }: { business?: boolean }) {
   return (
-    <div className="px-4 mt-3 mb-2">
-      <div className="overflow-hidden rounded-xl">
-        <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${idx * 100}%)` }}>
-          {BANNERS.map((b, i) => (
-            <div key={i} className={`min-w-full bg-gradient-to-r ${b.gradient} rounded-xl p-4 relative border ${b.border}`}>
-              <span className="absolute top-2 right-2 text-[9px] bg-gray-500/60 text-white px-1.5 py-0.5 rounded">AD</span>
-              <p className="text-sm font-bold text-gray-900 mb-0.5">{b.title}</p>
-              <p className="text-[10px] text-gray-600">{b.desc}</p>
-            </div>
-          ))}
-        </div>
+    <div className="flex items-center gap-2">
+      <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-white">
+        <Image src="/photopop-logo.png" alt="포토팟 로고" width={44} height={44} className="h-full w-full object-contain p-1" />
       </div>
-      <div className="flex justify-center gap-1 mt-2">
-        {BANNERS.map((_, i) => <button key={i} onClick={() => setIdx(i)} className={`w-1.5 h-1.5 rounded-full transition-all ${i === idx ? "bg-primary w-4" : "bg-gray-300"}`} />)}
+      <div>
+        <p className="text-[11px] font-medium text-gray-400">Partner Studio</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-lg font-bold tracking-tight text-gray-900">포토팟</p>
+          {business && <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-500">BUSINESS</span>}
+        </div>
       </div>
     </div>
   );
@@ -69,8 +50,6 @@ const STUDIOS = [
   { id: 6, name: "무브 필름랩", cat: "영상", desc: "유튜브촬영, 광고영상, 인터뷰", area: "서울 합정", price: "60,000", rating: 4.7, reviews: 45, phone: "02-5678-9012" },
 ];
 
-const KEYWORDS = ["강남 프로필", "성수 바디프로필", "웨딩 스냅", "증명사진", "제품 촬영"];
-
 const ALL_BOOKINGS: { id: number; month: number; date: number; name: string; cat: string; time: string; price: number; status: string; isManual?: boolean }[] = [
   { id: 1, month: 5, date: 10, name: "김철수", cat: "프로필", time: "10:00~12:00", price: 100000, status: "확정" },
   { id: 2, month: 5, date: 10, name: "이영희", cat: "바디프로필", time: "14:00~16:00", price: 160000, status: "확정" },
@@ -96,10 +75,15 @@ const NOTIFICATIONS: { id: number; type: string; text: string; time: string; act
 ];
 
 const SETTLEMENTS = [
-  { id: 1, date: "2026.04.10", period: "4월 2주차", count: 8, total: 680000, fee: "?%", net: "?", status: "완료" },
-  { id: 2, date: "2026.04.03", period: "4월 1주차", count: 5, total: 450000, fee: "?%", net: "?", status: "완료" },
-  { id: 3, date: "2026.03.27", period: "3월 4주차", count: 6, total: 520000, fee: "?%", net: "?", status: "완료" },
-  { id: 4, date: "2026.03.20", period: "3월 3주차", count: 4, total: 320000, fee: "?%", net: "?", status: "완료" },
+  { id: 1, date: "2026.04.10", period: "4월 2주차", count: 8, total: 680000, fee: "10%", net: "₩612,000", status: "완료" },
+  { id: 2, date: "2026.04.03", period: "4월 1주차", count: 5, total: 450000, fee: "10%", net: "₩405,000", status: "완료" },
+  { id: 3, date: "2026.03.27", period: "3월 4주차", count: 6, total: 520000, fee: "10%", net: "₩468,000", status: "완료" },
+  { id: 4, date: "2026.03.20", period: "3월 3주차", count: 4, total: 320000, fee: "10%", net: "₩288,000", status: "완료" },
+];
+
+const HOME_OWNER_REQUESTS = [
+  { id: 1, customer: "김철수", category: "프로필", time: "오늘 10:00", note: "업체 승인 대기", amount: "₩100,000" },
+  { id: 2, customer: "박지민", category: "웨딩", time: "내일 14:00", note: "시간 조율 필요", amount: "₩400,000" },
 ];
 
 export default function BusinessApp() {
@@ -117,12 +101,10 @@ export default function BusinessApp() {
   const [settlementMonth, setSettlementMonth] = useState("4월");
   const [selectedStudio, setSelectedStudio] = useState(STUDIOS[0]);
   const [categoryCat, setCategoryCat] = useState("프로필");
-  const [prevScreen, setPrevScreen] = useState<Screen>("home");
   const historyStack = useRef<{ s: Screen; t: Tab }[]>([]);
 
   const navigate = (to: Screen) => {
     historyStack.current.push({ s: screen, t: tab });
-    setPrevScreen(screen);
     setScreen(to);
   };
   const goBack = () => {
@@ -136,19 +118,10 @@ export default function BusinessApp() {
       setTab("home");
     }
   };
-  const [adIdx, setAdIdx] = useState(0);
   const [showManualModal, setShowManualModal] = useState(false);
   const [manualDate, setManualDate] = useState("");
   const [manualTime, setManualTime] = useState("");
   const [manualMemo, setManualMemo] = useState("");
-  const touchStartX = useRef(0);
-
-  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (diff > 50) setAdIdx(prev => Math.min(prev + 1, 2));
-    if (diff < -50) setAdIdx(prev => Math.max(prev - 1, 0));
-  };
 
   const catFiltered = categoryCat === "전체" ? STUDIOS : STUDIOS.filter(s => s.cat === categoryCat);
 
@@ -175,19 +148,16 @@ export default function BusinessApp() {
       <Link href="/" className="text-sm text-primary mb-4 hover:underline">← 메인으로</Link>
       <h2 className="text-xl font-bold mb-6 text-gray-900">업체 화면</h2>
 
-      <div className="w-[375px] bg-white rounded-[40px] border-[8px] border-gray-900 overflow-hidden shadow-2xl relative" style={{ height: 780 }}>
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[28px] bg-gray-900 rounded-b-2xl z-20" />
+      <div className="relative w-full max-w-[390px] overflow-hidden rounded-[28px] bg-white shadow-xl" style={{ height: 780 }}>
 
         {/* Header */}
         {screen !== "login" && (
-          <div className="relative z-10 bg-white pt-10 pl-2 pr-4 pb-2 border-b border-gray-50">
+          <div className="relative z-10 bg-white pt-5 pl-2 pr-4 pb-2 border-b border-gray-50">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 {screen !== "home" && <button onClick={goBack} className="text-gray-500 text-lg flex items-center justify-center -mr-1">‹</button>}
                 <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center">
-                  <img src="/funni-logo.png" alt="퍼니" className="w-12 h-12" />
-                  <span className="text-xl font-bold text-gray-900 -ml-1.5">퍼니</span>
-                  <span className="text-primary text-sm font-medium ml-1">비즈니스</span>
+                  <BrandMark business />
                 </button>
               </div>
               <button onClick={() => { navigate("notifications"); setHasNotif(false); }} className="relative text-gray-500 p-1">
@@ -198,76 +168,119 @@ export default function BusinessApp() {
           </div>
         )}
 
-        <div className="overflow-y-auto bg-white" style={{ height: screen === "login" ? "calc(780px - 28px)" : "calc(780px - 76px - 56px)" }}>
+        <div className="overflow-y-auto bg-white" style={{ height: screen === "login" ? "780px" : "calc(780px - 61px - 56px)" }}>
 
           {/* ===== HOME (IA-010: 소비자와 동일한 스튜디오 탐색) ===== */}
           {screen === "home" && (
-            <div>
-              {/* 업체 모드 토스트 */}
-              <div className="bg-primary/5 border-b border-primary/10 px-4 py-2 flex items-center justify-between">
-                <span className="text-[10px] text-primary font-medium">🏢 업체 계정 · 탐색만 가능 (예약·결제 불가)</span>
-                <button onClick={() => { navigate("dashboard"); setTab("my"); }} className="text-[10px] text-primary underline">내 대시보드 →</button>
+            <div className="pb-6">
+              <div className="px-4 pt-3">
+                <p className="text-[11px] text-gray-400">업체 홈</p>
+                <h2 className="mt-1 text-xl font-bold leading-tight text-gray-900">오늘 운영 현황을 한눈에 확인하세요</h2>
+                <p className="mt-1 text-xs text-gray-500">예약 승인, 수기 일정, 정산, 리뷰 대응까지 한 화면에서 관리할 수 있게 구성했습니다.</p>
               </div>
 
-              {/* 프리미엄 광고 (REQ-112) */}
-              <div className="policy-area mx-4 mt-3 p-2">
-                <PolicyBadge label="광고 정책 미확정" />
-                <div className="mt-1 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-                  <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${adIdx * 100}%)` }}>
-                    {STUDIOS.slice(0, 3).map((s, i) => (
-                      <div key={i} onClick={() => { setSelectedStudio(s); navigate("detail"); }} className="min-w-full cursor-pointer">
-                        <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-4 flex gap-3 items-center relative">
-                          <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
-                          <div className="w-16 h-16 bg-white/60 rounded-lg flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={24} strokeWidth={1.5} /></div>
-                          <div>
-                            <p className="text-sm font-bold text-gray-900">{s.name}</p>
-                            <p className="text-[10px] text-gray-500 mt-0.5">{s.cat} · {s.area}</p>
-                            <div className="flex items-center gap-1 mt-1">
-                              <span className="text-xs font-bold">₩{s.price}</span>
-                              <span className="text-[10px] text-yellow-600">★ {s.rating}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex justify-center gap-1.5 mt-2">
-                    {[0,1,2].map(i => (
-                      <button key={i} onClick={() => setAdIdx(i)} className={`w-1.5 h-1.5 rounded-full transition-all ${i === adIdx ? "bg-primary w-4" : "bg-gray-300"}`} />
-                    ))}
-                  </div>
+              <div className="mt-4 grid grid-cols-3 gap-2 px-4">
+                <div className="rounded-2xl border border-gray-200 bg-white p-3 text-center shadow-sm">
+                  <p className="text-[10px] text-gray-400">오늘 예약</p>
+                  <p className="mt-1 text-lg font-bold text-gray-900">{todayBookings.length}건</p>
+                </div>
+                <div className="rounded-2xl border border-gray-200 bg-white p-3 text-center shadow-sm">
+                  <p className="text-[10px] text-gray-400">승인 대기</p>
+                  <p className="mt-1 text-lg font-bold text-gray-900">{HOME_OWNER_REQUESTS.length}건</p>
+                </div>
+                <div className="rounded-2xl border border-gray-200 bg-white p-3 text-center shadow-sm">
+                  <p className="text-[10px] text-gray-400">이번 달 매출</p>
+                  <p className="mt-1 text-sm font-bold text-gray-900">₩{(totalRevenue / 10000).toFixed(0)}만</p>
                 </div>
               </div>
 
-              {/* 메인 배너 (REQ-113 / IA-A05) */}
-              <BannerSlider />
-
-              {/* 추천 스튜디오 */}
-              <div className="px-4 mt-3 mb-2">
-                <p className="font-bold text-base mb-2">추천 스튜디오</p>
+              <div className="mt-5 px-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-[15px] font-bold text-gray-900">승인 대기 / 조율 필요 예약</h3>
+                  <button onClick={() => navigate("bookings")} className="text-xs font-medium text-gray-400">전체보기</button>
+                </div>
+                <div className="space-y-2">
+                  {HOME_OWNER_REQUESTS.map(request => (
+                    <button
+                      key={request.id}
+                      onClick={() => navigate("bookings")}
+                      className="w-full rounded-2xl border border-gray-200 bg-white p-4 text-left shadow-sm"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">{request.customer}</p>
+                          <p className="mt-1 text-xs text-gray-400">{request.category} · {request.time}</p>
+                          <p className="mt-2 text-[11px] font-medium text-gray-600">{request.note}</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] font-semibold text-gray-500">확인 필요</span>
+                          <p className="mt-2 text-xs font-bold text-gray-900">{request.amount}</p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="px-4">
-                {STUDIOS.map(s => (
-                  <div key={s.id} onClick={() => { setSelectedStudio(s); navigate("detail"); }}
-                    className="w-full flex gap-3 py-4 border-b border-gray-50 cursor-pointer">
-                    <div className="relative w-[88px] h-[88px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center shrink-0 text-gray-400">
-                      <ImageIcon size={28} strokeWidth={1.5} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm text-gray-900">{s.name}</p>
-                      <p className="text-xs text-gray-400 mt-0.5 truncate">{s.desc}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{s.area}</p>
-                      <div className="flex items-center gap-1 mt-1.5">
-                        <span className="text-sm font-bold">₩{s.price}</span>
-                        <span className="text-xs text-gray-400">VAT 포함</span>
+
+              <div className="mt-5 px-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-[15px] font-bold text-gray-900">오늘 예약 일정</h3>
+                  <button onClick={() => navigate("dashboard")} className="text-xs font-medium text-gray-400">실적 보기</button>
+                </div>
+                <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
+                  {todayBookings.map((booking, index) => (
+                    <button
+                      key={booking.id}
+                      onClick={() => {
+                        setSelectedBooking(booking);
+                        navigate("bookingDetail");
+                      }}
+                      className={`flex w-full items-center justify-between px-4 py-3 text-left ${index !== todayBookings.length - 1 ? "border-b border-gray-100" : ""}`}
+                    >
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">{booking.name}</p>
+                        <p className="mt-1 text-xs text-gray-400">{booking.cat} · {booking.time}</p>
                       </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-yellow-500">★ {s.rating}</span>
-                        <span className="text-xs text-gray-400">({s.reviews})</span>
+                      <div className="text-right">
+                        <p className="text-xs font-bold text-gray-900">₩{booking.price.toLocaleString()}</p>
+                        <span className="mt-1 inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-500">{booking.status}</span>
                       </div>
-                    </div>
-                  </div>
-                ))}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-5 px-4">
+                <h3 className="mb-3 text-[15px] font-bold text-gray-900">빠른 메뉴</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <button onClick={() => navigate("register")} className="rounded-2xl border border-gray-200 bg-white p-4 text-left shadow-sm">
+                    <Building2 size={18} strokeWidth={1.7} className="text-gray-700" />
+                    <p className="mt-3 text-sm font-semibold text-gray-900">내 스튜디오 관리</p>
+                    <p className="mt-1 text-[11px] text-gray-400">등록/수정/삭제</p>
+                  </button>
+                  <button onClick={() => navigate("bookings")} className="rounded-2xl border border-gray-200 bg-white p-4 text-left shadow-sm">
+                    <Calendar size={18} strokeWidth={1.7} className="text-gray-700" />
+                    <p className="mt-3 text-sm font-semibold text-gray-900">예약 달력</p>
+                    <p className="mt-1 text-[11px] text-gray-400">승인 / 수기 일정</p>
+                  </button>
+                  <button onClick={() => navigate("settlement")} className="rounded-2xl border border-gray-200 bg-white p-4 text-left shadow-sm">
+                    <DollarSign size={18} strokeWidth={1.7} className="text-gray-700" />
+                    <p className="mt-3 text-sm font-semibold text-gray-900">정산 내역</p>
+                    <p className="mt-1 text-[11px] text-gray-400">월별 정산 조회</p>
+                  </button>
+                  <button onClick={() => navigate("reviews")} className="rounded-2xl border border-gray-200 bg-white p-4 text-left shadow-sm">
+                    <Star size={18} strokeWidth={1.7} className="text-gray-700" />
+                    <p className="mt-3 text-sm font-semibold text-gray-900">리뷰 관리</p>
+                    <p className="mt-1 text-[11px] text-gray-400">답글 작성</p>
+                  </button>
+                </div>
+              </div>
+
+              <div className="mx-4 mt-5 rounded-3xl bg-gray-50 p-4">
+                <p className="text-[11px] font-semibold text-gray-700">운영 메모</p>
+                <p className="mt-2 text-[11px] leading-relaxed text-gray-600">
+                  예약 현황, 승인 대기 건, 정산 흐름을 빠르게 확인할 수 있도록 주요 액션 중심으로 홈을 구성했습니다.
+                </p>
               </div>
             </div>
           )}
@@ -287,17 +300,12 @@ export default function BusinessApp() {
                   </button>
                 ))}
               </div>
-              {/* 카테고리별 광고 배너 (REQ-113: 카테고리 페이지 배너) — 소비자 화면 동기화 */}
-              <div className="policy-area p-2 mb-4">
-                <PolicyBadge label="광고 세부 규칙 미확정" />
-                <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-3 flex gap-3 items-center mt-1">
-                  <span className="bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
-                  <div className="flex-1">
-                    <p className="text-xs font-bold text-gray-800">&lsquo;{categoryCat}&rsquo; 카테고리 추천 배너</p>
-                    <p className="text-[10px] text-gray-500">관리자가 등록한 광고가 노출됩니다</p>
-                  </div>
+              <div className="mb-4 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 p-3 flex gap-3 items-center">
+                <span className="bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-gray-800">&lsquo;{categoryCat}&rsquo; 카테고리 추천 배너</p>
+                  <p className="text-[10px] text-gray-500">관리자가 등록한 광고가 노출됩니다</p>
                 </div>
-                <p className="text-[10px] text-amber-600 mt-1">→ 소비자 화면 &gt; 홈에 질문으로 표기</p>
               </div>
               <p className="text-sm font-bold mb-3">&lsquo;{categoryCat}&rsquo; 스튜디오 {catFiltered.length}곳</p>
               {catFiltered.map(s => (
@@ -504,10 +512,8 @@ export default function BusinessApp() {
                   <input type="text" defaultValue="02-1234-5678" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm border border-gray-100 outline-none focus:border-primary" />
                 </div>
 
-                {/* Categories - Toggle */}
-                <div className="policy-area p-3">
-                  <PolicyBadge label="카테고리 목록 미확정" />
-                  <label className="text-xs text-gray-500 mb-1.5 block font-medium mt-1">카테고리 (복수 선택)</label>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1.5 block font-medium">카테고리 (복수 선택)</label>
                   <div className="flex flex-wrap gap-2">
                     {["프로필", "바디프로필", "웨딩", "돌잔치", "제품", "영상"].map(c => (
                       <button key={c} onClick={() => toggleCat(c)}
@@ -593,10 +599,8 @@ export default function BusinessApp() {
                   </label>
                 </div>
 
-                {/* Schedule */}
-                <div className="policy-area p-3">
-                  <PolicyBadge label="예약 단위 미확정" />
-                  <p className="text-xs font-medium text-gray-700 mt-1 mb-2">운영 시간 설정</p>
+                <div className="bg-gray-50 rounded-xl p-3">
+                  <p className="text-xs font-medium text-gray-700 mb-2">운영 시간 설정</p>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-white rounded-lg px-3 py-2.5 text-sm text-center border border-gray-100">09:00 시작</div>
                     <div className="bg-white rounded-lg px-3 py-2.5 text-sm text-center border border-gray-100">22:00 종료</div>
@@ -611,7 +615,6 @@ export default function BusinessApp() {
                       ))}
                     </div>
                   </div>
-                  <p className="text-[10px] text-amber-600 mt-2">예약 단위 · 최소 시간 · 버퍼 → 미확정</p>
                 </div>
 
                 <button onClick={() => setRegistered(true)}
@@ -738,12 +741,6 @@ export default function BusinessApp() {
                 </div>
               ) : (
                 <div>
-                  {bookingFilter === "취소요청" && (
-                    <div className="policy-area p-2 mb-2">
-                      <PolicyBadge label="취소/환불 정책 미확정" />
-                      <p className="text-[10px] text-amber-600 mt-1">→ 소비자 화면 &gt; 내 예약에 질문으로 표기</p>
-                    </div>
-                  )}
                   <div className="space-y-2">
                     {filteredBookings.map(b => (
                       <button key={b.id} onClick={() => { setSelectedBooking(b); navigate("bookingDetail"); }}
@@ -814,13 +811,11 @@ export default function BusinessApp() {
               </div>
 
               {selectedBooking.status === "취소요청" && (
-                <div className="policy-area p-3 mb-4">
-                  <PolicyBadge label="취소/환불 정책 미확정" />
-                  <p className="text-sm font-medium mt-2 mb-2 text-red-700">고객이 취소를 요청했습니다</p>
-                  <p className="text-[10px] text-amber-600 mt-1">→ 소비자 화면 &gt; 내 예약에 질문으로 표기</p>
+                <div className="mb-4 rounded-2xl bg-red-50 p-3">
+                  <p className="text-sm font-medium mb-2 text-red-700">고객이 취소를 요청했습니다</p>
                   <div className="flex gap-2 mt-2">
                     <button onClick={() => handleBookingAction(selectedBooking.id, "reject")}
-                      className="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-xl text-sm font-medium">거절</button>
+                      className="flex-1 bg-white text-gray-600 py-2.5 rounded-xl text-sm font-medium border border-red-100">거절</button>
                     <button onClick={() => handleBookingAction(selectedBooking.id, "accept")}
                       className="flex-1 bg-red-500 text-white py-2.5 rounded-xl text-sm font-medium">취소 수락</button>
                   </div>
@@ -882,27 +877,19 @@ export default function BusinessApp() {
                 </button>
               </div>
 
-              {/* 업체 마이페이지 미확정 사항 — IA/명세서 기반 */}
-              <div className="policy-area p-3 mb-4">
-                <PolicyBadge label="업체 마이페이지 정책 미확정" />
-                <PolicyForm question="업체 계정 정지/해제 기준은? (위반 사항, 재활성화 절차)" screen="업체" area="계정 정지 기준" />
-                <p className="text-[10px] text-amber-600 mt-1">• 입점 심사 → 어드민 웹 &gt; 업체 관리에 질문으로 표기</p>
-                <p className="text-[10px] text-amber-600">• 취소/환불 → 소비자 화면 &gt; 내 예약에 질문으로 표기</p>
-                <p className="text-[10px] text-amber-600">• 정산 주기 → 업체 화면 &gt; 정산 내역에 질문으로 표기</p>
-              </div>
-
               <div className="space-y-0">
-                {[
-                  { label: "리뷰 관리", action: () => navigate("reviews") },
-                  { label: "고객센터", action: () => {} },
-                  { label: "로그아웃", action: () => setScreen("login") },
-                ].map(m => (
-                  <button key={m.label} onClick={m.action}
-                    className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
-                    <span className="text-sm">{m.label}</span>
-                    <span className="text-gray-300 text-xs">›</span>
-                  </button>
-                ))}
+                <button onClick={() => navigate("reviews")} className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
+                  <span className="text-sm">리뷰 관리</span>
+                  <span className="text-gray-300 text-xs">›</span>
+                </button>
+                <button className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
+                  <span className="text-sm">고객센터</span>
+                  <span className="text-gray-300 text-xs">›</span>
+                </button>
+                <button onClick={() => setScreen("login")} className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
+                  <span className="text-sm">로그아웃</span>
+                  <span className="text-gray-300 text-xs">›</span>
+                </button>
               </div>
             </div>
           )}
@@ -922,19 +909,14 @@ export default function BusinessApp() {
                 ))}
               </div>
 
-              <div className="policy-area p-3 mb-4">
-                <PolicyBadge label="정산 세부 규칙 미확정" />
-                <PolicyForm question="월 정산 기준일은? (매월 1일 / 마지막주 / 기타)" screen="업체" area="월 정산 기준일" />
-                <PolicyForm question="최소 정산 금액은? (N원 미만 시 이월?)" screen="업체" area="최소 정산 금액" />
-                <div className="mt-2 bg-white rounded-xl p-4 border border-gray-100">
-                  <p className="text-xs text-gray-500">{settlementMonth === "전체" ? "전체 정산금" : "이번달 금액"}</p>
-                  <p className="text-2xl font-bold text-primary mt-0.5">₩{pendingAmount.toLocaleString()}</p>
-                  <div className="mt-3 grid grid-cols-2 gap-2 text-[10px]">
-                    <div className="bg-gray-50 rounded-lg p-2"><span className="text-gray-400">수수료율</span><br/><span className="text-amber-600 font-medium">어드민 설정 (?%)</span></div>
-                    <div className="bg-gray-50 rounded-lg p-2"><span className="text-gray-400">차감 방식</span><br/><span className="text-amber-600 font-medium">자동 vs 수동 → 미확정</span></div>
-                    <div className="bg-gray-50 rounded-lg p-2"><span className="text-gray-400">정산 단위</span><br/><span className="text-amber-600 font-medium">건별 vs 일괄 → 미확정</span></div>
-                    <div className="bg-gray-50 rounded-lg p-2"><span className="text-gray-400">환불 후 처리</span><br/><span className="text-amber-600 font-medium">차감 vs 별도 → 미확정</span></div>
-                  </div>
+              <div className="mb-4 bg-gray-50 rounded-xl p-4">
+                <p className="text-xs text-gray-500">{settlementMonth === "전체" ? "전체 정산금" : "이번달 금액"}</p>
+                <p className="text-2xl font-bold text-primary mt-0.5">₩{pendingAmount.toLocaleString()}</p>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-[10px]">
+                  <div className="bg-white rounded-lg p-2"><span className="text-gray-400">수수료율</span><br/><span className="text-gray-700 font-medium">플랫폼 10%</span></div>
+                  <div className="bg-white rounded-lg p-2"><span className="text-gray-400">정산 방식</span><br/><span className="text-gray-700 font-medium">주간 자동 정산</span></div>
+                  <div className="bg-white rounded-lg p-2"><span className="text-gray-400">정산 단위</span><br/><span className="text-gray-700 font-medium">주간 일괄 지급</span></div>
+                  <div className="bg-white rounded-lg p-2"><span className="text-gray-400">환불 반영</span><br/><span className="text-gray-700 font-medium">다음 정산 차감</span></div>
                 </div>
               </div>
 
@@ -1000,8 +982,8 @@ export default function BusinessApp() {
           {/* ===== LOGIN (IA-003: 소비자/업체 공용) ===== */}
           {screen === "login" && (
             <div className="p-6 pt-16 flex flex-col items-center">
-              <img src="/funni-logo.png" alt="퍼니" className="w-20 h-20 mb-3" />
-              <p className="text-3xl font-bold text-primary mb-1">퍼니</p>
+              <Image src="/photopop-logo.png" alt="포토팟 로고" width={88} height={88} className="mb-3 h-[88px] w-[88px] object-contain" />
+              <p className="text-3xl font-bold text-primary mb-1">포토팟</p>
               <p className="text-xs text-gray-400 mb-10">스튜디오 대관·예약 플랫폼</p>
 
               <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-[#FEE500] text-[#191919] py-3 rounded-xl font-bold text-sm mb-2 flex items-center justify-center gap-2">💬 카카오로 로그인</button>
