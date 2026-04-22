@@ -834,6 +834,20 @@ export default function BusinessApp() {
                 </div>
 
                 <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs text-gray-500 font-medium">스튜디오 소개</label>
+                    <span className="text-[10px] text-gray-400">소비자 상세 화면에 노출</span>
+                  </div>
+                  <textarea
+                    defaultValue="서울 강남에 위치한 프로필·비즈니스 전문 스튜디오입니다. 자연광을 살린 촬영 공간과 경력 10년 이상 작가진이 함께합니다. 촬영 전 무료 상담을 제공해드려요."
+                    rows={4}
+                    maxLength={500}
+                    placeholder="스튜디오의 특징, 분위기, 작가 소개 등을 자유롭게 작성해주세요 (최대 500자)"
+                    className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm border border-gray-100 outline-none focus:border-primary resize-none"
+                  />
+                </div>
+
+                <div>
                   <label className="text-xs text-gray-500 mb-1.5 block font-medium">카테고리 (복수 선택)</label>
                   <div className="flex flex-wrap gap-2">
                     {adminCategories.map(c => (
@@ -1010,6 +1024,11 @@ export default function BusinessApp() {
                 {selectedCats.map(c => (
                   <span key={c} className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full font-medium">{c}</span>
                 ))}
+              </div>
+
+              <div className="bg-gray-50 rounded-xl p-3 mb-4">
+                <p className="text-xs text-gray-500 mb-1 font-medium">스튜디오 소개</p>
+                <p className="text-sm text-gray-700 leading-relaxed">서울 강남에 위치한 프로필·비즈니스 전문 스튜디오입니다. 자연광을 살린 촬영 공간과 경력 10년 이상 작가진이 함께합니다. 촬영 전 무료 상담을 제공해드려요.</p>
               </div>
 
               <div className="space-y-2 mb-4">

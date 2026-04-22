@@ -1014,6 +1014,12 @@ export default function AdminWeb() {
                     <div className="bg-gray-50 rounded-lg p-3"><p className="text-[10px] text-gray-400">지역</p><p className="text-sm font-medium">{bizDetail.area}</p></div>
                   </div>
 
+                  {/* 스튜디오 소개 */}
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-[10px] text-gray-400 mb-1">스튜디오 소개</p>
+                    <p className="text-sm text-gray-700 leading-relaxed">{bizDetail.area}에 위치한 {bizDetail.cats} 전문 스튜디오. 업체가 등록한 소개 문구가 여기에 표시됩니다. (어드민은 조회만, 수정은 업체 측에서 직접)</p>
+                  </div>
+
                   {/* 수수료율 Override */}
                   <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-3">
                     <div className="flex items-center justify-between mb-2">

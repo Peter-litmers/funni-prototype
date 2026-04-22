@@ -686,6 +686,12 @@ export default function ConsumerApp() {
                   {selectedStudio.travelAvailable && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">출장 가능</span>}
                 </div>
 
+                {/* 스튜디오 소개 */}
+                <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                  <p className="text-xs text-gray-500 mb-2 font-medium">스튜디오 소개</p>
+                  <p className="text-sm text-gray-700 leading-relaxed">{selectedStudio.desc}. {selectedStudio.area}에 위치한 {selectedStudio.cats.join("·")} 전문 스튜디오입니다. 편안한 분위기에서 최고의 결과물을 제공해드려요.</p>
+                </div>
+
                 {/* 가격표 */}
                 <div className="bg-gray-50 rounded-xl p-4 mb-4">
                   <p className="text-xs text-gray-500 mb-2 font-medium">촬영 가격</p>
