@@ -570,8 +570,14 @@ export default function BusinessApp() {
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm text-gray-900">{s.name}</p>
                       <p className="text-xs text-gray-400 mt-0.5 truncate">{s.desc}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{s.area}</p>
-                      {s.travelAvailable && <p className="text-[10px] font-medium text-primary mt-1">출장 가능</p>}
+                      <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+                        <p className="text-xs text-gray-400 truncate min-w-0">{s.area}</p>
+                        {s.travelAvailable && (
+                          <span className="shrink-0 rounded-full border border-primary/30 bg-primary/5 px-1.5 py-0.5 text-[9px] font-medium text-primary">
+                            출장 가능
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-1 mt-1.5">
                         <span className="text-sm font-bold text-gray-900">₩{parseStudioPrice(s.price).toLocaleString()}</span>
                         <span className="text-xs text-gray-400">/ 시간 · VAT 포함</span>
@@ -635,10 +641,16 @@ export default function BusinessApp() {
                 <div key={s.id} onClick={() => openDetail(s)}
                   className="flex gap-3 py-3 border-b border-gray-50 cursor-pointer">
                   <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={22} strokeWidth={1.5} /></div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium">{s.name}</p>
-                    <p className="text-xs text-gray-400">{s.cat} · {s.area}</p>
-                    {s.travelAvailable && <p className="text-[10px] font-medium text-primary mt-1">출장 가능</p>}
+                    <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+                      <p className="text-xs text-gray-400 truncate min-w-0">{s.cat} · {s.area}</p>
+                      {s.travelAvailable && (
+                        <span className="shrink-0 rounded-full border border-primary/30 bg-primary/5 px-1.5 py-0.5 text-[9px] font-medium text-primary">
+                          출장 가능
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-sm font-bold">₩{s.price}</span>
                       <span className="text-xs text-yellow-500">★ {s.rating}</span>
