@@ -701,6 +701,20 @@ export default function BusinessApp() {
               <button onClick={goBack} className="text-sm text-gray-400 mb-3">← 돌아가기</button>
               <h2 className="text-base font-bold mb-4">실적 대시보드</h2>
 
+              {/* 조회 기간 셀렉터 */}
+              <div className="flex gap-1.5 mb-4">
+                {[
+                  { k: "1m", label: "1개월" },
+                  { k: "3m", label: "3개월" },
+                  { k: "6m", label: "6개월" },
+                  { k: "1y", label: "1년" },
+                ].map((p, i) => (
+                  <button key={p.k}
+                    className={`flex-1 py-2 rounded-xl text-xs font-medium border transition-all ${
+                      i === 1 ? "bg-primary text-white border-primary" : "bg-white text-gray-500 border-gray-200"
+                    }`}>{p.label}</button>
+                ))}
+              </div>
 
               {/* Summary */}
               <div className="grid grid-cols-3 gap-2 mb-5">
@@ -832,15 +846,36 @@ export default function BusinessApp() {
                   </div>
                 </div>
 
-                {/* Per-Category Price */}
+                {/* Per-Category Price + 예약금 + 버퍼 시간 */}
                 {selectedCats.length > 0 && (
                   <div>
-                    <label className="text-xs text-gray-500 mb-1.5 block font-medium">카테고리별 가격 · 설명</label>
+                    <label className="text-xs text-gray-500 mb-1.5 block font-medium">카테고리별 가격 · 예약금 · 버퍼 시간 · 설명</label>
                     {selectedCats.map((c, i) => (
                       <div key={c} className="bg-primary/5 rounded-xl p-3 mb-2 border border-primary/10">
                         <p className="text-sm font-bold text-gray-900 mb-2">{c} 촬영</p>
-                        <input type="text" defaultValue={`₩${(i + 1) * 30000 + 20000} / 시간`}
-                          className="w-full bg-white rounded-lg px-3 py-2 text-sm border border-gray-100 mb-1.5 outline-none focus:border-primary" />
+                        <div className="grid grid-cols-2 gap-1.5 mb-1.5">
+                          <div>
+                            <p className="text-[10px] text-gray-500 mb-0.5">시간당 가격</p>
+                            <input type="text" defaultValue={`₩${((i + 1) * 30000 + 20000).toLocaleString()}`}
+                              className="w-full bg-white rounded-lg px-3 py-2 text-sm border border-gray-100 outline-none focus:border-primary" />
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-gray-500 mb-0.5">예약금</p>
+                            <input type="text" defaultValue={`₩${(10000 + i * 5000).toLocaleString()}`}
+                              className="w-full bg-white rounded-lg px-3 py-2 text-sm border border-gray-100 outline-none focus:border-primary" />
+                          </div>
+                        </div>
+                        <div className="mb-1.5">
+                          <p className="text-[10px] text-gray-500 mb-0.5">촬영 간 버퍼 시간 (청소·준비)</p>
+                          <select defaultValue="30" className="w-full bg-white rounded-lg px-3 py-2 text-sm border border-gray-100 outline-none focus:border-primary">
+                            <option value="0">없음</option>
+                            <option value="15">15분</option>
+                            <option value="30">30분</option>
+                            <option value="60">1시간</option>
+                            <option value="90">1시간 30분</option>
+                            <option value="120">2시간</option>
+                          </select>
+                        </div>
                         <input type="text" placeholder={`${c} 촬영 설명을 입력하세요...`}
                           className="w-full bg-white rounded-lg px-3 py-2 text-xs border border-gray-100 outline-none focus:border-primary text-gray-500" />
                       </div>
@@ -921,6 +956,34 @@ export default function BusinessApp() {
                       ))}
                     </div>
                   </div>
+                </div>
+
+                {/* 예약 가능 기간 (업체별 설정) */}
+                <div className="bg-gray-50 rounded-xl p-3">
+                  <p className="text-xs font-medium text-gray-700 mb-2">예약 가능 기간 (소비자가 며칠 전까지 예약 가능?)</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-[10px] text-gray-500 mb-0.5">최소 예약</p>
+                      <select defaultValue="1" className="w-full bg-white rounded-lg px-3 py-2 text-sm border border-gray-100 outline-none focus:border-primary">
+                        <option value="0">당일</option>
+                        <option value="1">1일 전</option>
+                        <option value="3">3일 전</option>
+                        <option value="7">7일 전</option>
+                      </select>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-500 mb-0.5">최대 예약</p>
+                      <select defaultValue="90" className="w-full bg-white rounded-lg px-3 py-2 text-sm border border-gray-100 outline-none focus:border-primary">
+                        <option value="30">30일 이내</option>
+                        <option value="60">60일 이내</option>
+                        <option value="90">90일 이내</option>
+                        <option value="180">6개월 이내</option>
+                        <option value="365">1년 이내</option>
+                        <option value="unlimited">무제한</option>
+                      </select>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-1.5">킥오프: 소비자 측 기본은 &apos;무제한&apos;, 업체가 좁히려면 위에서 조정</p>
                 </div>
 
                 <button onClick={() => setRegistered(true)}
@@ -1125,6 +1188,18 @@ export default function BusinessApp() {
                     <button onClick={() => handleBookingAction(selectedBooking.id, "accept")}
                       className="flex-1 bg-red-500 text-white py-2.5 rounded-xl text-sm font-medium">취소 수락</button>
                   </div>
+                </div>
+              )}
+
+              {(selectedBooking.status === "확정" || selectedBooking.status === "완료") && (
+                <div className="mb-4 rounded-2xl bg-gray-50 p-3 border border-gray-200">
+                  <p className="text-xs text-gray-500 mb-2">고객이 방문하지 않은 경우 (노쇼)</p>
+                  <button
+                    onClick={() => alert("노쇼로 기록되었습니다. 어드민 대시보드에 자동 반영되며, 소비자 CS 이력에 누적됩니다.")}
+                    className="w-full bg-white text-gray-700 py-2.5 rounded-xl text-sm font-medium border border-gray-300 hover:border-red-300 hover:text-red-600">
+                    ⚠️ 노쇼 처리
+                  </button>
+                  <p className="text-[10px] text-gray-400 mt-1.5">노쇼 누적은 소비자 이용제한 정책에 반영될 수 있습니다</p>
                 </div>
               )}
 

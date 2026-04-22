@@ -759,6 +759,7 @@ export default function ConsumerApp() {
                     <div className="h-32 bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center relative">
                       <div className="absolute inset-0 opacity-40" style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
                       <MapPin size={32} strokeWidth={1.5} className="text-primary z-10" />
+                      <span className="absolute bottom-2 right-2 text-[9px] bg-white/90 text-gray-500 px-2 py-0.5 rounded-full border border-gray-200 z-10">카카오맵 연동 예정</span>
                     </div>
                     <div className="p-3">
                       <p className="text-xs font-medium text-gray-700">{selectedStudio.location}</p>

@@ -799,6 +799,31 @@ export default function AdminWeb() {
                     <div className="bg-gray-50 rounded-lg p-3"><p className="text-[10px] text-gray-400">카테고리</p><p className="text-sm font-medium">{bizDetail.cats}</p></div>
                     <div className="bg-gray-50 rounded-lg p-3"><p className="text-[10px] text-gray-400">지역</p><p className="text-sm font-medium">{bizDetail.area}</p></div>
                   </div>
+
+                  {/* 위반/페널티 누적 지표 */}
+                  <div className="mt-4 rounded-xl border border-gray-200 bg-white p-3">
+                    <p className="text-xs font-bold text-gray-700 mb-2">위반/페널티 누적 (임시 기준)</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      <div className="text-center">
+                        <p className="text-[10px] text-gray-400">업체 취소</p>
+                        <p className="text-sm font-bold text-red-500">2회</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[10px] text-gray-400">미승인 취소</p>
+                        <p className="text-sm font-bold text-orange-500">0회</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[10px] text-gray-400">CS 접수</p>
+                        <p className="text-sm font-bold text-yellow-600">1건</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[10px] text-gray-400">누적 경고</p>
+                        <p className="text-sm font-bold text-gray-600">1회</p>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-gray-400 mt-2">※ 정지 기준은 운영 초기 수립 후 본 영역에 연동 (킥오프: 대표 확인 대기)</p>
+                  </div>
+
                   <div className="flex gap-2 mt-4">
                     {bizDetail.status === "운영중" && <button className="bg-red-50 text-red-500 px-4 py-2 rounded-lg text-sm">정지</button>}
                     {bizDetail.status === "정지" && <button className="bg-green-50 text-green-600 px-4 py-2 rounded-lg text-sm">해제</button>}
