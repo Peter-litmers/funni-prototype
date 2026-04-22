@@ -5,7 +5,7 @@ import Image from "next/image";
 import {
   Camera, Dumbbell, Heart, Cake, PawPrint, Briefcase, Baby, Sparkles,
   Home, LayoutGrid, User, Bell, Phone, MapPin, Star, Pencil, Check,
-  CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal, Tag,
+  CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal, Tag, ChevronDown,
   type LucideIcon
 } from "lucide-react";
 import { useCategories } from "../lib/admin-store";
@@ -167,6 +167,7 @@ export default function ConsumerApp() {
   const [selectedStudio, setSelectedStudio] = useState(STUDIOS[0]);
   const [tab, setTab] = useState<Tab>("home");
   const [sort, setSort] = useState<Sort>("payments");
+  const [sortOpen, setSortOpen] = useState(false);
   const [selectedTime, setSelectedTime] = useState("14:00");
   const [selectedDate, setSelectedDate] = useState(10);
   const [bookingFilter, setBookingFilter] = useState<BookingFilter>("예정");
@@ -554,30 +555,46 @@ export default function ConsumerApp() {
               </div>
 
               <div className="mt-6 px-4">
-                <div className="mb-3 flex items-center gap-2">
-                  <SlidersHorizontal size={16} strokeWidth={1.8} className="text-gray-500" />
-                  <h3 className="text-[15px] font-bold text-gray-900">필터</h3>
-                </div>
-                <div className="rounded-2xl border border-gray-200 bg-gray-50 p-3">
-                  <p className="text-[11px] text-gray-400">기본 정렬: 결제순 → 평점순</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {([
-                      { key: "payments" as Sort, label: "결제순" },
-                      { key: "rating" as Sort, label: "평점순" },
-                      { key: "distance" as Sort, label: "거리순" },
-                    ]).map(item => (
+                {(() => {
+                  const sortItems = [
+                    { key: "payments" as Sort, label: "결제순" },
+                    { key: "rating" as Sort, label: "평점순" },
+                    { key: "distance" as Sort, label: "거리순" },
+                  ];
+                  const currentLabel = sortItems.find(i => i.key === sort)?.label ?? "결제순";
+                  return (
+                    <div className="relative">
                       <button
-                        key={item.key}
-                        onClick={() => setSort(item.key)}
-                        className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-                          sort === item.key ? "bg-white text-gray-900 shadow-sm" : "bg-transparent text-gray-500"
-                        }`}
-                      >
-                        {item.label}
+                        onClick={() => setSortOpen(v => !v)}
+                        className="flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <SlidersHorizontal size={16} strokeWidth={1.8} className="text-gray-500" />
+                          <span className="text-[15px] font-bold text-gray-900">필터</span>
+                          <span className="text-[11px] text-gray-400">· {currentLabel}</span>
+                        </div>
+                        <ChevronDown size={16} strokeWidth={2} className={`text-gray-500 transition-transform ${sortOpen ? "rotate-180" : ""}`} />
                       </button>
-                    ))}
-                  </div>
-                </div>
+                      {sortOpen && (
+                        <>
+                          <div className="fixed inset-0 z-20" onClick={() => setSortOpen(false)} />
+                          <div className="absolute left-0 right-0 top-full z-30 mt-1.5 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
+                            {sortItems.map(item => (
+                              <button
+                                key={item.key}
+                                onClick={() => { setSort(item.key); setSortOpen(false); }}
+                                className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition-colors ${
+                                  sort === item.key ? "bg-primary/5 text-primary font-semibold" : "text-gray-700 hover:bg-gray-50"
+                                }`}>
+                                {item.label}
+                                {sort === item.key && <Check size={16} strokeWidth={2.5} className="text-primary" />}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="mt-4 px-4">
