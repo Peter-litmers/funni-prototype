@@ -412,7 +412,7 @@ export default function BusinessApp() {
                     <button
                       key={studio.id}
                       onClick={() => openDetail(studio)}
-                      className="w-40 shrink-0 overflow-hidden rounded-2xl border border-gray-100 bg-white text-left shadow-sm"
+                      className="flex w-40 shrink-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white text-left shadow-sm"
                     >
                       <div className="relative flex h-28 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400">
                         <ImageIcon size={28} strokeWidth={1.5} />
@@ -420,11 +420,13 @@ export default function BusinessApp() {
                           AD #{index + 1}
                         </span>
                       </div>
-                      <div className="p-3">
+                      <div className="flex flex-1 flex-col p-3">
                         <p className="truncate text-sm font-semibold text-gray-900">{studio.name}</p>
                         <p className="mt-1 text-[11px] text-gray-400">{studio.area}</p>
-                        {studio.travelAvailable && <p className="mt-1 text-[10px] font-medium text-primary">출장 가능</p>}
-                        <div className="mt-2 flex items-center justify-between text-[11px]">
+                        <p className={`mt-1 text-[10px] font-medium ${studio.travelAvailable ? "text-primary" : "text-transparent"}`} aria-hidden={!studio.travelAvailable}>
+                          {studio.travelAvailable ? "출장 가능" : "·"}
+                        </p>
+                        <div className="mt-auto flex items-center justify-between pt-2 text-[11px]">
                           <span className="font-bold text-gray-900">₩{parseStudioPrice(studio.price).toLocaleString()}</span>
                           <span className="text-yellow-500">★ {studio.rating}</span>
                         </div>
@@ -447,7 +449,7 @@ export default function BusinessApp() {
                     <button
                       key={studio.id}
                       onClick={() => openDetail(studio)}
-                      className="w-44 shrink-0 overflow-hidden rounded-2xl border border-gray-100 bg-white text-left shadow-sm"
+                      className="flex w-44 shrink-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white text-left shadow-sm"
                     >
                       <div className="relative flex h-28 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400">
                         <ImageIcon size={28} strokeWidth={1.5} />
@@ -457,11 +459,13 @@ export default function BusinessApp() {
                           </span>
                         )}
                       </div>
-                      <div className="p-3">
+                      <div className="flex flex-1 flex-col p-3">
                         <p className="truncate text-sm font-semibold text-gray-900">{studio.name}</p>
                         <p className="mt-1 text-[11px] text-gray-400">{studio.area}</p>
-                        {studio.travelAvailable && <p className="mt-1 text-[10px] font-medium text-primary">출장 가능</p>}
-                        <div className="mt-2 flex items-center justify-between text-[11px] text-gray-500">
+                        <p className={`mt-1 text-[10px] font-medium ${studio.travelAvailable ? "text-primary" : "text-transparent"}`} aria-hidden={!studio.travelAvailable}>
+                          {studio.travelAvailable ? "출장 가능" : "·"}
+                        </p>
+                        <div className="mt-auto flex items-center justify-between pt-2 text-[11px] text-gray-500">
                           <span>결제 {studio.paymentCount}건</span>
                           <span className="text-yellow-500">★ {studio.rating}</span>
                         </div>
