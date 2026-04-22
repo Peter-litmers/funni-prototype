@@ -5,8 +5,22 @@ import Image from "next/image";
 import {
   Camera, Dumbbell, Heart, Cake, PawPrint, Briefcase, Baby, Sparkles,
   Home, LayoutGrid, User, Bell, Phone, MapPin, Star, Pencil, Check,
-  CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal
+  CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal, Tag,
+  type LucideIcon
 } from "lucide-react";
+import { useCategories } from "../lib/admin-store";
+
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  "프로필": Camera,
+  "바디프로필": Dumbbell,
+  "웨딩": Sparkles,
+  "가족": Cake,
+  "반려동물": PawPrint,
+  "비즈니스": Briefcase,
+  "커플": Heart,
+  "아기": Baby,
+};
+const getCatIcon = (name: string): LucideIcon => CATEGORY_ICONS[name] ?? Tag;
 
 function BrandMark() {
   return (
@@ -17,17 +31,6 @@ function BrandMark() {
   );
 }
 
-const CATEGORIES = [
-  { name: "전체", Icon: LayoutGrid },
-  { name: "프로필", Icon: Camera },
-  { name: "바디프로필", Icon: Dumbbell },
-  { name: "웨딩", Icon: Sparkles },
-  { name: "가족", Icon: Cake },
-  { name: "반려동물", Icon: PawPrint },
-  { name: "비즈니스", Icon: Briefcase },
-  { name: "커플", Icon: Heart },
-  { name: "아기", Icon: Baby },
-];
 
 const HOME_KEYWORDS = ["인기", "웨딩", "프로필", "가족", "반려동물", "비즈니스"];
 
@@ -49,16 +52,6 @@ const HOME_AD_PAGES = [
   ],
 ];
 
-const HOME_CATEGORY_GRID = [
-  { name: "프로필", Icon: Camera },
-  { name: "바디프로필", Icon: Dumbbell },
-  { name: "웨딩", Icon: Sparkles },
-  { name: "가족", Icon: Cake },
-  { name: "반려동물", Icon: PawPrint },
-  { name: "비즈니스", Icon: Briefcase },
-  { name: "커플", Icon: Heart },
-  { name: "아기", Icon: Baby },
-];
 
 // 카테고리별 포트폴리오 (REQ-106: 탐색 경로의 카테고리에 맞는 사진만 표시)
 type StudioCategoryPortfolio = Record<string, number[]>;
@@ -167,6 +160,9 @@ type Tab = "home" | "category" | "mypage";
 const TIMES = ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00"];
 
 export default function ConsumerApp() {
+  const [adminCategories] = useCategories();
+  const CATEGORIES = [{ name: "전체", Icon: LayoutGrid }, ...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }))];
+  const HOME_CATEGORY_GRID = adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }));
   const [screen, setScreen] = useState<Screen>("home");
   const [selectedStudio, setSelectedStudio] = useState(STUDIOS[0]);
   const [tab, setTab] = useState<Tab>("home");

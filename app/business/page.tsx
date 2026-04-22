@@ -5,8 +5,22 @@ import Image from "next/image";
 import {
   Camera, Dumbbell, Heart, Cake, PawPrint, Briefcase, Baby, Sparkles,
   Home, LayoutGrid, User, Bell, Phone, Calendar, MapPin, Search, SlidersHorizontal,
-  DollarSign, BarChart3, Building2, ImageIcon, X, Star
+  DollarSign, BarChart3, Building2, ImageIcon, X, Star, Tag,
+  type LucideIcon
 } from "lucide-react";
+import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness } from "../lib/admin-store";
+
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  "프로필": Camera,
+  "바디프로필": Dumbbell,
+  "웨딩": Sparkles,
+  "가족": Cake,
+  "반려동물": PawPrint,
+  "비즈니스": Briefcase,
+  "커플": Heart,
+  "아기": Baby,
+};
+const getCatIcon = (name: string): LucideIcon => CATEGORY_ICONS[name] ?? Tag;
 
 function BrandMark() {
   return (
@@ -22,18 +36,7 @@ type Sort = "payments" | "rating" | "distance";
 type BookingFilter = "전체" | "확정" | "취소요청" | "완료";
 type Tab = "home" | "category" | "my";
 
-// Studio browsing data — 소비자와 동일한 탐색 화면
-const CATEGORIES = [
-  { name: "전체", Icon: LayoutGrid },
-  { name: "프로필", Icon: Camera },
-  { name: "바디프로필", Icon: Dumbbell },
-  { name: "웨딩", Icon: Sparkles },
-  { name: "가족", Icon: Cake },
-  { name: "반려동물", Icon: PawPrint },
-  { name: "비즈니스", Icon: Briefcase },
-  { name: "커플", Icon: Heart },
-  { name: "아기", Icon: Baby },
-];
+// Studio browsing data — 소비자와 동일한 탐색 화면 (CATEGORIES는 컴포넌트 안에서 훅으로 주입)
 
 const HOME_KEYWORDS = ["인기", "웨딩", "프로필", "가족", "반려동물", "비즈니스"];
 
@@ -113,6 +116,11 @@ const SETTLEMENTS = [
 ];
 
 export default function BusinessApp() {
+  const [adminCategories] = useCategories();
+  const [feeRate] = useFeeRate();
+  const [bizFees] = useBusinessFees();
+  const CATEGORIES = [{ name: "전체", Icon: LayoutGrid }, ...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }))];
+  const myFee = getFeeForBusiness("루미에르 스튜디오", feeRate, bizFees);
   const [screen, setScreen] = useState<Screen>("home");
   const [tab, setTab] = useState<Tab>("home");
   const [sort, setSort] = useState<Sort>("payments");
@@ -693,6 +701,19 @@ export default function BusinessApp() {
                 ))}
               </div>
 
+              {/* 적용 수수료율 안내 */}
+              <div className="mb-4 flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5">
+                <div>
+                  <p className="text-[10px] text-gray-500">내 스튜디오 적용 수수료율</p>
+                  <p className="text-sm font-bold text-primary">
+                    {myFee.rate}%
+                    {myFee.isOverride && <span className="ml-1.5 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">개별</span>}
+                    {!myFee.isOverride && <span className="ml-1.5 text-[10px] text-gray-400">(기본값)</span>}
+                  </p>
+                </div>
+                <p className="text-[10px] text-gray-400 text-right">수수료율 변경은<br/>어드민 문의</p>
+              </div>
+
               {/* Summary */}
               <div className="grid grid-cols-3 gap-2 mb-5">
                 <div className="bg-primary/5 rounded-2xl p-3 border border-primary/10 text-center">
@@ -812,7 +833,7 @@ export default function BusinessApp() {
                 <div>
                   <label className="text-xs text-gray-500 mb-1.5 block font-medium">카테고리 (복수 선택)</label>
                   <div className="flex flex-wrap gap-2">
-                    {["프로필", "바디프로필", "웨딩", "가족", "반려동물", "비즈니스", "커플", "아기"].map(c => (
+                    {adminCategories.map(c => (
                       <button key={c} onClick={() => toggleCat(c)}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                           selectedCats.includes(c) ? "bg-primary text-white border-primary" : "bg-white text-gray-400 border-gray-200"

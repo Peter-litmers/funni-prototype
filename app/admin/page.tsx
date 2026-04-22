@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Users, Building2, Calendar, DollarSign, ImageIcon, X } from "lucide-react";
 import PolicyForm from "../components/PolicyForm";
+import { useCategories, useRegions, useFeeRate, useBusinessFees, getFeeForBusiness } from "../lib/admin-store";
 
 function PolicyBadge({ label }: { label: string }) {
   return <span className="policy-badge">⚠️ {label}</span>;
@@ -14,6 +15,46 @@ export default function AdminWeb() {
   const [tab, setTab] = useState<Tab>("dashboard");
   const [bizDetail, setBizDetail] = useState<null | { name: string; cats: string; area: string; status: string; photos: number }>(null);
   const [bizDetailView, setBizDetailView] = useState<"info" | "portfolio" | "calendar">("info");
+  const [categories, setCategories] = useCategories();
+  const [regions, setRegions] = useRegions();
+  const [feeRate, setFeeRate] = useFeeRate();
+  const [bizFees, setBizFees] = useBusinessFees();
+
+  const updateCategory = (idx: number, next: string) => {
+    const updated = [...categories];
+    updated[idx] = next;
+    setCategories(updated);
+  };
+  const removeCategory = (idx: number) => setCategories(categories.filter((_, i) => i !== idx));
+  const addCategory = () => {
+    const name = prompt("새 카테고리 이름을 입력하세요");
+    if (name && name.trim()) setCategories([...categories, name.trim()]);
+  };
+  const moveCategory = (idx: number, dir: -1 | 1) => {
+    const next = [...categories];
+    const target = idx + dir;
+    if (target < 0 || target >= next.length) return;
+    [next[idx], next[target]] = [next[target], next[idx]];
+    setCategories(next);
+  };
+
+  const updateRegion = (idx: number, next: string) => {
+    const updated = [...regions];
+    updated[idx] = next;
+    setRegions(updated);
+  };
+  const removeRegion = (idx: number) => setRegions(regions.filter((_, i) => i !== idx));
+  const addRegion = () => {
+    const name = prompt("새 지역 이름을 입력하세요 (예: 서울 마포)");
+    if (name && name.trim()) setRegions([...regions, name.trim()]);
+  };
+
+  const setBizFeeOverride = (name: string, rate: number | null) => {
+    const next = { ...bizFees };
+    if (rate === null) delete next[name];
+    else next[name] = rate;
+    setBizFees(next);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -238,19 +279,79 @@ export default function AdminWeb() {
               <h3 className="font-bold mb-4">수수료율 설정</h3>
               <div className="flex items-center gap-4">
                 <div className="flex-1">
-                  <label className="text-xs text-gray-500 block mb-1">현재 수수료율</label>
+                  <label className="text-xs text-gray-500 block mb-1">기본 수수료율 (전체 업체 적용)</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
-                      defaultValue={10}
+                      value={feeRate}
+                      onChange={(e) => setFeeRate(Number(e.target.value) || 0)}
                       className="bg-gray-100 rounded-xl px-4 py-3 text-lg font-bold w-24 text-center"
                     />
                     <span className="text-lg font-bold">%</span>
                   </div>
                 </div>
-                <button className="bg-primary text-white px-6 py-3 rounded-xl text-sm font-medium">저장</button>
               </div>
-              <p className="text-xs text-gray-400 mt-2">어드민에서 직접 수정 가능 (확정) · 업체별 개별 수수료는 업체 상세에서 설정 (REQ-119)</p>
+              <p className="text-xs text-gray-400 mt-2">실시간 저장 · 업체별 개별 수수료 override는 아래 표에서 관리</p>
+
+              {/* Per-Business Fee Overrides */}
+              <div className="mt-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-bold">업체별 수수료 개별 설정 (Override)</h4>
+                  <span className="text-[10px] text-gray-400">빈 값 = 기본값 적용</span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="p-2 text-left font-medium text-gray-500 text-xs">업체</th>
+                        <th className="p-2 text-left font-medium text-gray-500 text-xs">적용 수수료율</th>
+                        <th className="p-2 text-left font-medium text-gray-500 text-xs">상태</th>
+                        <th className="p-2 text-left font-medium text-gray-500 text-xs">액션</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {["루미에르 스튜디오", "블룸 웨딩홀", "브랜드컷 스튜디오", "선셋 포토랩", "펫모먼츠 스튜디오"].map((bizName) => {
+                        const { rate, isOverride } = getFeeForBusiness(bizName, feeRate, bizFees);
+                        return (
+                          <tr key={bizName} className="border-t border-gray-50">
+                            <td className="p-2 font-medium">{bizName}</td>
+                            <td className="p-2">
+                              <div className="flex items-center gap-1">
+                                <input
+                                  type="number"
+                                  value={isOverride ? rate : ""}
+                                  placeholder={`${feeRate}`}
+                                  onChange={(e) => {
+                                    const v = e.target.value;
+                                    if (v === "") setBizFeeOverride(bizName, null);
+                                    else setBizFeeOverride(bizName, Number(v));
+                                  }}
+                                  className="bg-gray-50 rounded-lg px-2 py-1 text-sm w-16 text-center border border-gray-100"
+                                />
+                                <span className="text-xs">%</span>
+                              </div>
+                            </td>
+                            <td className="p-2">
+                              {isOverride ? (
+                                <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">개별 적용</span>
+                              ) : (
+                                <span className="text-[10px] text-gray-400">기본값 {feeRate}%</span>
+                              )}
+                            </td>
+                            <td className="p-2">
+                              {isOverride && (
+                                <button onClick={() => setBizFeeOverride(bizName, null)}
+                                  className="text-[10px] text-red-400 px-2 py-1">기본값으로 초기화</button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-[10px] text-gray-400 mt-2">※ 변경 즉시 업체 대시보드 &apos;적용 수수료율&apos; 및 정산 계산에 반영됩니다.</p>
+              </div>
             </div>
 
             {/* 운영 정책 기준치 (미확정 항목 — 대표 확인 대기) */}
@@ -450,25 +551,30 @@ export default function AdminWeb() {
                   </thead>
                   <tbody>
                     {[
-                      { name: "루미에르 스튜디오", count: 8, base: "₩580,000", options: "₩100,000", total: "₩680,000", customFee: "", fee: "10%", net: "₩612,000" },
-                      { name: "블룸 웨딩홀", count: 3, base: "₩450,000", options: "₩70,000", total: "₩520,000", customFee: "8%", fee: "8%", net: "₩478,400" },
-                      { name: "브랜드컷 스튜디오", count: 12, base: "₩340,000", options: "₩0", total: "₩340,000", customFee: "", fee: "10%", net: "₩306,000" },
-                    ].map((s, i) => (
-                      <tr key={i} className="border-t border-gray-50">
-                        <td className="p-3"><input type="checkbox" /></td>
-                        <td className="p-3">
-                          <p className="font-medium">{s.name}</p>
-                          {s.customFee && <span className="text-[9px] text-primary bg-primary/10 px-1.5 py-0.5 rounded">개별 {s.customFee}</span>}
-                        </td>
-                        <td className="p-3">{s.count}건</td>
-                        <td className="p-3">
-                          <p>{s.total}</p>
-                          <p className="text-[9px] text-gray-400">촬영 {s.base} + 옵션 {s.options}</p>
-                        </td>
-                        <td className="p-3 text-primary font-medium">{s.fee}</td>
-                        <td className="p-3 font-bold">{s.net}</td>
-                      </tr>
-                    ))}
+                      { name: "루미에르 스튜디오", count: 8, base: 580000, options: 100000 },
+                      { name: "블룸 웨딩홀", count: 3, base: 450000, options: 70000 },
+                      { name: "브랜드컷 스튜디오", count: 12, base: 340000, options: 0 },
+                    ].map((s, i) => {
+                      const total = s.base + s.options;
+                      const { rate, isOverride } = getFeeForBusiness(s.name, feeRate, bizFees);
+                      const net = Math.round(total * (1 - rate / 100));
+                      return (
+                        <tr key={i} className="border-t border-gray-50">
+                          <td className="p-3"><input type="checkbox" /></td>
+                          <td className="p-3">
+                            <p className="font-medium">{s.name}</p>
+                            {isOverride && <span className="text-[9px] text-primary bg-primary/10 px-1.5 py-0.5 rounded">개별 {rate}%</span>}
+                          </td>
+                          <td className="p-3">{s.count}건</td>
+                          <td className="p-3">
+                            <p>₩{total.toLocaleString()}</p>
+                            <p className="text-[9px] text-gray-400">촬영 ₩{s.base.toLocaleString()} + 옵션 ₩{s.options.toLocaleString()}</p>
+                          </td>
+                          <td className="p-3 text-primary font-medium">{rate}%</td>
+                          <td className="p-3 font-bold">₩{net.toLocaleString()}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -626,41 +732,63 @@ export default function AdminWeb() {
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold">카테고리 관리</h2>
-              <button className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium">+ 카테고리 추가</button>
+              <span className="text-[11px] text-gray-500">※ 수정 시 소비자·업체 화면에 즉시 반영</span>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-white rounded-xl shadow-sm p-4">
-                <h3 className="text-sm font-bold mb-3">종류별 카테고리</h3>
-                {["프로필", "바디프로필", "웨딩", "가족", "반려동물", "비즈니스", "커플", "아기"].map((c, i) => (
-                  <div key={c} className="flex items-center justify-between py-2.5 border-b border-gray-50">
-                    <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold">종류별 카테고리</h3>
+                  <button onClick={addCategory} className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-medium">+ 추가</button>
+                </div>
+                {categories.map((c, i) => (
+                  <div key={`${c}-${i}`} className="flex items-center justify-between py-2 border-b border-gray-50">
+                    <div className="flex items-center gap-3 flex-1">
                       <span className="text-xs text-gray-400 w-5">{i + 1}</span>
-                      <span className="text-sm">{c}</span>
+                      <input
+                        type="text"
+                        value={c}
+                        onChange={(e) => updateCategory(i, e.target.value)}
+                        className="text-sm bg-transparent outline-none border-b border-transparent focus:border-primary flex-1"
+                      />
                     </div>
                     <div className="flex gap-1">
-                      <button className="text-[10px] text-gray-400 px-2 py-1">▲</button>
-                      <button className="text-[10px] text-gray-400 px-2 py-1">▼</button>
-                      <button className="text-[10px] text-gray-400 px-2 py-1">수정</button>
-                      <button className="text-[10px] text-red-400 px-2 py-1">삭제</button>
+                      <button onClick={() => moveCategory(i, -1)} disabled={i === 0}
+                        className="text-[10px] text-gray-400 px-2 py-1 disabled:opacity-30">▲</button>
+                      <button onClick={() => moveCategory(i, 1)} disabled={i === categories.length - 1}
+                        className="text-[10px] text-gray-400 px-2 py-1 disabled:opacity-30">▼</button>
+                      <button onClick={() => removeCategory(i)}
+                        className="text-[10px] text-red-400 px-2 py-1">삭제</button>
                     </div>
                   </div>
                 ))}
+                {categories.length === 0 && (
+                  <p className="text-xs text-gray-400 text-center py-6">카테고리가 없습니다. + 추가 버튼을 눌러 생성하세요.</p>
+                )}
               </div>
               <div className="bg-white rounded-xl shadow-sm p-4">
-                <h3 className="text-sm font-bold mb-3">지역별 카테고리</h3>
-                {["서울 강남", "서울 성수", "서울 잠실", "서울 홍대", "서울 합정", "경기 판교", "경기 분당"].map((c, i) => (
-                  <div key={c} className="flex items-center justify-between py-2.5 border-b border-gray-50">
-                    <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold">지역별 카테고리</h3>
+                  <button onClick={addRegion} className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-medium">+ 추가</button>
+                </div>
+                {regions.map((c, i) => (
+                  <div key={`${c}-${i}`} className="flex items-center justify-between py-2 border-b border-gray-50">
+                    <div className="flex items-center gap-3 flex-1">
                       <span className="text-xs text-gray-400 w-5">{i + 1}</span>
-                      <span className="text-sm">{c}</span>
+                      <input
+                        type="text"
+                        value={c}
+                        onChange={(e) => updateRegion(i, e.target.value)}
+                        className="text-sm bg-transparent outline-none border-b border-transparent focus:border-primary flex-1"
+                      />
                     </div>
-                    <div className="flex gap-1">
-                      <button className="text-[10px] text-gray-400 px-2 py-1">수정</button>
-                      <button className="text-[10px] text-red-400 px-2 py-1">삭제</button>
-                    </div>
+                    <button onClick={() => removeRegion(i)}
+                      className="text-[10px] text-red-400 px-2 py-1">삭제</button>
                   </div>
                 ))}
+                {regions.length === 0 && (
+                  <p className="text-xs text-gray-400 text-center py-6">지역이 없습니다.</p>
+                )}
               </div>
             </div>
           </div>
@@ -884,6 +1012,38 @@ export default function AdminWeb() {
                     <div className="bg-gray-50 rounded-lg p-3"><p className="text-[10px] text-gray-400">이메일</p><p className="text-sm font-medium">biz@example.com</p></div>
                     <div className="bg-gray-50 rounded-lg p-3"><p className="text-[10px] text-gray-400">카테고리</p><p className="text-sm font-medium">{bizDetail.cats}</p></div>
                     <div className="bg-gray-50 rounded-lg p-3"><p className="text-[10px] text-gray-400">지역</p><p className="text-sm font-medium">{bizDetail.area}</p></div>
+                  </div>
+
+                  {/* 수수료율 Override */}
+                  <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs font-bold text-gray-700">수수료율 설정</p>
+                      {(() => {
+                        const { isOverride } = getFeeForBusiness(bizDetail.name, feeRate, bizFees);
+                        return isOverride ? (
+                          <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">개별 적용 중</span>
+                        ) : (
+                          <span className="text-[10px] text-gray-500">기본값 {feeRate}% 적용</span>
+                        );
+                      })()}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        value={bizFees[bizDetail.name] ?? ""}
+                        placeholder={`${feeRate}`}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (v === "") setBizFeeOverride(bizDetail.name, null);
+                          else setBizFeeOverride(bizDetail.name, Number(v));
+                        }}
+                        className="bg-white rounded-lg px-3 py-2 text-sm w-20 text-center border border-gray-200"
+                      />
+                      <span className="text-sm">%</span>
+                      <button onClick={() => setBizFeeOverride(bizDetail.name, null)}
+                        className="text-[10px] text-gray-400 px-2 py-1">기본값</button>
+                      <p className="text-[10px] text-gray-500 ml-auto">실시간 적용 · 업체 대시보드 반영</p>
+                    </div>
                   </div>
 
                   {/* 위반/페널티 누적 지표 */}
