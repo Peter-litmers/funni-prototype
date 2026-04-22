@@ -422,10 +422,14 @@ export default function BusinessApp() {
                       </div>
                       <div className="flex flex-1 flex-col p-3">
                         <p className="truncate text-sm font-semibold text-gray-900">{studio.name}</p>
-                        <p className="mt-1 text-[11px] text-gray-400">{studio.area}</p>
-                        <p className={`mt-1 text-[10px] font-medium ${studio.travelAvailable ? "text-primary" : "text-transparent"}`} aria-hidden={!studio.travelAvailable}>
-                          {studio.travelAvailable ? "출장 가능" : "·"}
-                        </p>
+                        <div className="mt-1 flex items-center gap-1.5 min-w-0">
+                          <p className="truncate text-[11px] text-gray-400 min-w-0">{studio.area}</p>
+                          {studio.travelAvailable && (
+                            <span className="shrink-0 rounded-full border border-primary/30 bg-primary/5 px-1.5 py-0.5 text-[9px] font-medium text-primary">
+                              출장 가능
+                            </span>
+                          )}
+                        </div>
                         <div className="mt-auto flex items-center justify-between pt-2 text-[11px]">
                           <span className="font-bold text-gray-900">₩{parseStudioPrice(studio.price).toLocaleString()}</span>
                           <span className="text-yellow-500">★ {studio.rating}</span>
@@ -461,10 +465,14 @@ export default function BusinessApp() {
                       </div>
                       <div className="flex flex-1 flex-col p-3">
                         <p className="truncate text-sm font-semibold text-gray-900">{studio.name}</p>
-                        <p className="mt-1 text-[11px] text-gray-400">{studio.area}</p>
-                        <p className={`mt-1 text-[10px] font-medium ${studio.travelAvailable ? "text-primary" : "text-transparent"}`} aria-hidden={!studio.travelAvailable}>
-                          {studio.travelAvailable ? "출장 가능" : "·"}
-                        </p>
+                        <div className="mt-1 flex items-center gap-1.5 min-w-0">
+                          <p className="truncate text-[11px] text-gray-400 min-w-0">{studio.area}</p>
+                          {studio.travelAvailable && (
+                            <span className="shrink-0 rounded-full border border-primary/30 bg-primary/5 px-1.5 py-0.5 text-[9px] font-medium text-primary">
+                              출장 가능
+                            </span>
+                          )}
+                        </div>
                         <div className="mt-auto flex items-center justify-between pt-2 text-[11px] text-gray-500">
                           <span>결제 {studio.paymentCount}건</span>
                           <span className="text-yellow-500">★ {studio.rating}</span>
