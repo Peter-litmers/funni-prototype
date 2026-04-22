@@ -3,13 +3,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { Users, Building2, Calendar, DollarSign, ImageIcon, X } from "lucide-react";
 import PolicyForm from "../components/PolicyForm";
-import { useCategories, useRegions, useFeeRate, useBusinessFees, getFeeForBusiness } from "../lib/admin-store";
+import { useCategories, useRegions, useFeeRate, useBusinessFees, getFeeForBusiness, usePolicies } from "../lib/admin-store";
+import { POLICY_CATALOG, formatTimestamp } from "../lib/policy-catalog";
 
 function PolicyBadge({ label }: { label: string }) {
   return <span className="policy-badge">⚠️ {label}</span>;
 }
 
-type Tab = "dashboard" | "businesses" | "settlement" | "ads" | "members" | "categories" | "banners" | "bookings" | "payments" | "reviews";
+type Tab = "dashboard" | "businesses" | "settlement" | "ads" | "members" | "categories" | "banners" | "bookings" | "payments" | "reviews" | "policies";
 
 export default function AdminWeb() {
   const [tab, setTab] = useState<Tab>("dashboard");
@@ -19,6 +20,10 @@ export default function AdminWeb() {
   const [regions, setRegions] = useRegions();
   const [feeRate, setFeeRate] = useFeeRate();
   const [bizFees, setBizFees] = useBusinessFees();
+  const [policies, updatePolicy, resetPolicy] = usePolicies();
+  const [policyEdit, setPolicyEdit] = useState<{ id: string; value: string } | null>(null);
+  const [policyHistoryId, setPolicyHistoryId] = useState<string | null>(null);
+  const [policySection, setPolicySection] = useState<string>(POLICY_CATALOG[0].id);
 
   const updateCategory = (idx: number, next: string) => {
     const updated = [...categories];
@@ -74,6 +79,7 @@ export default function AdminWeb() {
               { key: "bookings" as Tab, label: "예약" },
               { key: "payments" as Tab, label: "결제" },
               { key: "reviews" as Tab, label: "리뷰" },
+              { key: "policies" as Tab, label: "정책" },
             ].map(t => (
               <button
                 key={t.key}
@@ -972,7 +978,160 @@ export default function AdminWeb() {
             </div>
           </div>
         )}
+
+        {/* ===== POLICIES ===== */}
+        {tab === "policies" && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">정책 관리</h2>
+              <span className="text-[11px] text-gray-400">문서 DRAFT · 실서비스 즉시 반영 X</span>
+            </div>
+
+            {/* 안내 배너 */}
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-5 text-xs text-amber-800">
+              <p className="font-bold mb-1">⚠️ 본 페이지는 정책 문서 관리 영역입니다.</p>
+              <p>• 편집 내용은 DRAFT로 저장되며 실서비스에는 즉시 반영되지 않습니다.</p>
+              <p>• 운영 배포 시 개발팀이 최종 DRAFT를 기준으로 시스템에 반영합니다.</p>
+              <p>• 각 정책별 변경 이력을 추적할 수 있습니다.</p>
+            </div>
+
+            {/* 섹션 네비 */}
+            <div className="flex gap-1.5 mb-4 overflow-x-auto">
+              {POLICY_CATALOG.map(sec => (
+                <button key={sec.id} onClick={() => setPolicySection(sec.id)}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                    policySection === sec.id ? "bg-primary text-white border-primary" : "bg-white text-gray-500 border-gray-200"
+                  }`}>
+                  <span className="mr-1">{sec.icon}</span>{sec.title}
+                </button>
+              ))}
+            </div>
+
+            {/* 정책 카드 리스트 */}
+            {POLICY_CATALOG.filter(s => s.id === policySection).map(section => (
+              <div key={section.id} className="space-y-3">
+                {section.items.map(item => {
+                  const entry = policies[item.id];
+                  const currentValue = entry?.value ?? item.defaultValue;
+                  const isEdited = !!entry;
+                  const historyCount = entry?.history.length ?? 0;
+                  return (
+                    <div key={item.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                            <h3 className="text-sm font-bold text-gray-900">{item.title}</h3>
+                            {isEdited && (
+                              <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">DRAFT 수정됨</span>
+                            )}
+                            {item.note && (
+                              <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">{item.note}</span>
+                            )}
+                          </div>
+                          {isEdited && (
+                            <p className="text-[10px] text-gray-400">마지막 수정: {formatTimestamp(entry.updatedAt)}</p>
+                          )}
+                        </div>
+                        <div className="flex gap-1 shrink-0">
+                          <button
+                            onClick={() => setPolicyEdit({ id: item.id, value: currentValue })}
+                            className="text-[11px] bg-gray-100 text-gray-700 px-2.5 py-1 rounded-lg font-medium hover:bg-gray-200">
+                            편집
+                          </button>
+                          {historyCount > 0 && (
+                            <button
+                              onClick={() => setPolicyHistoryId(item.id)}
+                              className="text-[11px] bg-gray-100 text-gray-700 px-2.5 py-1 rounded-lg font-medium hover:bg-gray-200">
+                              히스토리 ({historyCount})
+                            </button>
+                          )}
+                          {isEdited && (
+                            <button
+                              onClick={() => { if (confirm("이 정책을 기본값으로 되돌립니다. 히스토리는 유지됩니다. 진행할까요?")) resetPolicy(item.id); }}
+                              className="text-[11px] text-red-400 px-2.5 py-1 rounded-lg font-medium hover:bg-red-50">
+                              초기화
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed bg-gray-50 rounded-lg p-3">{currentValue}</pre>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        )}
+
       </div>
+
+      {/* ===== 정책 편집 모달 ===== */}
+      {policyEdit && (() => {
+        const item = POLICY_CATALOG.flatMap(s => s.items).find(i => i.id === policyEdit.id);
+        if (!item) return null;
+        return (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setPolicyEdit(null)}>
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base font-bold">정책 편집 · {item.title}</h3>
+                <button onClick={() => setPolicyEdit(null)} className="text-gray-400"><X size={18} /></button>
+              </div>
+              <p className="text-[11px] text-amber-600 mb-2">※ DRAFT에만 저장됩니다. 실서비스에는 즉시 반영되지 않습니다.</p>
+              <textarea
+                value={policyEdit.value}
+                onChange={(e) => setPolicyEdit({ ...policyEdit, value: e.target.value })}
+                rows={8}
+                className="w-full bg-gray-50 rounded-xl p-3 text-sm border border-gray-200 outline-none focus:border-primary resize-y font-mono leading-relaxed"
+              />
+              <div className="flex gap-2 mt-3">
+                <button onClick={() => setPolicyEdit(null)}
+                  className="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-xl text-sm font-medium">취소</button>
+                <button
+                  onClick={() => { updatePolicy(policyEdit.id, policyEdit.value); setPolicyEdit(null); }}
+                  className="flex-1 bg-primary text-white py-2.5 rounded-xl text-sm font-bold">DRAFT 저장</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ===== 정책 히스토리 모달 ===== */}
+      {policyHistoryId && (() => {
+        const item = POLICY_CATALOG.flatMap(s => s.items).find(i => i.id === policyHistoryId);
+        const entry = policies[policyHistoryId];
+        if (!item || !entry) return null;
+        return (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setPolicyHistoryId(null)}>
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <div className="sticky top-0 bg-white border-b border-gray-100 p-5 flex items-center justify-between">
+                <h3 className="text-base font-bold">변경 이력 · {item.title}</h3>
+                <button onClick={() => setPolicyHistoryId(null)} className="text-gray-400"><X size={18} /></button>
+              </div>
+              <div className="p-5 space-y-3">
+                {/* 현재 값 */}
+                <div className="border-l-4 border-primary bg-primary/5 rounded-r-lg p-3">
+                  <p className="text-[10px] font-bold text-primary mb-1">현재 DRAFT · {formatTimestamp(entry.updatedAt)}</p>
+                  <pre className="text-xs text-gray-700 whitespace-pre-wrap font-sans">{entry.value}</pre>
+                </div>
+
+                {/* 히스토리 (최신순) */}
+                {entry.history.map((h, i) => (
+                  <div key={i} className="border-l-4 border-gray-200 bg-gray-50 rounded-r-lg p-3">
+                    <p className="text-[10px] text-gray-500 mb-1">{formatTimestamp(h.updatedAt)} · {h.editor}</p>
+                    <pre className="text-xs text-gray-600 whitespace-pre-wrap font-sans">{h.value}</pre>
+                  </div>
+                ))}
+
+                {/* 기본값 */}
+                <div className="border-l-4 border-gray-100 bg-white rounded-r-lg p-3">
+                  <p className="text-[10px] text-gray-400 mb-1">기본값 (카탈로그)</p>
+                  <pre className="text-xs text-gray-500 whitespace-pre-wrap font-sans">{item.defaultValue}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ===== 업체 상세 모달 (REQ-115) ===== */}
       {bizDetail && (

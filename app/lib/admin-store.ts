@@ -34,6 +34,7 @@ const K_CATEGORIES = "photopot.categories";
 const K_REGIONS = "photopot.regions";
 const K_FEE_RATE = "photopot.feeRate";
 const K_BIZ_FEES = "photopot.bizFees";
+const K_POLICIES = "photopot.policies.drafts";
 
 const CHANGE_EVENT = "photopot-admin-store-change";
 
@@ -162,4 +163,79 @@ export function getFeeForBusiness(
     return { rate: override, isOverride: true };
   }
   return { rate: global, isOverride: false };
+}
+
+// ===== 정책 DRAFT 스토어 (실서비스에 즉시 반영되지 않음, 문서 관리용) =====
+
+export type PolicyEntry = {
+  value: string;
+  updatedAt: number; // epoch ms
+  history: Array<{
+    value: string;
+    updatedAt: number;
+    editor: string;
+  }>;
+};
+
+export type PolicyMap = Record<string, PolicyEntry>;
+
+function sanitizePolicyMap(input: unknown): PolicyMap {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return {};
+  const result: PolicyMap = {};
+  for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+    if (!v || typeof v !== "object") continue;
+    const entry = v as Record<string, unknown>;
+    if (typeof entry.value !== "string") continue;
+    const updatedAt = typeof entry.updatedAt === "number" ? entry.updatedAt : 0;
+    const history = Array.isArray(entry.history)
+      ? entry.history.filter(
+          (h): h is { value: string; updatedAt: number; editor: string } =>
+            !!h &&
+            typeof h === "object" &&
+            typeof (h as { value?: unknown }).value === "string" &&
+            typeof (h as { updatedAt?: unknown }).updatedAt === "number" &&
+            typeof (h as { editor?: unknown }).editor === "string",
+        )
+      : [];
+    result[k] = { value: entry.value, updatedAt, history };
+  }
+  return result;
+}
+
+export function usePolicies(): [
+  PolicyMap,
+  (id: string, newValue: string, editor?: string) => void,
+  (id: string) => void,
+] {
+  const value = useStored<PolicyMap>(
+    K_POLICIES,
+    {},
+    (raw) => (raw === undefined ? {} : sanitizePolicyMap(raw)),
+  );
+
+  const update = (id: string, newValue: string, editor = "어드민") => {
+    const now = Date.now();
+    const current = value[id];
+    const next: PolicyMap = { ...value };
+    const newHistory = current
+      ? [
+          {
+            value: current.value,
+            updatedAt: current.updatedAt || now,
+            editor,
+          },
+          ...current.history,
+        ].slice(0, 20) // 최근 20개까지만 보관
+      : [];
+    next[id] = { value: newValue, updatedAt: now, history: newHistory };
+    writeStored(K_POLICIES, next);
+  };
+
+  const reset = (id: string) => {
+    const next: PolicyMap = { ...value };
+    delete next[id];
+    writeStored(K_POLICIES, next);
+  };
+
+  return [value, update, reset];
 }
