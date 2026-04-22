@@ -179,7 +179,6 @@ export default function ConsumerApp() {
   const [adIdx, setAdIdx] = useState(0);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
-  const [reviewPhotos, setReviewPhotos] = useState<number[]>([]);
   const [reviewTarget, setReviewTarget] = useState("");
   const [myBookingPage, setMyBookingPage] = useState(0);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -197,7 +196,6 @@ export default function ConsumerApp() {
   const [editingReviewIdx, setEditingReviewIdx] = useState<number | null>(null);
   const [editReviewRating, setEditReviewRating] = useState(5);
   const [editReviewText, setEditReviewText] = useState("");
-  const [editReviewPhotos, setEditReviewPhotos] = useState<number[]>([]);
   const [deleteRequestIdx, setDeleteRequestIdx] = useState<number | null>(null);
   const [deleteRequestReason, setDeleteRequestReason] = useState("");
 
@@ -333,9 +331,6 @@ export default function ConsumerApp() {
     setDetailEntryCat(fromCat || "");
     navigate("detail");
   };
-  const addReviewPhoto = () => setReviewPhotos(prev => prev.length >= 5 ? prev : [...prev, Date.now()]);
-  const addEditReviewPhoto = () => setEditReviewPhotos(prev => prev.length >= 5 ? prev : [...prev, Date.now()]);
-
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8 px-4">
       <Link href="/" className="text-sm text-primary mb-4 hover:underline">← 메인으로</Link>
@@ -929,7 +924,7 @@ export default function ConsumerApp() {
                   <div className="flex justify-between items-center pt-2 border-t border-gray-100">
                     <span className="text-sm font-bold">{b.price}</span>
                     {bookingFilter === "완료" && (b as { canReview?: boolean }).canReview && (
-                      <button onClick={() => { setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); setReviewPhotos([]); navigate("reviewWrite"); }} className="text-xs text-primary font-medium">리뷰 작성 →</button>
+                      <button onClick={() => { setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); navigate("reviewWrite"); }} className="text-xs text-primary font-medium">리뷰 작성 →</button>
                     )}
                     {bookingFilter === "취소" && <span className="text-[10px] text-gray-400">{(b as { reason?: string }).reason}</span>}
                   </div>
@@ -952,26 +947,11 @@ export default function ConsumerApp() {
                 <p className="text-sm font-medium mb-2">리뷰 내용</p>
                 <textarea value={reviewText} onChange={e => setReviewText(e.target.value)} maxLength={300} placeholder="촬영 경험을 30자 이상 작성해주세요" className="w-full bg-gray-50 rounded-xl p-4 text-sm outline-none resize-none border border-gray-200 focus:border-primary" rows={5} />
                 <div className="mt-1 flex items-center justify-between gap-3">
-                  <p className="text-[10px] text-gray-400">완료 처리 후 2주 이내 작성 가능 · 사진 최대 5장 · 삭제는 요청 후 승인</p>
+                  <p className="text-[10px] text-gray-400">완료 처리 후 2주 이내 작성 가능 · 삭제는 요청 후 승인</p>
                   <p className="text-[10px] text-gray-400 shrink-0">{reviewText.length}/300</p>
                 </div>
               </div>
-              <div className="mb-6">
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-sm font-medium">리뷰 사진</p>
-                  <span className="text-[10px] text-gray-400">{reviewPhotos.length}/5장</span>
-                </div>
-                <div className="grid grid-cols-5 gap-2">
-                  <button onClick={addReviewPhoto} disabled={reviewPhotos.length >= 5} className={`aspect-square rounded-xl border-2 border-dashed text-sm ${reviewPhotos.length >= 5 ? "border-gray-200 bg-gray-50 text-gray-300" : "border-gray-300 bg-gray-50 text-gray-400"}`}>+</button>
-                  {reviewPhotos.map(photoId => (
-                    <div key={photoId} className="relative aspect-square rounded-xl bg-gray-100">
-                      <div className="flex h-full items-center justify-center text-gray-300"><ImageIcon size={18} strokeWidth={1.5} /></div>
-                      <button onClick={() => setReviewPhotos(prev => prev.filter(id => id !== photoId))} className="absolute right-1 top-1 rounded-full bg-white px-1 text-[10px] text-gray-500 shadow">x</button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <button onClick={() => { setScreen("myBookings"); setTab("mypage"); setReviewPhotos([]); }} disabled={reviewText.trim().length < 30} className={`w-full py-3.5 rounded-xl font-bold text-sm ${reviewText.trim().length >= 30 ? "bg-primary text-white" : "bg-gray-200 text-gray-400"}`}>리뷰 등록</button>
+              <button onClick={() => { setScreen("myBookings"); setTab("mypage"); }} disabled={reviewText.trim().length < 30} className={`w-full py-3.5 rounded-xl font-bold text-sm ${reviewText.trim().length >= 30 ? "bg-primary text-white" : "bg-gray-200 text-gray-400"}`}>리뷰 등록</button>
             </div>
           )}
 
@@ -984,7 +964,7 @@ export default function ConsumerApp() {
                   <div className="flex justify-between items-start mb-2"><div><p className="text-sm font-bold">{r.studio}</p><p className="text-xs text-gray-400 mt-0.5">{r.date}</p></div><span className="text-xs text-yellow-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span></div>
                   <p className="text-xs text-gray-600">{r.text}</p>
                   <div className="flex justify-end gap-2 mt-3 pt-2 border-t border-gray-100">
-                    <button onClick={() => { setEditingReviewIdx(i); setEditReviewRating(r.rating); setEditReviewText(r.text); setEditReviewPhotos([i + 1]); }} className="text-[10px] text-primary px-2 py-1 font-medium">수정</button>
+                    <button onClick={() => { setEditingReviewIdx(i); setEditReviewRating(r.rating); setEditReviewText(r.text); }} className="text-[10px] text-primary px-2 py-1 font-medium">수정</button>
                     <button onClick={() => { setDeleteRequestIdx(i); setDeleteRequestReason(""); }} className="text-[10px] text-red-400 px-2 py-1">삭제 요청</button>
                   </div>
                 </div>
@@ -1010,24 +990,9 @@ export default function ConsumerApp() {
                   <p className="text-[10px] text-gray-400 shrink-0">{editReviewText.length}/300</p>
                 </div>
               </div>
-              <div className="mb-6">
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-sm font-medium">리뷰 사진</p>
-                  <span className="text-[10px] text-gray-400">{editReviewPhotos.length}/5장</span>
-                </div>
-                <div className="grid grid-cols-5 gap-2">
-                  <button onClick={addEditReviewPhoto} disabled={editReviewPhotos.length >= 5} className={`aspect-square rounded-xl border-2 border-dashed text-sm ${editReviewPhotos.length >= 5 ? "border-gray-200 bg-gray-50 text-gray-300" : "border-gray-300 bg-gray-50 text-gray-400"}`}>+</button>
-                  {editReviewPhotos.map(photoId => (
-                    <div key={photoId} className="relative aspect-square rounded-xl bg-gray-100">
-                      <div className="flex h-full items-center justify-center text-gray-300"><ImageIcon size={18} strokeWidth={1.5} /></div>
-                      <button onClick={() => setEditReviewPhotos(prev => prev.filter(id => id !== photoId))} className="absolute right-1 top-1 rounded-full bg-white px-1 text-[10px] text-gray-500 shadow">x</button>
-                    </div>
-                  ))}
-                </div>
-              </div>
               <div className="flex gap-2">
                 <button onClick={() => setEditingReviewIdx(null)} className="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-medium text-sm">취소</button>
-                <button onClick={() => { setEditingReviewIdx(null); setEditReviewPhotos([]); }} disabled={editReviewText.trim().length < 30} className={`flex-1 py-3 rounded-xl font-bold text-sm ${editReviewText.trim().length >= 30 ? "bg-primary text-white" : "bg-gray-200 text-gray-400"}`}>수정 완료</button>
+                <button onClick={() => setEditingReviewIdx(null)} disabled={editReviewText.trim().length < 30} className={`flex-1 py-3 rounded-xl font-bold text-sm ${editReviewText.trim().length >= 30 ? "bg-primary text-white" : "bg-gray-200 text-gray-400"}`}>수정 완료</button>
               </div>
             </div>
           )}
