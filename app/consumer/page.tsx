@@ -417,10 +417,7 @@ export default function ConsumerApp() {
               </div>
 
               <div className="mx-4 mt-5 rounded-3xl bg-gray-50 p-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-semibold text-gray-700">이번 주 추천 배너</p>
-                  <span className="text-[10px] text-gray-400">3개 x 3페이지</span>
-                </div>
+                <p className="text-[11px] font-semibold text-gray-700">이번 주 추천 배너</p>
                 <div className="mt-3 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
                   <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${adIdx * 100}%)` }}>
                     {HOME_AD_PAGES.map((page, pageIndex) => (
@@ -489,7 +486,9 @@ export default function ConsumerApp() {
                     <p className="text-[11px] text-gray-400">에디터 셀렉션</p>
                     <h3 className="text-[15px] font-bold text-gray-900">지금 추천하는 스튜디오</h3>
                   </div>
-                  <button className="text-xs font-medium text-gray-400">전체보기</button>
+                  <button
+                    onClick={() => { setCategoryCat("전체"); setScreen("category"); setTab("category"); }}
+                    className="text-xs font-medium text-gray-400 hover:text-primary">전체보기 →</button>
                 </div>
                 <div className="no-scrollbar flex gap-3 overflow-x-auto px-4 pb-1">
                   {promotedStudios.map((studio, index) => (
@@ -527,10 +526,12 @@ export default function ConsumerApp() {
               <div className="mt-6">
                 <div className="mb-3 flex items-center justify-between px-4">
                   <div>
-                    <p className="text-[11px] text-gray-400">결제랑 평점에 기반으로 보여줘요</p>
+                    <p className="text-[11px] text-gray-400">예약·평점 TOP</p>
                     <h3 className="text-[15px] font-bold text-gray-900">지금 많이 찾는 스튜디오</h3>
                   </div>
-                  <button className="text-xs font-medium text-gray-400">전체보기</button>
+                  <button
+                    onClick={() => { setCategoryCat("전체"); setScreen("category"); setTab("category"); }}
+                    className="text-xs font-medium text-gray-400 hover:text-primary">전체보기 →</button>
                 </div>
                 <div className="no-scrollbar flex gap-3 overflow-x-auto px-4 pb-1">
                   {hotStudios.map((studio, index) => (
