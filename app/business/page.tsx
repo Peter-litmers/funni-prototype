@@ -861,40 +861,77 @@ export default function BusinessApp() {
                   </div>
                 </div>
 
-                {/* Per-Category Price + 예약금 + 버퍼 시간 */}
+                {/* Per-Category 패키지 + 예약금 + 버퍼 시간 */}
                 {selectedCats.length > 0 && (
                   <div>
-                    <label className="text-xs text-gray-500 mb-1.5 block font-medium">카테고리별 가격 · 예약금 · 버퍼 시간 · 설명</label>
-                    {selectedCats.map((c, i) => (
-                      <div key={c} className="bg-primary/5 rounded-xl p-3 mb-2 border border-primary/10">
-                        <p className="text-sm font-bold text-gray-900 mb-2">{c} 촬영</p>
-                        <div className="grid grid-cols-2 gap-1.5 mb-1.5">
-                          <div>
-                            <p className="text-[10px] text-gray-500 mb-0.5">시간당 가격</p>
-                            <input type="text" defaultValue={`₩${((i + 1) * 30000 + 20000).toLocaleString()}`}
-                              className="w-full bg-white rounded-lg px-3 py-2 text-sm border border-gray-100 outline-none focus:border-primary" />
+                    <label className="text-xs text-gray-500 mb-1.5 block font-medium">카테고리별 가격 패키지 · 예약금 · 버퍼 시간</label>
+                    {selectedCats.map((c, i) => {
+                      const defaultPackages = [
+                        { title: "1컨셉", price: 270000, desc: "보정본 4컷 · 30분 소요" },
+                        { title: "2컨셉", price: 420000, desc: "보정본 7컷 · 60분 소요" },
+                        { title: "3컨셉", price: 580000, desc: "보정본 12컷 · 90분 소요" },
+                      ];
+                      return (
+                        <div key={c} className="bg-primary/5 rounded-xl p-3 mb-2 border border-primary/10">
+                          <p className="text-sm font-bold text-gray-900 mb-2">{c} 촬영</p>
+
+                          {/* 가격 패키지 목록 */}
+                          <p className="text-[10px] text-gray-500 mb-1">가격 패키지 (여러 개 가능)</p>
+                          <div className="space-y-1.5 mb-2">
+                            {defaultPackages.map((pkg, idx) => (
+                              <div key={idx} className="bg-white rounded-lg p-2 border border-gray-100">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <input type="text" defaultValue={pkg.title} placeholder="예: 1컨셉 / 4컷 / 기본"
+                                    className="flex-1 bg-gray-50 rounded px-2 py-1 text-xs border border-transparent outline-none focus:border-primary" />
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-xs">₩</span>
+                                    <input type="text" defaultValue={pkg.price.toLocaleString()}
+                                      className="w-24 bg-gray-50 rounded px-2 py-1 text-xs text-right border border-transparent outline-none focus:border-primary" />
+                                  </div>
+                                </div>
+                                <input type="text" defaultValue={pkg.desc} placeholder="보정본 컷수·소요시간·포함내역"
+                                  className="w-full bg-gray-50 rounded px-2 py-1 text-[11px] text-gray-500 border border-transparent outline-none focus:border-primary" />
+                              </div>
+                            ))}
+                            <button className="w-full text-xs text-primary bg-white border border-dashed border-primary/30 rounded-lg py-1.5 font-medium">
+                              + 패키지 추가
+                            </button>
                           </div>
-                          <div>
-                            <p className="text-[10px] text-gray-500 mb-0.5">예약금</p>
-                            <input type="text" defaultValue={`₩${(10000 + i * 5000).toLocaleString()}`}
-                              className="w-full bg-white rounded-lg px-3 py-2 text-sm border border-gray-100 outline-none focus:border-primary" />
+
+                          {/* 추가 옵션 (원본·보정 추가) */}
+                          <p className="text-[10px] text-gray-500 mb-1 mt-2">추가 옵션 (선택)</p>
+                          <div className="space-y-1 mb-2">
+                            {[{ name: "원본 추가", price: 40000 }, { name: "보정 컷 추가", price: 40000 }].map((opt, idx) => (
+                              <div key={idx} className="flex items-center gap-1.5 bg-white rounded-lg p-1.5 border border-gray-100">
+                                <input type="text" defaultValue={opt.name} className="flex-1 bg-gray-50 rounded px-2 py-1 text-xs border border-transparent outline-none focus:border-primary" />
+                                <span className="text-xs">+₩</span>
+                                <input type="text" defaultValue={opt.price.toLocaleString()} className="w-20 bg-gray-50 rounded px-2 py-1 text-xs text-right border border-transparent outline-none focus:border-primary" />
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* 예약금 + 버퍼 */}
+                          <div className="grid grid-cols-2 gap-1.5 mb-1">
+                            <div>
+                              <p className="text-[10px] text-gray-500 mb-0.5">예약금</p>
+                              <input type="text" defaultValue={`₩${(50000 + i * 10000).toLocaleString()}`}
+                                className="w-full bg-white rounded-lg px-2 py-1.5 text-xs border border-gray-100 outline-none focus:border-primary" />
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-gray-500 mb-0.5">버퍼 시간 (청소·준비)</p>
+                              <select defaultValue="30" className="w-full bg-white rounded-lg px-2 py-1.5 text-xs border border-gray-100 outline-none focus:border-primary">
+                                <option value="0">없음</option>
+                                <option value="15">15분</option>
+                                <option value="30">30분</option>
+                                <option value="60">1시간</option>
+                                <option value="90">1시간 30분</option>
+                                <option value="120">2시간</option>
+                              </select>
+                            </div>
                           </div>
                         </div>
-                        <div className="mb-1.5">
-                          <p className="text-[10px] text-gray-500 mb-0.5">촬영 간 버퍼 시간 (청소·준비)</p>
-                          <select defaultValue="30" className="w-full bg-white rounded-lg px-3 py-2 text-sm border border-gray-100 outline-none focus:border-primary">
-                            <option value="0">없음</option>
-                            <option value="15">15분</option>
-                            <option value="30">30분</option>
-                            <option value="60">1시간</option>
-                            <option value="90">1시간 30분</option>
-                            <option value="120">2시간</option>
-                          </select>
-                        </div>
-                        <input type="text" placeholder={`${c} 촬영 설명을 입력하세요...`}
-                          className="w-full bg-white rounded-lg px-3 py-2 text-xs border border-gray-100 outline-none focus:border-primary text-gray-500" />
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
 
@@ -1032,10 +1069,25 @@ export default function BusinessApp() {
               </div>
 
               <div className="space-y-2 mb-4">
-                {selectedCats.map((c, i) => (
-                  <div key={c} className="flex justify-between items-center bg-gray-50 rounded-xl p-3">
-                    <span className="text-sm">{c} 촬영</span>
-                    <span className="text-sm font-bold">₩{((i + 1) * 30000 + 20000).toLocaleString()} / 시간</span>
+                {selectedCats.map((c) => (
+                  <div key={c} className="bg-gray-50 rounded-xl p-3">
+                    <p className="text-sm font-bold mb-2">{c} 촬영 패키지</p>
+                    <div className="space-y-1.5">
+                      {[
+                        { title: "1컨셉", price: 270000, desc: "보정본 4컷 · 30분 소요" },
+                        { title: "2컨셉", price: 420000, desc: "보정본 7컷 · 60분 소요" },
+                        { title: "3컨셉", price: 580000, desc: "보정본 12컷 · 90분 소요" },
+                      ].map((pkg, idx) => (
+                        <div key={idx} className="flex justify-between items-start bg-white rounded-lg p-2 border border-gray-100">
+                          <div>
+                            <p className="text-xs font-medium">{pkg.title}</p>
+                            <p className="text-[10px] text-gray-400">{pkg.desc}</p>
+                          </div>
+                          <span className="text-sm font-bold">₩{pkg.price.toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-gray-400 mt-1.5">+ 원본 추가 ₩40,000 / 보정 컷 추가 ₩40,000</p>
                   </div>
                 ))}
               </div>

@@ -180,6 +180,8 @@ export default function ConsumerApp() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const profileInputRef = useRef<HTMLInputElement>(null);
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
+  const [selectedPackageIdx, setSelectedPackageIdx] = useState(0);
+  const [selectedAddons, setSelectedAddons] = useState<number[]>([]);
   const [categoryCat, setCategoryCat] = useState("프로필");
   const [selectedRegion, setSelectedRegion] = useState("전체");
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
@@ -283,9 +285,20 @@ export default function ConsumerApp() {
 
   const timeIdx = TIMES.indexOf(selectedTime);
   const endTime = TIMES[Math.min(timeIdx + 1, TIMES.length - 1)] || "22:00";
-  const basePrice = selectedStudio.price;
+  const packageList = [
+    { title: "1컨셉", price: Math.round(selectedStudio.price * 0.9), desc: "보정본 4컷 · 30분 소요" },
+    { title: "2컨셉", price: Math.round(selectedStudio.price * 1.4), desc: "보정본 7컷 · 60분 소요" },
+    { title: "3컨셉", price: Math.round(selectedStudio.price * 1.9), desc: "보정본 12컷 · 90분 소요" },
+  ];
+  const selectedPackage = packageList[selectedPackageIdx] ?? packageList[0];
+  const addonList = [
+    { id: 101, name: "원본 추가", price: 40000 },
+    { id: 102, name: "보정 컷 추가", price: 40000 },
+  ];
+  const basePrice = selectedPackage.price;
+  const addonsTotal = selectedAddons.reduce((sum, id) => sum + (addonList.find(a => a.id === id)?.price || 0), 0);
   const optionsTotal = selectedOptions.reduce((sum, id) => sum + (HAIR_MAKEUP_OPTIONS.find(o => o.id === id)?.price || 0), 0);
-  const totalPrice = basePrice + optionsTotal;
+  const totalPrice = basePrice + addonsTotal + optionsTotal;
 
   const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
   const handleTouchEnd = (e: React.TouchEvent) => {
@@ -692,12 +705,54 @@ export default function ConsumerApp() {
                   <p className="text-sm text-gray-700 leading-relaxed">{selectedStudio.desc}. {selectedStudio.area}에 위치한 {selectedStudio.cats.join("·")} 전문 스튜디오입니다. 편안한 분위기에서 최고의 결과물을 제공해드려요.</p>
                 </div>
 
-                {/* 가격표 */}
+                {/* 가격 패키지 */}
                 <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                  <p className="text-xs text-gray-500 mb-2 font-medium">촬영 가격</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold">₩{selectedStudio.price.toLocaleString()}</span>
-                    <span className="text-xs text-gray-400">/ 시간 · {selectedStudio.vatIncluded ? "VAT 포함" : "VAT 별도"}</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs text-gray-500 font-medium">가격 패키지</p>
+                    <span className="text-[10px] text-gray-400">{selectedStudio.vatIncluded ? "VAT 포함" : "VAT 별도"}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {[
+                      { title: "1컨셉", price: Math.round(selectedStudio.price * 0.9), desc: "보정본 4컷 · 30분 소요" },
+                      { title: "2컨셉", price: Math.round(selectedStudio.price * 1.4), desc: "보정본 7컷 · 60분 소요" },
+                      { title: "3컨셉", price: Math.round(selectedStudio.price * 1.9), desc: "보정본 12컷 · 90분 소요" },
+                    ].map((pkg, idx) => (
+                      <button key={idx} onClick={() => setSelectedPackageIdx(idx)}
+                        className={`w-full flex justify-between items-start p-3 rounded-lg border text-left transition-all ${selectedPackageIdx === idx ? "border-primary bg-primary/5" : "border-gray-200 bg-white"}`}>
+                        <div className="flex items-start gap-2">
+                          <span className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedPackageIdx === idx ? "border-primary bg-primary" : "border-gray-300"}`}>
+                            {selectedPackageIdx === idx && <Check size={10} strokeWidth={3} className="text-white" />}
+                          </span>
+                          <div>
+                            <p className="text-sm font-medium">{pkg.title}</p>
+                            <p className="text-[10px] text-gray-500 mt-0.5">{pkg.desc}</p>
+                          </div>
+                        </div>
+                        <span className="text-sm font-bold shrink-0">₩{pkg.price.toLocaleString()}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 추가 옵션 */}
+                <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                  <p className="text-xs text-gray-500 mb-2 font-medium">추가 옵션</p>
+                  <div className="space-y-2">
+                    {[
+                      { id: 101, name: "원본 추가", price: 40000 },
+                      { id: 102, name: "보정 컷 추가", price: 40000 },
+                    ].map(addon => (
+                      <button key={addon.id} onClick={() => setSelectedAddons(prev => prev.includes(addon.id) ? prev.filter(x => x !== addon.id) : [...prev, addon.id])}
+                        className={`w-full flex justify-between items-center p-3 rounded-lg border text-left transition-all ${selectedAddons.includes(addon.id) ? "border-primary bg-primary/5" : "border-gray-200 bg-white"}`}>
+                        <div className="flex items-center gap-2">
+                          <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${selectedAddons.includes(addon.id) ? "border-primary bg-primary" : "border-gray-300"}`}>
+                            {selectedAddons.includes(addon.id) && <Check size={10} strokeWidth={3} className="text-white" />}
+                          </span>
+                          <span className="text-sm">{addon.name}</span>
+                        </div>
+                        <span className="text-sm font-medium">+₩{addon.price.toLocaleString()}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -849,7 +904,11 @@ export default function ConsumerApp() {
               <div className="space-y-3 mb-4 px-1">
                 <div className="flex justify-between text-sm"><span className="text-gray-500">날짜</span><span className="font-medium">2026.05.{selectedDate} ({["목","금","토","일","월","화","수"][selectedDate - 8]})</span></div>
                 <div className="flex justify-between text-sm"><span className="text-gray-500">시간</span><span className="font-medium">{selectedTime} ~ {endTime} (1시간)</span></div>
-                <div className="flex justify-between text-sm"><span className="text-gray-500">촬영 비용</span><span className="font-medium">₩{basePrice.toLocaleString()}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-gray-500">{selectedPackage.title}</span><span className="font-medium">₩{basePrice.toLocaleString()}</span></div>
+                {selectedAddons.length > 0 && selectedAddons.map(id => {
+                  const addon = addonList.find(a => a.id === id);
+                  return addon ? <div key={id} className="flex justify-between text-sm"><span className="text-gray-500">{addon.name}</span><span className="font-medium">+₩{addon.price.toLocaleString()}</span></div> : null;
+                })}
                 {selectedOptions.length > 0 && selectedOptions.map(id => {
                   const opt = HAIR_MAKEUP_OPTIONS.find(o => o.id === id);
                   return opt ? <div key={id} className="flex justify-between text-sm"><span className="text-gray-500">{opt.name}</span><span className="font-medium">+₩{opt.price.toLocaleString()}</span></div> : null;
