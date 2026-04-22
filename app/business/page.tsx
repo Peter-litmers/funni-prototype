@@ -19,7 +19,7 @@ function BrandMark() {
 
 type Screen = "home" | "category" | "detail" | "register" | "bookings" | "bookingDetail" | "settlement" | "notifications" | "studioView" | "mypage" | "bizSignup" | "approvalWaiting" | "dashboard" | "bizInfo" | "reviews" | "login";
 type Sort = "payments" | "rating" | "distance";
-type SecondarySort = "default" | "priceHigh" | "priceLow";
+type SecondarySort = "default" | "priceHigh";
 type BookingFilter = "전체" | "확정" | "취소요청" | "완료";
 type Tab = "home" | "category" | "my";
 
@@ -225,7 +225,6 @@ export default function BusinessApp() {
 
   const finalHomeStudios = [...homeSorted].sort((a, b) => {
     if (secondarySort === "priceHigh") return parseStudioPrice(b.price) - parseStudioPrice(a.price);
-    if (secondarySort === "priceLow") return parseStudioPrice(a.price) - parseStudioPrice(b.price);
     return 0;
   });
 
@@ -494,7 +493,6 @@ export default function BusinessApp() {
                     {([
                       { key: "default" as SecondarySort, label: "보조 정렬 없음" },
                       { key: "priceHigh" as SecondarySort, label: "가격 높은순" },
-                      { key: "priceLow" as SecondarySort, label: "가격 낮은순" },
                     ]).map(item => (
                       <button
                         key={item.key}

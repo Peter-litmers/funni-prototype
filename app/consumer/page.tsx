@@ -161,7 +161,7 @@ const ALL_MY_BOOKINGS_FOR_MYPAGE = [
 
 type Screen = "home" | "category" | "myBookings" | "detail" | "booking" | "done" | "mypage" | "reviewWrite" | "myReviews" | "paymentHistory" | "login" | "signup" | "bizSignup" | "forgotPassword" | "notifications";
 type Sort = "payments" | "rating" | "distance";
-type SecondarySort = "default" | "priceHigh" | "priceLow";
+type SecondarySort = "default" | "priceHigh";
 type BookingFilter = "예정" | "완료" | "취소";
 type Tab = "home" | "category" | "mypage";
 
@@ -269,7 +269,6 @@ export default function ConsumerApp() {
   });
   const finalHomeStudios = [...homeSorted].sort((a, b) => {
     if (secondarySort === "priceHigh") return b.price - a.price;
-    if (secondarySort === "priceLow") return a.price - b.price;
     return 0;
   });
   const promotedStudios = [...STUDIOS].sort((a, b) => b.paymentCount - a.paymentCount).slice(0, 4);
@@ -562,7 +561,6 @@ export default function ConsumerApp() {
                     {([
                       { key: "default" as SecondarySort, label: "보조 정렬 없음" },
                       { key: "priceHigh" as SecondarySort, label: "가격 높은순" },
-                      { key: "priceLow" as SecondarySort, label: "가격 낮은순" },
                     ]).map(item => (
                       <button
                         key={item.key}
@@ -908,7 +906,7 @@ export default function ConsumerApp() {
                   <button key={f} onClick={() => setBookingFilter(f)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${bookingFilter === f ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{f} {f === "예정" ? UPCOMING_BOOKINGS.length : f === "완료" ? COMPLETED_BOOKINGS.length : CANCELLED_BOOKINGS.length}</button>
                 ))}
               </div>
-              {bookingFilter === "완료" && <p className="text-[11px] text-gray-400 mb-3">리뷰는 업체가 촬영 건을 완료 처리한 시점부터 2주 이내 작성할 수 있습니다.</p>}
+              {bookingFilter === "완료" && <p className="text-[11px] text-gray-400 mb-3">리뷰는 업체가 촬영 건을 완료 처리한 시점부터 2주 이내 작성, 작성 후 3일 이내 수정 가능합니다.</p>}
               {bookingFilter === "취소" && (
                 <div className="mb-3 rounded-xl bg-rose-50 p-3 text-[11px] text-rose-500">
                   <p>소비자 취소 환불 기준: 7일 전 전액 환불 · 3~6일 전 20% · 1~2일 전 50% · 당일 80%</p>
@@ -947,7 +945,7 @@ export default function ConsumerApp() {
                 <p className="text-sm font-medium mb-2">리뷰 내용</p>
                 <textarea value={reviewText} onChange={e => setReviewText(e.target.value)} maxLength={300} placeholder="촬영 경험을 30자 이상 작성해주세요" className="w-full bg-gray-50 rounded-xl p-4 text-sm outline-none resize-none border border-gray-200 focus:border-primary" rows={5} />
                 <div className="mt-1 flex items-center justify-between gap-3">
-                  <p className="text-[10px] text-gray-400">완료 처리 후 2주 이내 작성 가능 · 삭제는 요청 후 승인</p>
+                  <p className="text-[10px] text-gray-400">완료 후 2주 이내 작성 · 작성 후 3일 이내 수정 · 삭제는 요청 후 승인</p>
                   <p className="text-[10px] text-gray-400 shrink-0">{reviewText.length}/300</p>
                 </div>
               </div>

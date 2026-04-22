@@ -285,12 +285,12 @@ export default function AdminWeb() {
             </div>
 
             <div className="policy-area p-4 mb-6">
-              <PolicyBadge label="입점 정책 미확정" />
+              <PolicyBadge label="입점 정책 반영" />
               <p className="text-[10px] text-gray-500 mt-1">• 입점 방식: 관리자 수동 검토 (REQ-115 확정)</p>
               <p className="text-[10px] text-gray-500">• 필수 서류: 사업자등록번호 + 포트폴리오 사진 (REQ-102 확정)</p>
-              <p className="text-[10px] text-gray-500">• 승인 거절 사유 전달: 이메일 + 앱 알림</p>
-              <p className="text-[10px] text-gray-500">• 재신청 제한: 횟수/대기기간 없이 차단 여부 운영 검토</p>
-              <PolicyForm question="퇴점(입점 해제) 기준은? (위반 횟수, 경고 절차)" screen="어드민" area="퇴점 기준" />
+              <p className="text-[10px] text-gray-500">• 승인 거절 사유 전달: 이메일 + 앱 알림 (확정)</p>
+              <p className="text-[10px] text-gray-500">• 재신청: 횟수/대기기간 없이 관리자 재차단 가능</p>
+              <p className="text-[10px] text-gray-500">• 이용정지·퇴점 기준: 운영 초기 정책 수립 후 반영 (임시: 노쇼·소비자 CS 누적 시 어드민 재량 정지)</p>
             </div>
 
             {/* Business List */}
@@ -360,7 +360,7 @@ export default function AdminWeb() {
               <p className="text-[10px] text-gray-500">• 정산 기준: 월별 기준, 주별 조회 가능</p>
               <p className="text-[10px] text-gray-500">• 정산 단위: 업체별 일괄 정산</p>
               <p className="text-[10px] text-gray-500">• 수수료 차등: 기본 10%, 업체별 override</p>
-              <p className="text-[10px] text-gray-500">• 환불 반영: 토스페이먼츠 결제 방식별 정책 정리 후 반영 예정</p>
+              <p className="text-[10px] text-gray-500">• 환불 반영: 정산 완료 전 발생 건은 정산액에서 차감, 정산 완료 후 발생 건은 다음 정산에서 차감 (대표 확인 대기)</p>
             </div>
 
             {/* Settlement Table */}
@@ -425,7 +425,7 @@ export default function AdminWeb() {
 
             <div className="policy-area p-4 mb-6">
               <PolicyBadge label="광고 정책 반영" />
-              <p className="text-[10px] text-gray-500 mt-1">• 프리미엄 영역: 정사각형 3개 × 3페이지</p>
+              <p className="text-[10px] text-gray-500 mt-1">• 광고 배너: 정사각형 3개 × 3페이지 = 총 9구좌</p>
               <p className="text-[10px] text-gray-500">• 노출 기간: 월간, 시작일/종료일 상세 설정</p>
               <p className="text-[10px] text-gray-500">• 배너 순서: 로테이션</p>
             </div>
