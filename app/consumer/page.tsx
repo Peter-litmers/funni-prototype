@@ -32,7 +32,6 @@ function BrandMark() {
 }
 
 
-const HOME_KEYWORDS = ["인기", "웨딩", "프로필", "가족", "반려동물", "비즈니스"];
 
 const HOME_AD_PAGES = [
   [
@@ -163,6 +162,7 @@ export default function ConsumerApp() {
   const [adminCategories] = useCategories();
   const CATEGORIES = [{ name: "전체", Icon: LayoutGrid }, ...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }))];
   const HOME_CATEGORY_GRID = adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }));
+  const HOME_KEYWORDS = ["인기", ...adminCategories];
   const [screen, setScreen] = useState<Screen>("home");
   const [selectedStudio, setSelectedStudio] = useState(STUDIOS[0]);
   const [tab, setTab] = useState<Tab>("home");
@@ -208,6 +208,13 @@ export default function ConsumerApp() {
     return () => window.clearInterval(timer);
   }, [screen]);
 
+  // 카테고리가 어드민에서 삭제된 경우 선택된 키워드 초기화
+  useEffect(() => {
+    if (activeKeyword !== "인기" && !adminCategories.includes(activeKeyword)) {
+      setActiveKeyword("인기");
+    }
+  }, [adminCategories, activeKeyword]);
+
   const navigate = (to: Screen) => {
     historyStack.current.push({ s: screen, t: tab });
     setScreen(to);
@@ -228,12 +235,7 @@ export default function ConsumerApp() {
   const homeFiltered = STUDIOS
     .filter(s => {
       if (activeKeyword === "인기") return true;
-      if (activeKeyword === "웨딩") return s.cats.includes("웨딩");
-      if (activeKeyword === "프로필") return s.cats.includes("프로필");
-      if (activeKeyword === "가족") return s.cats.includes("가족");
-      if (activeKeyword === "반려동물") return s.cats.includes("반려동물");
-      if (activeKeyword === "비즈니스") return s.cats.includes("비즈니스");
-      return true;
+      return s.cats.includes(activeKeyword);
     })
     .filter(s => {
       if (selectedRegion === "전체" || !selectedRegion.trim()) return true;

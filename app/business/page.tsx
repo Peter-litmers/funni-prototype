@@ -38,7 +38,6 @@ type Tab = "home" | "category" | "my";
 
 // Studio browsing data — 소비자와 동일한 탐색 화면 (CATEGORIES는 컴포넌트 안에서 훅으로 주입)
 
-const HOME_KEYWORDS = ["인기", "웨딩", "프로필", "가족", "반려동물", "비즈니스"];
 
 const HOME_AD_PAGES = [
   [
@@ -120,6 +119,7 @@ export default function BusinessApp() {
   const [feeRate] = useFeeRate();
   const [bizFees] = useBusinessFees();
   const CATEGORIES = [{ name: "전체", Icon: LayoutGrid }, ...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }))];
+  const HOME_KEYWORDS = ["인기", ...adminCategories];
   const myFee = getFeeForBusiness("루미에르 스튜디오", feeRate, bizFees);
   const [screen, setScreen] = useState<Screen>("home");
   const [tab, setTab] = useState<Tab>("home");
@@ -182,17 +182,19 @@ export default function BusinessApp() {
     return () => window.clearInterval(timer);
   }, [screen]);
 
+  // 카테고리가 어드민에서 삭제된 경우 선택된 키워드 초기화
+  useEffect(() => {
+    if (activeKeyword !== "인기" && !adminCategories.includes(activeKeyword)) {
+      setActiveKeyword("인기");
+    }
+  }, [adminCategories, activeKeyword]);
+
   const parseStudioPrice = (price: string) => Number(price.replace(/,/g, ""));
 
   const homeFiltered = STUDIOS
     .filter(s => {
       if (activeKeyword === "인기") return true;
-      if (activeKeyword === "웨딩") return s.cat === "웨딩";
-      if (activeKeyword === "프로필") return s.cat === "프로필";
-      if (activeKeyword === "가족") return s.cat === "가족";
-      if (activeKeyword === "반려동물") return s.cat === "반려동물";
-      if (activeKeyword === "비즈니스") return s.cat === "비즈니스";
-      return true;
+      return s.cat === activeKeyword;
     })
     .filter(s => {
       if (selectedRegion === "전체" || !selectedRegion.trim()) return true;
