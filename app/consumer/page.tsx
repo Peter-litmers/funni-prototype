@@ -874,7 +874,7 @@ export default function ConsumerApp() {
                   return opt ? <div key={id} className="flex justify-between text-sm"><span className="text-gray-500">{opt.name}</span><span className="font-medium">+₩{opt.price.toLocaleString()}</span></div> : null;
                 })}
                 <div className="flex justify-between text-sm border-t border-gray-100 pt-3"><span className="text-gray-500 font-bold">총 금액</span><span className="font-bold text-primary text-base">₩{totalPrice.toLocaleString()}</span></div>
-                <p className="text-[11px] text-gray-400 pt-1">예약금 결제 후 업체 승인 시 확정되며, 48시간 내 미승인 시 자동 취소됩니다.</p>
+                <p className="text-[11px] text-gray-400 pt-1">예약금 결제 후 업체 승인 시 확정되며, 영업일 기준 48시간 내 미승인 시 자동 취소 및 전액 환불됩니다.</p>
               </div>
 
               <button onClick={() => navigate("done")} className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm">결제하기 · 토스페이먼츠</button>
@@ -891,7 +891,7 @@ export default function ConsumerApp() {
               <div className="bg-primary/5 rounded-xl p-4 w-full mb-4 border border-primary/10">
                 <p className="text-xs text-primary font-medium">토스페이먼츠 예약금 결제 완료</p>
                 <p className="text-sm font-bold text-gray-900 mt-1">₩{totalPrice.toLocaleString()}</p>
-                <p className="text-[11px] text-gray-500 mt-2">업체 승인 후 예약이 확정되며, 48시간 내 미승인 시 자동 취소됩니다.</p>
+                <p className="text-[11px] text-gray-500 mt-2">업체 승인 후 예약이 확정되며, 영업일 기준 48시간 내 미승인 시 자동 취소 및 전액 환불됩니다.</p>
               </div>
               <button onClick={() => { setScreen("myBookings"); setTab("mypage"); }} className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium text-sm mb-2">예약 요청 내역 확인</button>
               <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm">홈으로</button>
@@ -911,7 +911,7 @@ export default function ConsumerApp() {
               {bookingFilter === "취소" && (
                 <div className="mb-3 rounded-xl bg-rose-50 p-3 text-[11px] text-rose-500">
                   <p>소비자 취소 환불 기준: 7일 전 전액 환불 · 3~6일 전 20% · 1~2일 전 50% · 당일 80%</p>
-                  <p className="mt-1">업체 취소는 100% 환불되며, 취소 이력은 어드민 웹에 누적 기록됩니다.</p>
+                  <p className="mt-1">업체 취소: 100% 환불 + 업체에 페널티 누적 기록 (누적 5회 이상 시 이용정지 검토)</p>
                 </div>
               )}
               {filteredBookings.length === 0 ? <div className="text-center py-12"><p className="text-gray-400 text-sm">해당 예약이 없습니다</p></div> : filteredBookings.map((b, i) => (

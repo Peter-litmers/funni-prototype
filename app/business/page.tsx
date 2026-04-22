@@ -1192,15 +1192,29 @@ export default function BusinessApp() {
               )}
 
               {(selectedBooking.status === "확정" || selectedBooking.status === "완료") && (
-                <div className="mb-4 rounded-2xl bg-gray-50 p-3 border border-gray-200">
-                  <p className="text-xs text-gray-500 mb-2">고객이 방문하지 않은 경우 (노쇼)</p>
-                  <button
-                    onClick={() => alert("노쇼로 기록되었습니다. 어드민 대시보드에 자동 반영되며, 소비자 CS 이력에 누적됩니다.")}
-                    className="w-full bg-white text-gray-700 py-2.5 rounded-xl text-sm font-medium border border-gray-300 hover:border-red-300 hover:text-red-600">
-                    ⚠️ 노쇼 처리
-                  </button>
-                  <p className="text-[10px] text-gray-400 mt-1.5">노쇼 누적은 소비자 이용제한 정책에 반영될 수 있습니다</p>
-                </div>
+                <>
+                  <div className="mb-4 rounded-2xl bg-gray-50 p-3 border border-gray-200">
+                    <p className="text-xs text-gray-500 mb-2">고객이 방문하지 않은 경우 (노쇼)</p>
+                    <button
+                      onClick={() => alert("노쇼로 기록되었습니다. 어드민 대시보드에 자동 반영되며, 소비자 CS 이력에 누적됩니다.")}
+                      className="w-full bg-white text-gray-700 py-2.5 rounded-xl text-sm font-medium border border-gray-300 hover:border-red-300 hover:text-red-600">
+                      ⚠️ 노쇼 처리
+                    </button>
+                    <p className="text-[10px] text-gray-400 mt-1.5">노쇼 누적은 소비자 이용제한 정책에 반영될 수 있습니다</p>
+                  </div>
+
+                  {selectedBooking.status === "확정" && (
+                    <div className="mb-4 rounded-2xl bg-red-50 p-3 border border-red-100">
+                      <p className="text-xs text-red-700 font-medium mb-1">부득이한 업체 사유로 취소</p>
+                      <p className="text-[10px] text-gray-500 mb-2">고객 100% 환불 처리됩니다. 누적 5회 이상 시 이용정지 검토 대상이 됩니다.</p>
+                      <button
+                        onClick={() => { if (confirm("정말 업체 사유로 취소하시겠습니까?\n• 고객에게 100% 환불\n• 페널티 1회 누적 (현재 2회)\n• 누적 5회부터 이용정지 검토")) { alert("업체 취소 처리되었습니다. 어드민에 자동 보고됩니다."); } }}
+                        className="w-full bg-white text-red-600 py-2 rounded-xl text-xs font-medium border border-red-200">
+                        업체 사유로 예약 취소
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
 
             </div>

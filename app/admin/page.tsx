@@ -253,6 +253,66 @@ export default function AdminWeb() {
               <p className="text-xs text-gray-400 mt-2">어드민에서 직접 수정 가능 (확정) · 업체별 개별 수수료는 업체 상세에서 설정 (REQ-119)</p>
             </div>
 
+            {/* 운영 정책 기준치 (미확정 항목 — 대표 확인 대기) */}
+            <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold">운영 정책 기준치</h3>
+                <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-medium">대표 확인 대기</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">미승인 자동취소 대기시간</label>
+                  <div className="flex items-center gap-2">
+                    <input type="number" defaultValue={48} className="bg-gray-50 rounded-lg px-3 py-2 text-sm font-bold w-16 text-center border border-gray-100" />
+                    <span className="text-xs">시간</span>
+                    <select defaultValue="business" className="bg-gray-50 rounded-lg px-2 py-2 text-xs border border-gray-100 outline-none">
+                      <option value="business">영업일 기준</option>
+                      <option value="calendar">달력일 기준</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">소비자 노쇼 누적 → 경고</label>
+                  <div className="flex items-center gap-2">
+                    <input type="number" defaultValue={3} className="bg-gray-50 rounded-lg px-3 py-2 text-sm font-bold w-16 text-center border border-gray-100" />
+                    <span className="text-xs">회부터 경고</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">업체 취소 누적 → 이용정지</label>
+                  <div className="flex items-center gap-2">
+                    <input type="number" defaultValue={5} className="bg-gray-50 rounded-lg px-3 py-2 text-sm font-bold w-16 text-center border border-gray-100" />
+                    <span className="text-xs">회부터 정지</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">소비자 CS 누적 → 정지 검토</label>
+                  <div className="flex items-center gap-2">
+                    <input type="number" defaultValue={5} className="bg-gray-50 rounded-lg px-3 py-2 text-sm font-bold w-16 text-center border border-gray-100" />
+                    <span className="text-xs">건</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">최소 정산 금액</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs">₩</span>
+                    <input type="text" defaultValue="50,000" className="bg-gray-50 rounded-lg px-3 py-2 text-sm font-bold w-full text-right border border-gray-100" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">최대 정산 금액 (1회)</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs">₩</span>
+                    <input type="text" defaultValue="10,000,000" className="bg-gray-50 rounded-lg px-3 py-2 text-sm font-bold w-full text-right border border-gray-100" />
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 flex items-center justify-between">
+                <p className="text-[10px] text-gray-400">※ 기본값은 업계 표준 기준 임시 세팅. 대표 확인 후 확정.</p>
+                <button className="bg-primary text-white px-4 py-2 rounded-lg text-xs font-medium">저장</button>
+              </div>
+            </div>
+
             {/* Recent Activity */}
             <div className="bg-white rounded-xl p-6 shadow-sm">
               <h3 className="font-bold mb-4">최근 활동</h3>
@@ -426,8 +486,34 @@ export default function AdminWeb() {
             <div className="policy-area p-4 mb-6">
               <PolicyBadge label="광고 정책 반영" />
               <p className="text-[10px] text-gray-500 mt-1">• 광고 배너: 정사각형 3개 × 3페이지 = 총 9구좌</p>
-              <p className="text-[10px] text-gray-500">• 노출 기간: 월간, 시작일/종료일 상세 설정</p>
-              <p className="text-[10px] text-gray-500">• 배너 순서: 로테이션</p>
+              <p className="text-[10px] text-gray-500">• 노출 기간: 월간(기본), 시작일/종료일 상세 설정 가능</p>
+              <p className="text-[10px] text-gray-500">• 배너 순서: 로테이션 (9구좌가 순환 노출)</p>
+            </div>
+
+            {/* 광고 노출 기간 단위 설정 */}
+            <div className="bg-white rounded-xl p-4 shadow-sm mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold text-sm">광고 노출 기간 기본값</h3>
+                <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-medium">대표 확인 대기</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">기본 노출 단위</label>
+                  <select defaultValue="monthly" className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-100 outline-none">
+                    <option value="weekly">주간 (7일)</option>
+                    <option value="monthly">월간 (30일)</option>
+                    <option value="custom">건별 (시작일/종료일 직접 설정)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">최소 광고 단가 (월간 기준)</label>
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs">₩</span>
+                    <input type="text" defaultValue="300,000" className="flex-1 bg-gray-50 rounded-lg px-3 py-2 text-sm text-right border border-gray-100" />
+                  </div>
+                </div>
+              </div>
+              <p className="text-[10px] text-gray-400 mt-2">※ 개별 광고 등록 시 세부 시작일/종료일 지정 가능. 본 설정은 기본값.</p>
             </div>
 
             {/* 현재 노출 중인 광고 스튜디오 (REQ-112 상단 노출) */}
