@@ -19,7 +19,6 @@ function BrandMark() {
 
 type Screen = "home" | "category" | "detail" | "register" | "bookings" | "bookingDetail" | "settlement" | "notifications" | "studioView" | "mypage" | "bizSignup" | "approvalWaiting" | "dashboard" | "bizInfo" | "reviews" | "login";
 type Sort = "payments" | "rating" | "distance";
-type SecondarySort = "default" | "priceHigh";
 type BookingFilter = "전체" | "확정" | "취소요청" | "완료";
 type Tab = "home" | "category" | "my";
 
@@ -117,7 +116,6 @@ export default function BusinessApp() {
   const [screen, setScreen] = useState<Screen>("home");
   const [tab, setTab] = useState<Tab>("home");
   const [sort, setSort] = useState<Sort>("payments");
-  const [secondarySort, setSecondarySort] = useState<SecondarySort>("default");
   const [adIdx, setAdIdx] = useState(0);
   const [selectedRegion, setSelectedRegion] = useState("전체");
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
@@ -223,10 +221,7 @@ export default function BusinessApp() {
     return b.rating - a.rating;
   });
 
-  const finalHomeStudios = [...homeSorted].sort((a, b) => {
-    if (secondarySort === "priceHigh") return parseStudioPrice(b.price) - parseStudioPrice(a.price);
-    return 0;
-  });
+  const finalHomeStudios = homeSorted;
 
   const promotedStudios = [...STUDIOS].sort((a, b) => b.paymentCount - a.paymentCount).slice(0, 4);
   const hotStudios = [...STUDIOS].sort((a, b) => {
@@ -471,10 +466,10 @@ export default function BusinessApp() {
                   <h3 className="text-[15px] font-bold text-gray-900">필터</h3>
                 </div>
                 <div className="rounded-2xl border border-gray-200 bg-gray-50 p-3">
-                  <p className="text-[11px] text-gray-400">기본 정렬: 결제 많은순 → 평점순</p>
+                  <p className="text-[11px] text-gray-400">기본 정렬: 결제순 → 평점순</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {([
-                      { key: "payments" as Sort, label: "결제 많은순" },
+                      { key: "payments" as Sort, label: "결제순" },
                       { key: "rating" as Sort, label: "평점순" },
                       { key: "distance" as Sort, label: "거리순" },
                     ]).map(item => (
@@ -483,24 +478,6 @@ export default function BusinessApp() {
                         onClick={() => setSort(item.key)}
                         className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
                           sort === item.key ? "bg-white text-gray-900 shadow-sm" : "bg-transparent text-gray-500"
-                        }`}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {([
-                      { key: "default" as SecondarySort, label: "보조 정렬 없음" },
-                      { key: "priceHigh" as SecondarySort, label: "가격 높은순" },
-                    ]).map(item => (
-                      <button
-                        key={item.key}
-                        onClick={() => setSecondarySort(item.key)}
-                        className={`rounded-full border px-3 py-1.5 text-[11px] transition-all ${
-                          secondarySort === item.key
-                            ? "border-primary bg-white text-primary"
-                            : "border-gray-200 bg-white text-gray-500"
                         }`}
                       >
                         {item.label}
