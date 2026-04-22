@@ -33,7 +33,7 @@ function BrandMark() {
 
 type Screen = "home" | "category" | "detail" | "register" | "bookings" | "bookingDetail" | "settlement" | "notifications" | "studioView" | "mypage" | "bizSignup" | "approvalWaiting" | "dashboard" | "bizInfo" | "reviews" | "login";
 type Sort = "payments" | "rating" | "distance";
-type BookingFilter = "전체" | "확정" | "취소요청" | "완료";
+type BookingFilter = "전체" | "확정" | "예약 취소 중" | "완료";
 type Tab = "home" | "category" | "my";
 
 // Studio browsing data — 소비자와 동일한 탐색 화면 (CATEGORIES는 컴포넌트 안에서 훅으로 주입)
@@ -83,16 +83,16 @@ const STUDIOS = [
   { id: 12, name: "바디에디션 랩", cat: "바디프로필", desc: "바디 프로필, 운동기록 촬영, 피트니스 브랜딩", area: "서울 성신여대", price: "150,000", rating: 4.8, reviews: 26, phone: "02-9345-6789", travelAvailable: false, paymentCount: 73, distanceKm: 11.6 },
 ];
 
-const ALL_BOOKINGS: { id: number; month: number; date: number; name: string; cat: string; time: string; price: number; status: string; isManual?: boolean }[] = [
+const ALL_BOOKINGS: { id: number; month: number; date: number; name: string; cat: string; time: string; price: number; status: string; isManual?: boolean; cancelReason?: string }[] = [
   { id: 1, month: 5, date: 10, name: "김철수", cat: "프로필", time: "10:00~12:00", price: 100000, status: "확정" },
   { id: 2, month: 5, date: 10, name: "이영희", cat: "바디프로필", time: "14:00~16:00", price: 160000, status: "확정" },
   { id: 3, month: 5, date: 10, name: "박지민", cat: "프로필", time: "17:00~19:00", price: 100000, status: "확정" },
-  { id: 4, month: 5, date: 11, name: "최수현", cat: "프로필", time: "10:00~12:00", price: 100000, status: "취소요청" },
+  { id: 4, month: 5, date: 11, name: "최수현", cat: "프로필", time: "10:00~12:00", price: 100000, status: "예약 취소 중", cancelReason: "일정 변경이 생겨서 취소 부탁드립니다." },
   { id: 5, month: 5, date: 11, name: "정다은", cat: "바디프로필", time: "13:00~15:00", price: 160000, status: "확정" },
   { id: 6, month: 5, date: 12, name: "한소희", cat: "프로필", time: "15:00~17:00", price: 100000, status: "완료" },
   { id: 7, month: 5, date: 13, name: "오진우", cat: "바디프로필", time: "10:00~13:00", price: 240000, status: "확정" },
   { id: 8, month: 5, date: 15, name: "윤서연", cat: "프로필", time: "11:00~13:00", price: 100000, status: "확정" },
-  { id: 9, month: 5, date: 20, name: "강민지", cat: "바디프로필", time: "14:00~16:00", price: 160000, status: "취소요청" },
+  { id: 9, month: 5, date: 20, name: "강민지", cat: "바디프로필", time: "14:00~16:00", price: 160000, status: "예약 취소 중", cancelReason: "일정 변경이 생겨서 취소 부탁드립니다." },
   { id: 10, month: 5, date: 25, name: "임재현", cat: "프로필", time: "16:00~18:00", price: 100000, status: "확정" },
   { id: 11, month: 4, date: 5, name: "송예진", cat: "프로필", time: "10:00~12:00", price: 100000, status: "완료" },
   { id: 12, month: 4, date: 12, name: "류현우", cat: "바디프로필", time: "14:00~16:00", price: 160000, status: "완료" },
@@ -101,7 +101,7 @@ const ALL_BOOKINGS: { id: number; month: number; date: number; name: string; cat
 
 const NOTIFICATIONS: { id: number; type: string; text: string; time: string; action?: { screen: Screen; filter?: BookingFilter } }[] = [
   { id: 1, type: "booking", text: "김철수님이 5/10 프로필 촬영을 예약했습니다", time: "10분 전", action: { screen: "bookings", filter: "확정" } },
-  { id: 2, type: "cancel", text: "최수현님이 5/11 예약 취소를 요청했습니다", time: "30분 전", action: { screen: "bookings", filter: "취소요청" } },
+  { id: 2, type: "cancel", text: "최수현님이 5/11 예약 취소를 요청했습니다", time: "30분 전", action: { screen: "bookings", filter: "예약 취소 중" } },
   { id: 3, type: "review", text: "한소희님이 리뷰를 작성했습니다 ★★★★★", time: "2시간 전", action: { screen: "reviews" } },
   { id: 4, type: "settlement", text: "4월 2주차 정산이 완료되었습니다 (₩450,000)", time: "1일 전", action: { screen: "settlement" } },
   { id: 5, type: "booking", text: "오진우님이 5/13 바디프로필 촬영을 예약했습니다", time: "2일 전", action: { screen: "bookings", filter: "확정" } },
@@ -770,10 +770,10 @@ export default function BusinessApp() {
                   <p className="text-[10px] text-gray-500 mb-1">이번 달</p>
                   <p className="text-sm font-bold text-green-600 truncate">₩{(totalRevenue / 10000).toFixed(0)}<span className="text-[10px] font-normal">만원</span></p>
                 </div>
-                <button onClick={() => { navigate("bookings"); setBookingFilter("취소요청"); }}
+                <button onClick={() => { navigate("bookings"); setBookingFilter("예약 취소 중"); }}
                   className="bg-red-50 rounded-2xl p-3 border border-red-100 text-center">
                   <p className="text-[10px] text-gray-500 mb-1">취소 요청</p>
-                  <p className="text-xl font-bold text-red-500">{bookings.filter(b => b.status === "취소요청").length}<span className="text-[10px] font-normal ml-0.5">건</span></p>
+                  <p className="text-xl font-bold text-red-500">{bookings.filter(b => b.status === "예약 취소 중").length}<span className="text-[10px] font-normal ml-0.5">건</span></p>
                 </button>
               </div>
 
@@ -806,7 +806,7 @@ export default function BusinessApp() {
                     <p className="text-xs text-gray-400">{b.cat} · {b.time}</p>
                   </div>
                   <div className="text-right">
-                    <span className={`text-[10px] px-2 py-1 rounded-full font-medium ${b.status === "취소요청" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>{b.status}</span>
+                    <span className={`text-[10px] px-2 py-1 rounded-full font-medium ${b.status === "예약 취소 중" ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700"}`}>{b.status}</span>
                     <p className="text-xs font-bold mt-1">₩{b.price.toLocaleString()}</p>
                   </div>
                 </button>
@@ -1175,7 +1175,7 @@ export default function BusinessApp() {
 
               {/* Status Filter */}
               <div className="flex gap-2 mb-3">
-                {(["전체", "확정", "취소요청", "완료"] as BookingFilter[]).map(f => (
+                {(["전체", "확정", "예약 취소 중", "완료"] as BookingFilter[]).map(f => (
                   <button key={f} onClick={() => setBookingFilter(f)}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                       bookingFilter === f ? "bg-primary text-white" : "bg-gray-100 text-gray-500"
@@ -1236,10 +1236,10 @@ export default function BusinessApp() {
                         </div>
                         <div className="flex flex-col items-end gap-1">
                           <span className={`text-[10px] px-2.5 py-1 rounded-full font-medium ${
-                            b.status === "취소요청" ? "bg-red-100 text-red-700" :
+                            b.status === "예약 취소 중" ? "bg-amber-100 text-amber-700" :
                             b.status === "완료" ? "bg-gray-200 text-gray-500" :
                             b.status === "취소완료" ? "bg-gray-200 text-gray-400" :
-                            b.status === "수기" ? "bg-amber-100 text-amber-700" :
+                            b.status === "수기" ? "bg-orange-100 text-orange-700" :
                             "bg-green-100 text-green-700"
                           }`}>{b.status}</span>
                           <span className="text-xs text-gray-300">›</span>
@@ -1286,7 +1286,7 @@ export default function BusinessApp() {
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">상태</span>
                     <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                      selectedBooking.status === "취소요청" ? "bg-red-100 text-red-700" :
+                      selectedBooking.status === "예약 취소 중" ? "bg-amber-100 text-amber-700" :
                       selectedBooking.status === "완료" ? "bg-gray-200 text-gray-500" :
                       "bg-green-100 text-green-700"
                     }`}>{selectedBooking.status}</span>
@@ -1294,12 +1294,18 @@ export default function BusinessApp() {
                 </div>
               </div>
 
-              {selectedBooking.status === "취소요청" && (
-                <div className="mb-4 rounded-2xl bg-red-50 p-3">
-                  <p className="text-sm font-medium mb-2 text-red-700">고객이 취소를 요청했습니다</p>
+              {selectedBooking.status === "예약 취소 중" && (
+                <div className="mb-4 rounded-2xl bg-amber-50 p-3 border border-amber-100">
+                  <p className="text-sm font-medium mb-2 text-amber-700">고객이 예약 취소를 요청 중입니다</p>
+                  {selectedBooking.cancelReason && (
+                    <div className="bg-white rounded-lg p-2.5 mb-2 border border-amber-100">
+                      <p className="text-[10px] text-gray-500 font-medium mb-0.5">취소 사유</p>
+                      <p className="text-xs text-gray-700">{selectedBooking.cancelReason}</p>
+                    </div>
+                  )}
                   <div className="flex gap-2 mt-2">
                     <button onClick={() => handleBookingAction(selectedBooking.id, "reject")}
-                      className="flex-1 bg-white text-gray-600 py-2.5 rounded-xl text-sm font-medium border border-red-100">거절</button>
+                      className="flex-1 bg-white text-gray-600 py-2.5 rounded-xl text-sm font-medium border border-amber-100">거절</button>
                     <button onClick={() => handleBookingAction(selectedBooking.id, "accept")}
                       className="flex-1 bg-red-500 text-white py-2.5 rounded-xl text-sm font-medium">취소 수락</button>
                   </div>

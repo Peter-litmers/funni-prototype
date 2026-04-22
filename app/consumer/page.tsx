@@ -115,7 +115,16 @@ const CONSUMER_NOTIFICATIONS: { id: number; type: string; text: string; time: st
   { id: 5, type: "system", text: "포토팟 앱이 업데이트되었습니다", time: "3일 전", read: true },
 ];
 
-const UPCOMING_BOOKINGS = [
+type UpcomingBooking = {
+  studio: string;
+  date: string;
+  time: string;
+  cat: string;
+  price: string;
+  status: string;
+  cancelReason?: string;
+};
+const UPCOMING_BOOKINGS: UpcomingBooking[] = [
   { studio: "루미에르 스튜디오", date: "2026.05.10 (토)", time: "14:00~16:00", cat: "프로필", price: "₩100,000", status: "확정" },
   { studio: "선셋 포토랩", date: "2026.05.18 (일)", time: "10:00~12:00", cat: "바디프로필", price: "₩160,000", status: "확정" },
   { studio: "블룸 웨딩 스튜디오", date: "2026.05.25 (일)", time: "10:00~14:00", cat: "웨딩", price: "₩800,000", status: "대기" },
@@ -176,6 +185,9 @@ export default function ConsumerApp() {
   const [reviewText, setReviewText] = useState("");
   const [reviewTarget, setReviewTarget] = useState("");
   const [myBookingPage, setMyBookingPage] = useState(0);
+  const [upcomingBookings, setUpcomingBookings] = useState<UpcomingBooking[]>(UPCOMING_BOOKINGS);
+  const [cancelModal, setCancelModal] = useState<{ idx: number; studio: string } | null>(null);
+  const [cancelReasonInput, setCancelReasonInput] = useState("");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [userName, setUserName] = useState("김포토");
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -313,11 +325,12 @@ export default function ConsumerApp() {
   const BOOKINGS_PER_PAGE = 3;
   const totalBookingPages = Math.ceil(ALL_MY_BOOKINGS_FOR_MYPAGE.length / BOOKINGS_PER_PAGE);
   const pagedBookings = ALL_MY_BOOKINGS_FOR_MYPAGE.slice(myBookingPage * BOOKINGS_PER_PAGE, (myBookingPage + 1) * BOOKINGS_PER_PAGE);
-  const filteredBookings = bookingFilter === "예정" ? UPCOMING_BOOKINGS : bookingFilter === "완료" ? COMPLETED_BOOKINGS : CANCELLED_BOOKINGS;
+  const filteredBookings = bookingFilter === "예정" ? upcomingBookings : bookingFilter === "완료" ? COMPLETED_BOOKINGS : CANCELLED_BOOKINGS;
 
   const statusColor = (s: string) => {
     if (s === "확정" || s === "대기") return "bg-green-100 text-green-700";
     if (s === "완료") return "bg-gray-200 text-gray-500";
+    if (s === "예약 취소 중") return "bg-amber-100 text-amber-700";
     return "bg-red-100 text-red-500";
   };
 
@@ -987,7 +1000,7 @@ export default function ConsumerApp() {
               <h2 className="text-base font-bold mb-4">내 예약</h2>
               <div className="flex gap-2 mb-4">
                 {(["예정", "완료", "취소"] as BookingFilter[]).map(f => (
-                  <button key={f} onClick={() => setBookingFilter(f)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${bookingFilter === f ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{f} {f === "예정" ? UPCOMING_BOOKINGS.length : f === "완료" ? COMPLETED_BOOKINGS.length : CANCELLED_BOOKINGS.length}</button>
+                  <button key={f} onClick={() => setBookingFilter(f)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${bookingFilter === f ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{f} {f === "예정" ? upcomingBookings.length : f === "완료" ? COMPLETED_BOOKINGS.length : CANCELLED_BOOKINGS.length}</button>
                 ))}
               </div>
               {bookingFilter === "완료" && <p className="text-[11px] text-gray-400 mb-3">리뷰는 업체가 촬영 건을 완료 처리한 시점부터 2주 이내 작성, 작성 후 3일 이내 수정 가능합니다.</p>}
@@ -997,21 +1010,32 @@ export default function ConsumerApp() {
                   <p className="mt-1">업체 취소: 100% 환불 + 업체에 페널티 누적 기록 (누적 5회 이상 시 이용정지 검토)</p>
                 </div>
               )}
-              {filteredBookings.length === 0 ? <div className="text-center py-12"><p className="text-gray-400 text-sm">해당 예약이 없습니다</p></div> : filteredBookings.map((b, i) => (
+              {filteredBookings.length === 0 ? <div className="text-center py-12"><p className="text-gray-400 text-sm">해당 예약이 없습니다</p></div> : filteredBookings.map((b, i) => {
+                const cancelReason = (b as UpcomingBooking).cancelReason;
+                return (
                 <div key={i} className={`bg-gray-50 rounded-xl p-4 mb-3 ${bookingFilter === "취소" ? "opacity-60" : ""}`}>
                   <div className="flex justify-between items-start mb-2">
                     <div><p className="text-sm font-bold">{b.studio}</p><p className="text-xs text-gray-400 mt-0.5">{b.cat} · {b.date}</p><p className="text-xs text-gray-400">{b.time}</p></div>
                     <span className={`text-[10px] px-2.5 py-1 rounded-full font-medium ${statusColor(b.status)}`}>{b.status}</span>
                   </div>
+                  {b.status === "예약 취소 중" && cancelReason && (
+                    <div className="bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-1.5 mb-2">
+                      <p className="text-[10px] text-amber-700 font-medium mb-0.5">취소 사유</p>
+                      <p className="text-[11px] text-gray-700">{cancelReason}</p>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center pt-2 border-t border-gray-100">
                     <span className="text-sm font-bold">{b.price}</span>
                     <div className="flex items-center gap-2">
-                      {bookingFilter === "예정" && (
+                      {bookingFilter === "예정" && b.status !== "예약 취소 중" && (
                         <button
-                          onClick={() => { if (confirm(`${b.studio} 예약을 취소 요청하시겠습니까?\n\n※ 취소 환불 기준이 적용됩니다\n• 7일 전: 전액 환불\n• 3~6일 전: 20% 환불\n• 1~2일 전: 50% 환불\n• 당일: 80% 환불`)) alert("취소 요청이 접수되었습니다. 업체 승인 후 환불됩니다."); }}
+                          onClick={() => { setCancelModal({ idx: i, studio: b.studio }); setCancelReasonInput(""); }}
                           className="text-xs text-red-500 bg-red-50 px-2.5 py-1 rounded-full font-medium">
                           예약 취소
                         </button>
+                      )}
+                      {bookingFilter === "예정" && b.status === "예약 취소 중" && (
+                        <span className="text-[10px] text-amber-600">업체 승인 대기 중</span>
                       )}
                       {bookingFilter === "완료" && (b as { canReview?: boolean }).canReview && (
                         <button onClick={() => { setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); navigate("reviewWrite"); }} className="text-xs text-primary font-medium">리뷰 작성 →</button>
@@ -1020,7 +1044,54 @@ export default function ConsumerApp() {
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
+            </div>
+          )}
+
+          {/* ===== CANCEL MODAL ===== */}
+          {cancelModal && (
+            <div className="absolute inset-0 z-50 flex items-end justify-center bg-black/40" onClick={() => setCancelModal(null)}>
+              <div onClick={(e) => e.stopPropagation()}
+                className="w-full bg-white rounded-t-2xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold">예약 취소</h3>
+                  <button onClick={() => setCancelModal(null)} className="text-gray-400">✕</button>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-3 mb-3">
+                  <p className="text-xs font-bold mb-1">{cancelModal.studio}</p>
+                  <p className="text-[10px] text-gray-500 leading-relaxed">
+                    취소 요청 후 업체 승인 시 환불 처리됩니다. 환불 기준:<br/>
+                    • 7일 전 전액 · 3~6일 전 80% · 1~2일 전 50% · 당일 20%
+                  </p>
+                </div>
+                <p className="text-xs font-medium mb-1.5">취소 사유</p>
+                <textarea
+                  value={cancelReasonInput}
+                  onChange={(e) => setCancelReasonInput(e.target.value)}
+                  placeholder="업체와 어드민이 확인합니다. 구체적으로 작성해주세요 (5자 이상)"
+                  rows={4}
+                  maxLength={200}
+                  className="w-full bg-gray-50 rounded-xl p-3 text-sm outline-none resize-none border border-gray-200 focus:border-primary"
+                />
+                <div className="flex items-center justify-end mb-3">
+                  <p className="text-[10px] text-gray-400">{cancelReasonInput.length}/200</p>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => setCancelModal(null)}
+                    className="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl text-sm font-medium">돌아가기</button>
+                  <button
+                    onClick={() => {
+                      setUpcomingBookings(prev => prev.map((bk, j) => j === cancelModal.idx ? { ...bk, status: "예약 취소 중", cancelReason: cancelReasonInput.trim() } : bk));
+                      setCancelModal(null);
+                      setCancelReasonInput("");
+                    }}
+                    disabled={cancelReasonInput.trim().length < 5}
+                    className={`flex-1 py-3 rounded-xl text-sm font-bold ${cancelReasonInput.trim().length >= 5 ? "bg-red-500 text-white" : "bg-gray-200 text-gray-400"}`}>
+                    취소 요청
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
