@@ -131,6 +131,9 @@ export default function BusinessApp() {
   const [customPriceMax, setCustomPriceMax] = useState("");
   const [activeKeyword, setActiveKeyword] = useState("인기");
   const [selectedCats, setSelectedCats] = useState<string[]>(["프로필", "바디프로필"]);
+  const [replyModal, setReplyModal] = useState<{ idx: number; author: string; text: string } | null>(null);
+  const [replyDraft, setReplyDraft] = useState("");
+  const [savedReplies, setSavedReplies] = useState<Record<number, string>>({});
   const [calDate, setCalDate] = useState(10);
   const [calMonth, setCalMonth] = useState(5); // 1~12
   const [calYear, setCalYear] = useState(2026);
@@ -1238,13 +1241,13 @@ export default function BusinessApp() {
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <Home size={20} strokeWidth={1.5} className="text-gray-700" />
                   <p className="text-sm font-medium mt-1">내 스튜디오 관리</p>
-                  <p className="text-[10px] text-gray-400">IA-060 · 등록/수정/삭제</p>
+                  <p className="text-[10px] text-gray-400">등록 · 수정 · 삭제</p>
                 </button>
                 <button onClick={() => { navigate("bookings"); }}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <Calendar size={20} strokeWidth={1.5} className="text-gray-700" />
                   <p className="text-sm font-medium mt-1">내 예약 달력</p>
-                  <p className="text-[10px] text-gray-400">IA-061 · 예약·수기 일정</p>
+                  <p className="text-[10px] text-gray-400">예약 · 수기 일정</p>
                 </button>
               </div>
               <div className="grid grid-cols-2 gap-2 mb-2">
@@ -1252,13 +1255,13 @@ export default function BusinessApp() {
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <Building2 size={20} strokeWidth={1.5} className="text-gray-700" />
                   <p className="text-sm font-medium mt-1">업체 기본정보</p>
-                  <p className="text-[10px] text-gray-400">IA-065 · 기본정보 수정</p>
+                  <p className="text-[10px] text-gray-400">기본정보 수정</p>
                 </button>
                 <button onClick={() => navigate("settlement")}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <DollarSign size={20} strokeWidth={1.5} className="text-gray-700" />
                   <p className="text-sm font-medium mt-1">정산 내역</p>
-                  <p className="text-[10px] text-gray-400">IA-064 · 월별 정산</p>
+                  <p className="text-[10px] text-gray-400">월별 정산</p>
                 </button>
               </div>
               <div className="grid grid-cols-1 gap-2 mb-4">
@@ -1266,7 +1269,7 @@ export default function BusinessApp() {
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <BarChart3 size={20} strokeWidth={1.5} className="text-gray-700" />
                   <p className="text-sm font-medium mt-1">실적 대시보드</p>
-                  <p className="text-[10px] text-gray-400">IA-063 · 월별 예약·매출</p>
+                  <p className="text-[10px] text-gray-400">월별 예약 · 매출</p>
                 </button>
               </div>
 
@@ -1349,28 +1352,78 @@ export default function BusinessApp() {
                 { author: "이**", rating: 4, text: "접근성이 좋고 시설이 깔끔해요", date: "2026.04.08", replied: false },
                 { author: "한**", rating: 5, text: "결과물 퀄리티가 정말 좋습니다. 재방문 예정!", date: "2026.03.28", replied: true, reply: "좋은 리뷰 감사합니다! 또 뵙겠습니다." },
                 { author: "박**", rating: 3, text: "가격 대비 보통이었어요", date: "2026.03.20", replied: false },
-              ].map((r, i) => (
-                <div key={i} className="bg-gray-50 rounded-xl p-4 mb-3">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <span className="text-xs font-medium">{r.author}</span>
-                      <span className="text-xs text-yellow-500 ml-2">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
+              ].map((r, i) => {
+                const savedReply = savedReplies[i];
+                const hasReply = (r.replied && r.reply) || !!savedReply;
+                const replyText = savedReply ?? r.reply;
+                return (
+                  <div key={i} className="bg-gray-50 rounded-xl p-4 mb-3">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <span className="text-xs font-medium">{r.author}</span>
+                        <span className="text-xs text-yellow-500 ml-2">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
+                      </div>
+                      <span className="text-[10px] text-gray-400">{r.date}</span>
                     </div>
-                    <span className="text-[10px] text-gray-400">{r.date}</span>
+                    <p className="text-xs text-gray-600 mb-2">{r.text}</p>
+                    {hasReply ? (
+                      <div className="bg-white rounded-lg p-2.5 border border-gray-100">
+                        <p className="text-[10px] text-primary font-medium mb-1">업체 답변</p>
+                        <p className="text-xs text-gray-600">{replyText}</p>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => { setReplyModal({ idx: i, author: r.author, text: r.text }); setReplyDraft(""); }}
+                        className="w-full bg-white border border-gray-200 rounded-lg py-2 text-xs text-gray-500 hover:border-primary hover:text-primary transition-all">
+                        답글 작성 (1주 이내)
+                      </button>
+                    )}
                   </div>
-                  <p className="text-xs text-gray-600 mb-2">{r.text}</p>
-                  {r.replied && r.reply ? (
-                    <div className="bg-white rounded-lg p-2.5 border border-gray-100">
-                      <p className="text-[10px] text-primary font-medium mb-1">업체 답변</p>
-                      <p className="text-xs text-gray-600">{r.reply}</p>
-                    </div>
-                  ) : (
-                    <button className="w-full bg-white border border-gray-200 rounded-lg py-2 text-xs text-gray-500 hover:border-primary hover:text-primary transition-all">
-                      답글 작성 (1주 이내)
-                    </button>
-                  )}
+                );
+              })}
+            </div>
+          )}
+
+          {/* ===== REPLY MODAL ===== */}
+          {replyModal && (
+            <div className="absolute inset-0 z-50 flex items-end justify-center bg-black/40" onClick={() => setReplyModal(null)}>
+              <div onClick={(e) => e.stopPropagation()}
+                className="w-full bg-white rounded-t-2xl p-4 animate-in slide-in-from-bottom duration-200">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold">답글 작성</h3>
+                  <button onClick={() => setReplyModal(null)} className="text-gray-400"><X size={18} /></button>
                 </div>
-              ))}
+                <div className="bg-gray-50 rounded-xl p-3 mb-3">
+                  <p className="text-[10px] text-gray-400 mb-1">{replyModal.author}의 리뷰</p>
+                  <p className="text-xs text-gray-600">{replyModal.text}</p>
+                </div>
+                <textarea
+                  value={replyDraft}
+                  onChange={(e) => setReplyDraft(e.target.value)}
+                  placeholder="리뷰에 대한 답글을 작성해주세요 (10자 이상)"
+                  maxLength={300}
+                  rows={4}
+                  className="w-full bg-gray-50 rounded-xl p-3 text-sm outline-none resize-none border border-gray-200 focus:border-primary mb-2"
+                />
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[10px] text-gray-400">작성 후 30일 이내 수정 가능</p>
+                  <p className="text-[10px] text-gray-400">{replyDraft.length}/300</p>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => setReplyModal(null)}
+                    className="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl text-sm font-medium">취소</button>
+                  <button
+                    onClick={() => {
+                      setSavedReplies({ ...savedReplies, [replyModal.idx]: replyDraft });
+                      setReplyModal(null);
+                      setReplyDraft("");
+                    }}
+                    disabled={replyDraft.trim().length < 10}
+                    className={`flex-1 py-3 rounded-xl text-sm font-bold ${replyDraft.trim().length >= 10 ? "bg-primary text-white" : "bg-gray-200 text-gray-400"}`}>
+                    등록
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 

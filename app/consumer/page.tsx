@@ -177,6 +177,8 @@ export default function ConsumerApp() {
   const [myBookingPage, setMyBookingPage] = useState(0);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [userName, setUserName] = useState("김포토");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const profileInputRef = useRef<HTMLInputElement>(null);
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
   const [categoryCat, setCategoryCat] = useState("프로필");
   const [selectedRegion, setSelectedRegion] = useState("전체");
@@ -895,10 +897,19 @@ export default function ConsumerApp() {
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-gray-100">
                     <span className="text-sm font-bold">{b.price}</span>
-                    {bookingFilter === "완료" && (b as { canReview?: boolean }).canReview && (
-                      <button onClick={() => { setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); navigate("reviewWrite"); }} className="text-xs text-primary font-medium">리뷰 작성 →</button>
-                    )}
-                    {bookingFilter === "취소" && <span className="text-[10px] text-gray-400">{(b as { reason?: string }).reason}</span>}
+                    <div className="flex items-center gap-2">
+                      {bookingFilter === "예정" && (
+                        <button
+                          onClick={() => { if (confirm(`${b.studio} 예약을 취소 요청하시겠습니까?\n\n※ 취소 환불 기준이 적용됩니다\n• 7일 전: 전액 환불\n• 3~6일 전: 20% 환불\n• 1~2일 전: 50% 환불\n• 당일: 80% 환불`)) alert("취소 요청이 접수되었습니다. 업체 승인 후 환불됩니다."); }}
+                          className="text-xs text-red-500 bg-red-50 px-2.5 py-1 rounded-full font-medium">
+                          예약 취소
+                        </button>
+                      )}
+                      {bookingFilter === "완료" && (b as { canReview?: boolean }).canReview && (
+                        <button onClick={() => { setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); navigate("reviewWrite"); }} className="text-xs text-primary font-medium">리뷰 작성 →</button>
+                      )}
+                      {bookingFilter === "취소" && <span className="text-[10px] text-gray-400">{(b as { reason?: string }).reason}</span>}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -912,15 +923,14 @@ export default function ConsumerApp() {
               <div className="bg-gray-50 rounded-xl p-4 mb-6"><p className="text-sm font-bold">{reviewTarget}</p></div>
               <div className="mb-6">
                 <p className="text-sm font-medium mb-3">별점</p>
-                <div className="flex gap-2 justify-center">{[1,2,3,4,5].map(star => <button key={star} onClick={() => setReviewRating(star)} className="text-3xl">{star <= reviewRating ? "★" : "☆"}</button>)}</div>
+                <div className="flex gap-2 justify-center">{[1,2,3,4,5].map(star => <button key={star} onClick={() => setReviewRating(star)} className={`text-3xl ${star <= reviewRating ? "text-yellow-400" : "text-gray-300"}`}>{star <= reviewRating ? "★" : "☆"}</button>)}</div>
                 <p className="text-center text-xs text-gray-400 mt-2">{reviewRating}점</p>
               </div>
               <div className="mb-6">
                 <p className="text-sm font-medium mb-2">리뷰 내용</p>
                 <textarea value={reviewText} onChange={e => setReviewText(e.target.value)} maxLength={300} placeholder="촬영 경험을 30자 이상 작성해주세요" className="w-full bg-gray-50 rounded-xl p-4 text-sm outline-none resize-none border border-gray-200 focus:border-primary" rows={5} />
-                <div className="mt-1 flex items-center justify-between gap-3">
-                  <p className="text-[10px] text-gray-400">완료 후 2주 이내 작성 · 작성 후 3일 이내 수정 · 삭제는 요청 후 승인</p>
-                  <p className="text-[10px] text-gray-400 shrink-0">{reviewText.length}/300</p>
+                <div className="mt-1 flex items-center justify-end">
+                  <p className="text-[10px] text-gray-400">{reviewText.length}/300</p>
                 </div>
               </div>
               <button onClick={() => { setScreen("myBookings"); setTab("mypage"); }} disabled={reviewText.trim().length < 30} className={`w-full py-3.5 rounded-xl font-bold text-sm ${reviewText.trim().length >= 30 ? "bg-primary text-white" : "bg-gray-200 text-gray-400"}`}>리뷰 등록</button>
@@ -951,7 +961,7 @@ export default function ConsumerApp() {
               <div className="bg-gray-50 rounded-xl p-4 mb-6"><p className="text-sm font-bold">{MY_REVIEWS_DATA[editingReviewIdx].studio}</p><p className="text-xs text-gray-400 mt-0.5">{MY_REVIEWS_DATA[editingReviewIdx].date}</p></div>
               <div className="mb-6">
                 <p className="text-sm font-medium mb-3">별점</p>
-                <div className="flex gap-2 justify-center">{[1,2,3,4,5].map(star => <button key={star} onClick={() => setEditReviewRating(star)} className="text-3xl">{star <= editReviewRating ? "★" : "☆"}</button>)}</div>
+                <div className="flex gap-2 justify-center">{[1,2,3,4,5].map(star => <button key={star} onClick={() => setEditReviewRating(star)} className={`text-3xl ${star <= editReviewRating ? "text-yellow-400" : "text-gray-300"}`}>{star <= editReviewRating ? "★" : "☆"}</button>)}</div>
                 <p className="text-center text-xs text-gray-400 mt-2">{editReviewRating}점</p>
               </div>
               <div className="mb-6">
@@ -988,8 +998,31 @@ export default function ConsumerApp() {
               {/* 프로필 편집 */}
               <div className="flex items-center gap-3 mb-6">
                 <div className="relative">
-                  <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-primary"><User size={26} strokeWidth={1.5} /></div>
-                  <button onClick={() => setIsEditingProfile(true)} className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center text-white shadow"><Camera size={11} strokeWidth={2} /></button>
+                  <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-primary overflow-hidden">
+                    {profileImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={profileImage} alt="프로필" className="w-full h-full object-cover" />
+                    ) : (
+                      <User size={26} strokeWidth={1.5} />
+                    )}
+                  </div>
+                  <input
+                    ref={profileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = (ev) => setProfileImage(ev.target?.result as string);
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                  <button onClick={() => profileInputRef.current?.click()}
+                    className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center text-white shadow">
+                    <Camera size={11} strokeWidth={2} />
+                  </button>
                 </div>
                 <div className="flex-1">
                   {isEditingProfile ? (
