@@ -1055,7 +1055,7 @@ export default function BusinessApp() {
 
                 {/* 예약 가능 기간 (업체별 설정) */}
                 <div className="bg-gray-50 rounded-xl p-3">
-                  <p className="text-xs font-medium text-gray-700 mb-2">예약 가능 기간 (소비자가 며칠 전까지 예약 가능?)</p>
+                  <p className="text-xs font-medium text-gray-700 mb-2">고객 예약 가능 기간</p>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <p className="text-[10px] text-gray-500 mb-0.5">최소 예약</p>
@@ -1078,7 +1078,6 @@ export default function BusinessApp() {
                       </select>
                     </div>
                   </div>
-                  <p className="text-[10px] text-gray-400 mt-1.5">킥오프: 소비자 측 기본은 &apos;무제한&apos;, 업체가 좁히려면 위에서 조정</p>
                 </div>
 
                 <button onClick={() => setRegistered(true)}
