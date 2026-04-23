@@ -135,8 +135,8 @@ export default function BusinessApp() {
   // 한 업체 계정에 스튜디오 여러 개 가능, 각 스튜디오 = 단일 카테고리
   type MyStudio = { id: string; name: string; category: string; address: string; intro: string; photoCount: number; tags: string[] };
   const [myStudios, setMyStudios] = useState<MyStudio[]>([
-    { id: "s-1", name: "루미에르 스튜디오", category: "프로필", address: "서울시 강남구 역삼동 123-4", intro: "서울 강남에 위치한 프로필 전문 스튜디오. 자연광·경력 10년 작가진.", photoCount: 6, tags: ["자연광", "임직원", "이력서"] },
-    { id: "s-2", name: "루미에르 비즈컷", category: "비즈니스", address: "서울시 강남구 역삼동 123-4 별관", intro: "임직원·대표 프로필 전용 스튜디오. 팀 촬영 공간 별도.", photoCount: 4, tags: ["임직원", "대표프로필", "강남"] },
+    { id: "s-1", name: "루미에르 스튜디오", category: "프로필", address: "서울시 강남구 역삼동 123-4", intro: "서울 강남에 위치한 프로필 전문 스튜디오. 자연광·경력 10년 작가진.", photoCount: 6, tags: ["증명사진", "취업프로필", "이력서"] },
+    { id: "s-2", name: "루미에르 비즈컷", category: "비즈니스", address: "서울시 강남구 역삼동 123-4 별관", intro: "임직원·대표 프로필 전용 스튜디오. 팀 촬영 공간 별도.", photoCount: 4, tags: ["사내프로필", "대표프로필", "단체촬영"] },
   ]);
   const [editingStudioId, setEditingStudioId] = useState<string | null>(null); // null = 새 등록
   const [selectedCat, setSelectedCat] = useState<string>("프로필");
@@ -994,29 +994,43 @@ export default function BusinessApp() {
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs text-gray-500 font-medium">해시태그 (3개)</label>
+                    <label className="text-xs text-gray-500 font-medium">상세 카테고리 해시태그 (3개)</label>
                     <span className="text-[10px] text-gray-400">소비자 카드·상세에 #형식으로 노출</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
-                    {[0, 1, 2].map(i => (
-                      <div key={i} className="flex items-center bg-gray-50 rounded-xl px-3 py-2.5 border border-gray-100 focus-within:border-primary">
-                        <span className="text-sm text-gray-400 mr-1">#</span>
-                        <input
-                          type="text"
-                          value={studioTagInputs[i]}
-                          onChange={e => {
-                            const next: [string, string, string] = [...studioTagInputs] as [string, string, string];
-                            next[i] = e.target.value.replace(/[\s#]/g, "");
-                            setStudioTagInputs(next);
-                          }}
-                          maxLength={10}
-                          placeholder={["자연광", "임직원", "이력서"][i]}
-                          className="flex-1 min-w-0 bg-transparent text-sm outline-none"
-                        />
-                      </div>
-                    ))}
+                    {(() => {
+                      // 대분류에 맞춘 상세 카테고리 예시 (placeholder 자동 전환)
+                      const SUBCAT_HINTS: Record<string, [string, string, string]> = {
+                        "프로필": ["증명사진", "취업프로필", "이력서"],
+                        "바디프로필": ["일반바디", "피트니스", "커플바디"],
+                        "웨딩": ["본식스냅", "야외웨딩", "리마인드"],
+                        "가족": ["3대가족", "돌잔치", "가족나들이"],
+                        "반려동물": ["강아지", "고양이", "반려가족"],
+                        "비즈니스": ["사내프로필", "단체촬영", "음식"],
+                        "커플": ["기념일", "데이트스냅", "프리웨딩"],
+                        "아기": ["신생아", "100일", "돌"],
+                      };
+                      const hints = SUBCAT_HINTS[selectedCat] ?? ["태그1", "태그2", "태그3"];
+                      return [0, 1, 2].map(i => (
+                        <div key={i} className="flex items-center bg-gray-50 rounded-xl px-3 py-2.5 border border-gray-100 focus-within:border-primary">
+                          <span className="text-sm text-gray-400 mr-1">#</span>
+                          <input
+                            type="text"
+                            value={studioTagInputs[i]}
+                            onChange={e => {
+                              const next: [string, string, string] = [...studioTagInputs] as [string, string, string];
+                              next[i] = e.target.value.replace(/[\s#]/g, "");
+                              setStudioTagInputs(next);
+                            }}
+                            maxLength={10}
+                            placeholder={hints[i]}
+                            className="flex-1 min-w-0 bg-transparent text-sm outline-none"
+                          />
+                        </div>
+                      ));
+                    })()}
                   </div>
-                  <p className="text-[10px] text-gray-400 mt-1">※ 태그 1개당 최대 10자, 공백·# 없이 입력</p>
+                  <p className="text-[10px] text-gray-400 mt-1">※ 대분류({selectedCat}) 안의 상세 카테고리로 입력하세요. 예: {({ "프로필": "증명사진·취업프로필·이력서", "바디프로필": "일반바디·피트니스·커플바디", "웨딩": "본식스냅·야외웨딩·리마인드", "가족": "3대가족·돌잔치·가족나들이", "반려동물": "강아지·고양이·반려가족", "비즈니스": "사내프로필·단체촬영·음식", "커플": "기념일·데이트스냅·프리웨딩", "아기": "신생아·100일·돌" } as Record<string, string>)[selectedCat] ?? "자유 입력"}</p>
                 </div>
 
                 <div>
