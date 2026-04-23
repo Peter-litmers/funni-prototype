@@ -19,11 +19,13 @@ import {
   useReviewDeleteRequests,
   useBookingActions,
   useRefundMatrix,
+  useCategoryIcons,
   REFUND_PERIOD_LABELS,
   type RefundPeriod,
   type AdEntry,
   type BannerEntry,
 } from "../lib/admin-store";
+import { ICON_OPTIONS, DEFAULT_CAT_ICON_KEY, getIconByKey } from "../lib/category-icons";
 import { POLICY_CATALOG, formatTimestamp } from "../lib/policy-catalog";
 
 function PolicyBadge({ label }: { label: string }) {
@@ -80,6 +82,8 @@ export default function AdminWeb() {
   const [deleteRequests, decideDeleteRequest] = useReviewDeleteRequests();
   const [bookingActions, updateBookingAction] = useBookingActions();
   const [refundMatrix, setRefundMatrix] = useRefundMatrix();
+  const [categoryIcons, setCategoryIcons] = useCategoryIcons();
+  const [iconPickerFor, setIconPickerFor] = useState<string | null>(null);
 
   const [adModal, setAdModal] = useState<AdEntry | null>(null);
   const [adModalMode, setAdModalMode] = useState<"create" | "edit">("edit");
@@ -979,27 +983,81 @@ export default function AdminWeb() {
                   <h3 className="text-sm font-bold">종류별 카테고리</h3>
                   <button onClick={addCategory} className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-medium">+ 추가</button>
                 </div>
-                {categories.map((c, i) => (
-                  <div key={`${c}-${i}`} className="flex items-center justify-between py-2 border-b border-gray-50">
-                    <div className="flex items-center gap-3 flex-1">
-                      <span className="text-xs text-gray-400 w-5">{i + 1}</span>
-                      <input
-                        type="text"
-                        value={c}
-                        onChange={(e) => updateCategory(i, e.target.value)}
-                        className="text-sm bg-transparent outline-none border-b border-transparent focus:border-primary flex-1"
-                      />
+                {categories.map((c, i) => {
+                  const currentKey = categoryIcons[c] ?? DEFAULT_CAT_ICON_KEY[c] ?? "image";
+                  const CurrentIcon = getIconByKey(currentKey);
+                  const isOpen = iconPickerFor === c;
+                  return (
+                  <div key={`${c}-${i}`} className="border-b border-gray-50 py-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 flex-1">
+                        <span className="text-xs text-gray-400 w-5">{i + 1}</span>
+                        <button
+                          onClick={() => setIconPickerFor(isOpen ? null : c)}
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all ${isOpen ? "border-primary bg-primary/10 text-primary" : "border-gray-200 bg-gray-50 text-gray-600 hover:border-primary"}`}
+                          title="아이콘 변경"
+                        >
+                          <CurrentIcon size={16} strokeWidth={1.5} />
+                        </button>
+                        <input
+                          type="text"
+                          value={c}
+                          onChange={(e) => updateCategory(i, e.target.value)}
+                          className="text-sm bg-transparent outline-none border-b border-transparent focus:border-primary flex-1"
+                        />
+                      </div>
+                      <div className="flex gap-1">
+                        <button onClick={() => moveCategory(i, -1)} disabled={i === 0}
+                          className="text-[10px] text-gray-400 px-2 py-1 disabled:opacity-30">▲</button>
+                        <button onClick={() => moveCategory(i, 1)} disabled={i === categories.length - 1}
+                          className="text-[10px] text-gray-400 px-2 py-1 disabled:opacity-30">▼</button>
+                        <button onClick={() => removeCategory(i)}
+                          className="text-[10px] text-red-400 px-2 py-1">삭제</button>
+                      </div>
                     </div>
-                    <div className="flex gap-1">
-                      <button onClick={() => moveCategory(i, -1)} disabled={i === 0}
-                        className="text-[10px] text-gray-400 px-2 py-1 disabled:opacity-30">▲</button>
-                      <button onClick={() => moveCategory(i, 1)} disabled={i === categories.length - 1}
-                        className="text-[10px] text-gray-400 px-2 py-1 disabled:opacity-30">▼</button>
-                      <button onClick={() => removeCategory(i)}
-                        className="text-[10px] text-red-400 px-2 py-1">삭제</button>
-                    </div>
+                    {isOpen && (
+                      <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-[11px] text-gray-500 font-medium">아이콘 선택 — &lsquo;{c}&rsquo;</p>
+                          <button onClick={() => setIconPickerFor(null)} className="text-[10px] text-gray-400">닫기</button>
+                        </div>
+                        <div className="grid grid-cols-8 gap-1.5">
+                          {ICON_OPTIONS.map(opt => {
+                            const OptIcon = opt.Icon;
+                            const active = currentKey === opt.key;
+                            return (
+                              <button
+                                key={opt.key}
+                                onClick={() => {
+                                  setCategoryIcons({ ...categoryIcons, [c]: opt.key });
+                                  setIconPickerFor(null);
+                                }}
+                                title={opt.label}
+                                className={`aspect-square rounded-lg flex items-center justify-center border transition-all ${active ? "border-primary bg-primary/10 text-primary" : "border-gray-200 bg-white text-gray-500 hover:border-primary hover:text-primary"}`}
+                              >
+                                <OptIcon size={16} strokeWidth={1.5} />
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {categoryIcons[c] && (
+                          <button
+                            onClick={() => {
+                              const next = { ...categoryIcons };
+                              delete next[c];
+                              setCategoryIcons(next);
+                              setIconPickerFor(null);
+                            }}
+                            className="text-[10px] text-gray-400 mt-2 hover:text-red-400"
+                          >
+                            기본값으로 되돌리기
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
-                ))}
+                  );
+                })}
                 {categories.length === 0 && (
                   <p className="text-xs text-gray-400 text-center py-6">카테고리가 없습니다. + 추가 버튼을 눌러 생성하세요.</p>
                 )}

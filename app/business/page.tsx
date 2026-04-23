@@ -3,24 +3,11 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Camera, Dumbbell, Heart, Cake, PawPrint, Briefcase, Baby, Sparkles,
-  Home, LayoutGrid, User, Bell, Phone, Calendar, MapPin, Search, SlidersHorizontal,
-  DollarSign, BarChart3, Building2, ImageIcon, X, Star, Tag, Check, ChevronDown,
-  type LucideIcon
+  Camera, Home, LayoutGrid, User, Bell, Phone, Calendar, MapPin, Search, SlidersHorizontal,
+  DollarSign, BarChart3, Building2, ImageIcon, X, Star, Check, ChevronDown,
 } from "lucide-react";
-import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness, useHomeKeywords, matchesKeyword, type HomeKeyword } from "../lib/admin-store";
-
-const CATEGORY_ICONS: Record<string, LucideIcon> = {
-  "프로필": Camera,
-  "바디프로필": Dumbbell,
-  "웨딩": Sparkles,
-  "가족": Cake,
-  "반려동물": PawPrint,
-  "비즈니스": Briefcase,
-  "커플": Heart,
-  "아기": Baby,
-};
-const getCatIcon = (name: string): LucideIcon => CATEGORY_ICONS[name] ?? Tag;
+import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness, useHomeKeywords, matchesKeyword, useCategoryIcons, type HomeKeyword } from "../lib/admin-store";
+import { resolveCatIcon } from "../lib/category-icons";
 
 function BrandMark() {
   return (
@@ -57,16 +44,6 @@ const HOME_AD_PAGES = [
   ],
 ];
 
-const HOME_CATEGORY_GRID = [
-  { name: "프로필", Icon: Camera },
-  { name: "바디프로필", Icon: Dumbbell },
-  { name: "웨딩", Icon: Sparkles },
-  { name: "가족", Icon: Cake },
-  { name: "반려동물", Icon: PawPrint },
-  { name: "비즈니스", Icon: Briefcase },
-  { name: "커플", Icon: Heart },
-  { name: "아기", Icon: Baby },
-];
 
 const STUDIOS = [
   { id: 1, name: "루미에르 스튜디오", cat: "프로필", desc: "프로필촬영, 임직원 프로필, 이력서사진", area: "서울 강남구", price: "50,000", rating: 4.8, reviews: 124, phone: "02-1234-5678", travelAvailable: true, paymentCount: 302, distanceKm: 1.2 },
@@ -118,7 +95,10 @@ export default function BusinessApp() {
   const [adminCategories] = useCategories();
   const [feeRate] = useFeeRate();
   const [bizFees] = useBusinessFees();
+  const [categoryIcons] = useCategoryIcons();
+  const getCatIcon = (name: string) => resolveCatIcon(name, categoryIcons);
   const CATEGORIES = [{ name: "전체", Icon: LayoutGrid }, ...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }))];
+  const HOME_CATEGORY_GRID = adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }));
   const [homeKeywords] = useHomeKeywords();
   const myFee = getFeeForBusiness("루미에르 스튜디오", feeRate, bizFees);
   const [screen, setScreen] = useState<Screen>("home");
@@ -195,6 +175,7 @@ export default function BusinessApp() {
   const [categoryCat, setCategoryCat] = useState("프로필");
   const historyStack = useRef<{ s: Screen; t: Tab }[]>([]);
   const touchStartX = useRef(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const navigate = (to: Screen) => {
     historyStack.current.push({ s: screen, t: tab });
@@ -237,6 +218,11 @@ export default function BusinessApp() {
       setActiveKeyword(homeKeywords[0].label);
     }
   }, [homeKeywords, activeKeyword]);
+
+  // 화면 전환 시 내부 스크롤 최상단으로
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [screen, selectedStudio]);
 
   // 홈 추천 검색어 칩 클릭 → 카테고리 탭으로 전환하며 필터 적용
   const applyHomeKeyword = (label: string) => {
@@ -413,7 +399,7 @@ export default function BusinessApp() {
           </div>
         )}
 
-        <div className="overflow-y-auto bg-white" style={{ height: screen === "login" ? "780px" : "calc(780px - 61px - 56px)" }}>
+        <div ref={scrollRef} className="overflow-y-auto bg-white" style={{ height: screen === "login" ? "780px" : "calc(780px - 61px - 56px)" }}>
 
           {/* ===== HOME (IA-010: 소비자와 동일한 스튜디오 탐색) ===== */}
           {screen === "home" && (
@@ -597,7 +583,7 @@ export default function BusinessApp() {
                           )}
                         </div>
                         <div className="mt-auto flex items-center justify-between pt-2 text-[11px] text-gray-500">
-                          <span>결제 {studio.paymentCount}건</span>
+                          <span>예약 {studio.paymentCount}건</span>
                           <span className="text-yellow-500">★ {studio.rating}</span>
                         </div>
                       </div>
@@ -609,11 +595,11 @@ export default function BusinessApp() {
               <div className="mt-6 px-4">
                 {(() => {
                   const sortItems = [
-                    { key: "payments" as Sort, label: "결제순" },
+                    { key: "payments" as Sort, label: "예약순" },
                     { key: "rating" as Sort, label: "평점순" },
                     { key: "distance" as Sort, label: "거리순" },
                   ];
-                  const currentLabel = sortItems.find(i => i.key === sort)?.label ?? "결제순";
+                  const currentLabel = sortItems.find(i => i.key === sort)?.label ?? "예약순";
                   return (
                     <div className="relative">
                       <button
@@ -706,7 +692,7 @@ export default function BusinessApp() {
                         <span className="text-xs text-yellow-500">★ {s.rating}</span>
                         <span className="text-xs text-gray-400">({s.reviews})</span>
                         <span className="text-xs text-gray-300">|</span>
-                        <span className="text-xs text-gray-400">결제 {s.paymentCount}건</span>
+                        <span className="text-xs text-gray-400">예약 {s.paymentCount}건</span>
                         <span className="text-xs text-gray-300">|</span>
                         <span className="text-xs text-gray-400">{s.distanceKm.toFixed(1)}km</span>
                       </div>

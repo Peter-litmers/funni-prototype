@@ -59,6 +59,7 @@ const K_REVIEW_HIDDEN = "photopot.reviewHidden";
 const K_REVIEW_DELETE_REQUESTS = "photopot.reviewDeleteRequests";
 const K_BOOKING_ACTIONS = "photopot.bookingActions";
 const K_REFUND_MATRIX = "photopot.refundMatrix";
+const K_CATEGORY_ICONS = "photopot.categoryIcons";
 
 const CHANGE_EVENT = "photopot-admin-store-change";
 
@@ -421,6 +422,25 @@ export function useBookingActions(): [
     writeStored(K_BOOKING_ACTIONS, merged);
   };
   return [value, update];
+}
+
+// ===== 카테고리별 아이콘 오버라이드 =====
+function sanitizeCategoryIcons(input: unknown): Record<string, string> {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return {};
+  const result: Record<string, string> = {};
+  for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+    if (typeof k === "string" && typeof v === "string") result[k] = v;
+  }
+  return result;
+}
+
+export function useCategoryIcons(): [Record<string, string>, (next: Record<string, string>) => void] {
+  const value = useStored<Record<string, string>>(
+    K_CATEGORY_ICONS,
+    {},
+    (raw) => (raw === undefined ? {} : sanitizeCategoryIcons(raw)),
+  );
+  return [value, (next) => writeStored(K_CATEGORY_ICONS, sanitizeCategoryIcons(next))];
 }
 
 // ===== 카테고리별 환불율 매트릭스 =====

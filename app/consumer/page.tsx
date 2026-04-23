@@ -3,24 +3,11 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Camera, Dumbbell, Heart, Cake, PawPrint, Briefcase, Baby, Sparkles,
-  Home, LayoutGrid, User, Bell, Phone, MapPin, Star, Pencil, Check,
-  CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal, Tag, ChevronDown,
-  type LucideIcon
+  Camera, Home, LayoutGrid, User, Bell, Phone, MapPin, Star, Pencil, Check,
+  CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal, ChevronDown,
 } from "lucide-react";
-import { useCategories, useHomeKeywords, matchesKeyword, useAds, useRefundMatrix, pickRefundRate, REFUND_PERIOD_LABELS, type HomeKeyword } from "../lib/admin-store";
-
-const CATEGORY_ICONS: Record<string, LucideIcon> = {
-  "프로필": Camera,
-  "바디프로필": Dumbbell,
-  "웨딩": Sparkles,
-  "가족": Cake,
-  "반려동물": PawPrint,
-  "비즈니스": Briefcase,
-  "커플": Heart,
-  "아기": Baby,
-};
-const getCatIcon = (name: string): LucideIcon => CATEGORY_ICONS[name] ?? Tag;
+import { useCategories, useHomeKeywords, matchesKeyword, useAds, useRefundMatrix, pickRefundRate, REFUND_PERIOD_LABELS, useCategoryIcons, type HomeKeyword } from "../lib/admin-store";
+import { resolveCatIcon } from "../lib/category-icons";
 
 function BrandMark() {
   return (
@@ -697,6 +684,8 @@ export default function ConsumerApp() {
   const [homeKeywords] = useHomeKeywords();
   const [ads] = useAds();
   const [refundMatrix] = useRefundMatrix();
+  const [categoryIcons] = useCategoryIcons();
+  const getCatIcon = (name: string) => resolveCatIcon(name, categoryIcons);
   const CATEGORIES = [{ name: "전체", Icon: LayoutGrid }, ...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }))];
   const HOME_CATEGORY_GRID = adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }));
   const [screen, setScreen] = useState<Screen>("home");
@@ -740,6 +729,8 @@ export default function ConsumerApp() {
 
   const touchStartX = useRef(0);
   const historyStack = useRef<{ s: Screen; t: Tab }[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [introExpanded, setIntroExpanded] = useState(false);
 
   useEffect(() => {
     if (screen !== "home") return;
@@ -748,6 +739,12 @@ export default function ConsumerApp() {
     }, 4000);
     return () => window.clearInterval(timer);
   }, [screen]);
+
+  // 화면 전환 시 내부 스크롤 최상단으로 (특히 상세 진입)
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+    if (screen === "detail") setIntroExpanded(false);
+  }, [screen, selectedStudio]);
 
   // 어드민에서 키워드가 변경/삭제된 경우 현재 선택값을 안전하게 리셋
   useEffect(() => {
@@ -914,7 +911,7 @@ export default function ConsumerApp() {
           </div>
         )}
 
-        <div className="overflow-y-auto bg-white" style={{ height: showHeader ? "calc(780px - 64px - 56px)" : "calc(780px - 56px)" }}>
+        <div ref={scrollRef} className="overflow-y-auto bg-white" style={{ height: showHeader ? "calc(780px - 64px - 56px)" : "calc(780px - 56px)" }}>
 
           {/* ===== HOME (IA-010) ===== */}
           {screen === "home" && (
@@ -1112,7 +1109,7 @@ export default function ConsumerApp() {
                           </div>
                         )}
                         <div className="mt-auto flex items-center justify-between pt-2 text-[11px] text-gray-500">
-                          <span>결제 {studio.paymentCount}건</span>
+                          <span>예약 {studio.paymentCount}건</span>
                           <span className="text-yellow-500">★ {studio.rating}</span>
                         </div>
                       </div>
@@ -1168,11 +1165,11 @@ export default function ConsumerApp() {
               <div className="mb-3">
                 {(() => {
                   const sortItems = [
-                    { key: "payments" as Sort, label: "결제순" },
+                    { key: "payments" as Sort, label: "예약순" },
                     { key: "rating" as Sort, label: "평점순" },
                     { key: "distance" as Sort, label: "거리순" },
                   ];
-                  const currentLabel = sortItems.find(i => i.key === sort)?.label ?? "결제순";
+                  const currentLabel = sortItems.find(i => i.key === sort)?.label ?? "예약순";
                   return (
                     <div className="relative">
                       <button
@@ -1270,9 +1267,27 @@ export default function ConsumerApp() {
                 {/* 스튜디오 소개 */}
                 <div className="bg-gray-50 rounded-xl p-4 mb-4">
                   <p className="text-xs text-gray-500 mb-2 font-medium">스튜디오 소개</p>
-                  {selectedStudio.intro ? (
-                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{selectedStudio.intro}</p>
-                  ) : (
+                  {selectedStudio.intro ? (() => {
+                    const full = selectedStudio.intro;
+                    const firstBreak = full.indexOf("\n\n");
+                    const preview = firstBreak > 0 && firstBreak < 400 ? full.slice(0, firstBreak) : full.slice(0, 200);
+                    const isLong = full.length > preview.length;
+                    return (
+                      <>
+                        <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                          {introExpanded || !isLong ? full : `${preview}…`}
+                        </p>
+                        {isLong && (
+                          <button
+                            onClick={() => setIntroExpanded(v => !v)}
+                            className="mt-2 text-xs text-primary font-medium hover:underline"
+                          >
+                            {introExpanded ? "접기 ▲" : "전체 보기 ▼"}
+                          </button>
+                        )}
+                      </>
+                    );
+                  })() : (
                     <p className="text-sm text-gray-700 leading-relaxed">{selectedStudio.desc}. {selectedStudio.area}에 위치한 {selectedStudio.cat} 전문 스튜디오입니다. 편안한 분위기에서 최고의 결과물을 제공해드려요.</p>
                   )}
                   {selectedStudio.tags.length > 0 && (
