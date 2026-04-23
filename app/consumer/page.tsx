@@ -1550,8 +1550,13 @@ export default function ConsumerApp() {
               )}
               {filteredBookings.length === 0 ? <div className="text-center py-12"><p className="text-gray-400 text-sm">해당 예약이 없습니다</p></div> : filteredBookings.map((b, i) => {
                 const cancelReason = (b as UpcomingBooking).cancelReason;
+                const linkedStudio = STUDIOS.find(s => s.name === b.studio);
                 return (
-                <div key={i} className={`bg-gray-50 rounded-xl p-4 mb-3 ${bookingFilter === "취소" ? "opacity-60" : ""}`}>
+                <div
+                  key={i}
+                  onClick={() => { if (linkedStudio) openDetail(linkedStudio); }}
+                  className={`bg-gray-50 rounded-xl p-4 mb-3 transition-all ${bookingFilter === "취소" ? "opacity-60" : ""} ${linkedStudio ? "cursor-pointer hover:bg-gray-100" : ""}`}
+                >
                   <div className="flex justify-between items-start mb-2">
                     <div><p className="text-sm font-bold">{b.studio}</p><p className="text-xs text-gray-400 mt-0.5">{b.cat} · {b.date}</p><p className="text-xs text-gray-400">{b.time}</p></div>
                     <span className={`text-[10px] px-2.5 py-1 rounded-full font-medium ${statusColor(b.status)}`}>{b.status}</span>
@@ -1567,7 +1572,7 @@ export default function ConsumerApp() {
                     <div className="flex items-center gap-2">
                       {bookingFilter === "예정" && b.status !== "예약 취소 중" && (
                         <button
-                          onClick={() => { setCancelModal({ idx: i, studio: b.studio }); setCancelReasonInput(""); }}
+                          onClick={(e) => { e.stopPropagation(); setCancelModal({ idx: i, studio: b.studio }); setCancelReasonInput(""); }}
                           className="text-xs text-red-500 bg-red-50 px-2.5 py-1 rounded-full font-medium">
                           예약 취소
                         </button>
@@ -1576,7 +1581,7 @@ export default function ConsumerApp() {
                         <span className="text-[10px] text-amber-600">업체 승인 대기 중</span>
                       )}
                       {bookingFilter === "완료" && (b as { canReview?: boolean }).canReview && (
-                        <button onClick={() => { setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); navigate("reviewWrite"); }} className="text-xs text-primary font-medium">리뷰 작성 →</button>
+                        <button onClick={(e) => { e.stopPropagation(); setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); navigate("reviewWrite"); }} className="text-xs text-primary font-medium">리뷰 작성 →</button>
                       )}
                       {bookingFilter === "취소" && <span className="text-[10px] text-gray-400">{(b as { reason?: string }).reason}</span>}
                     </div>
@@ -1789,23 +1794,54 @@ export default function ConsumerApp() {
                 </div>
               </div>
 
-              {/* 예약 내역 with pagination */}
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-bold text-sm">예약 내역</h3>
-                  {totalBookingPages > 1 && (
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => setMyBookingPage(p => Math.max(0, p - 1))} disabled={myBookingPage === 0} className={`text-sm ${myBookingPage === 0 ? "text-gray-300" : "text-gray-500"}`}>‹</button>
-                      <span className="text-xs text-gray-400">{myBookingPage + 1}/{totalBookingPages}</span>
-                      <button onClick={() => setMyBookingPage(p => Math.min(totalBookingPages - 1, p + 1))} disabled={myBookingPage === totalBookingPages - 1} className={`text-sm ${myBookingPage === totalBookingPages - 1 ? "text-gray-300" : "text-gray-500"}`}>›</button>
-                    </div>
-                  )}
-                </div>
-                {pagedBookings.map((b, i) => (
-                  <div key={i} className={`bg-gray-50 rounded-xl p-4 mb-2 ${b.status === "취소" ? "opacity-50" : ""}`}>
-                    <div className="flex justify-between items-start"><div><p className="text-sm font-medium">{b.studio}</p><p className="text-xs text-gray-400 mt-0.5">{b.date}</p><p className="text-xs text-gray-400">{b.cat}</p></div><span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColor(b.status)}`}>{b.status}</span></div>
+              {/* 추천 스튜디오 — 어드민 광고 노출중 기준 */}
+              <div className="mb-5 -mx-4">
+                <div className="mb-3 flex items-center justify-between px-4">
+                  <div>
+                    <p className="text-[11px] text-gray-400">지금 추천하는 스튜디오</p>
+                    <h3 className="text-[15px] font-bold text-gray-900">오늘은 이런 곳 어때요?</h3>
                   </div>
-                ))}
+                  <button onClick={() => { setCategoryCat("전체"); setScreen("category"); setTab("category"); }}
+                    className="text-xs font-medium text-gray-400 hover:text-primary">전체보기 →</button>
+                </div>
+                <div className="no-scrollbar flex gap-3 overflow-x-auto px-4 pb-1">
+                  {promotedStudios.map((studio, index) => (
+                    <button
+                      key={studio.id}
+                      onClick={() => openDetail(studio)}
+                      className="flex w-44 shrink-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white text-left shadow-sm"
+                    >
+                      <div className="relative flex h-28 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400">
+                        <ImageIcon size={28} strokeWidth={1.5} />
+                        <span className="absolute left-2 top-2 rounded-full bg-white/85 px-2 py-0.5 text-[9px] font-semibold text-gray-500">
+                          AD #{index + 1}
+                        </span>
+                      </div>
+                      <div className="flex flex-1 flex-col p-3">
+                        <p className="truncate text-sm font-semibold text-gray-900">{studio.name}</p>
+                        <div className="mt-1 flex items-center gap-1.5 min-w-0">
+                          <p className="truncate text-[11px] text-gray-400 min-w-0">{studio.area}</p>
+                          {studio.travelAvailable && (
+                            <span className="shrink-0 rounded-full border border-primary/30 bg-primary/5 px-1.5 py-0.5 text-[9px] font-medium text-primary">
+                              출장 가능
+                            </span>
+                          )}
+                        </div>
+                        {studio.tags.length > 0 && (
+                          <div className="mt-1 flex gap-1 flex-wrap">
+                            {studio.tags.slice(0, 3).map(t => (
+                              <span key={t} className="text-[10px] text-primary bg-primary/5 px-1.5 py-0.5 rounded-full">#{t}</span>
+                            ))}
+                          </div>
+                        )}
+                        <div className="mt-auto flex items-center justify-between pt-2 text-[11px]">
+                          <span className="font-bold text-gray-900">₩{studio.price.toLocaleString()}</span>
+                          <span className="text-yellow-500">★ {studio.rating}</span>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="space-y-0">
