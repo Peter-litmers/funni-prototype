@@ -719,6 +719,7 @@ export default function ConsumerApp() {
   const [customPriceMax, setCustomPriceMax] = useState<string>("");
   const [activeKeyword, setActiveKeyword] = useState("인기 검색어");
   const [freeKeyword, setFreeKeyword] = useState<HomeKeyword | null>(null);
+  const [homeSearchInput, setHomeSearchInput] = useState("");
   const [detailEntryCat, setDetailEntryCat] = useState<string>(""); // 탐색 진입 카테고리
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
@@ -758,6 +759,20 @@ export default function ConsumerApp() {
   const navigate = (to: Screen) => {
     historyStack.current.push({ s: screen, t: tab });
     setScreen(to);
+  };
+
+  // 홈 검색창 입력 → 카테고리 탭으로 전환하며 자유 키워드 매칭
+  const runHomeSearch = () => {
+    const q = homeSearchInput.trim();
+    if (!q) return;
+    const entry: HomeKeyword = { label: q, aliases: [q] };
+    setFreeKeyword(entry);
+    setActiveKeyword(q);
+    setCategoryCat("전체");
+    historyStack.current.push({ s: screen, t: tab });
+    setScreen("category");
+    setTab("category");
+    setHomeSearchInput("");
   };
 
   // 홈 상단 추천 검색어 칩 클릭 → 카테고리 탭으로 전환하며 필터 적용
@@ -923,15 +938,29 @@ export default function ConsumerApp() {
                   <h2 className="mt-1 text-xl font-bold leading-tight text-gray-900">오늘의 촬영에 맞는 스튜디오를 찾아보세요</h2>
                 </div>
 
-                <div className="mt-4 flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-3">
-                  <Search size={16} strokeWidth={1.8} className="text-gray-400" />
+                <div className="mt-4 flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-3 focus-within:border-primary transition-colors">
+                  <Search size={16} strokeWidth={1.8} className="text-gray-400 shrink-0" />
                   <input
                     type="text"
-                    value={selectedRegion === "전체" ? "" : selectedRegion}
-                    onChange={e => setSelectedRegion(e.target.value || "전체")}
-                    placeholder="어떤 스튜디오를 찾고 계신가요?"
+                    value={homeSearchInput}
+                    onChange={e => setHomeSearchInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter") runHomeSearch(); }}
+                    placeholder="스튜디오·지역·태그로 검색 (예: 성수 프로필)"
                     className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
                   />
+                  {homeSearchInput && (
+                    <button
+                      onClick={() => setHomeSearchInput("")}
+                      aria-label="검색어 지우기"
+                      className="shrink-0 text-gray-400 hover:text-gray-600"
+                    >✕</button>
+                  )}
+                  {homeSearchInput.trim() && (
+                    <button
+                      onClick={runHomeSearch}
+                      className="shrink-0 rounded-full bg-primary text-white text-xs font-medium px-3 py-1"
+                    >검색</button>
+                  )}
                 </div>
 
                 {homeKeywords.length > 0 && (
