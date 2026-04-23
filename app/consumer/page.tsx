@@ -269,40 +269,6 @@ export default function ConsumerApp() {
     }
   };
 
-  // 홈 맞춤 결과: 추천 검색어 칩과 독립. 지역·가격 필터만 적용.
-  // (칩 클릭은 카테고리 탭 라우팅 전용 → applyHomeKeyword)
-  const homeFiltered = STUDIOS
-    .filter(s => {
-      if (selectedRegion === "전체" || !selectedRegion.trim()) return true;
-      const kw = selectedRegion.trim().toLowerCase();
-      return s.area.toLowerCase().includes(kw);
-    })
-    .filter(s => {
-      // 커스텀 범위 우선 (원 단위)
-      const cmin = customPriceMin ? parseInt(customPriceMin) : null;
-      const cmax = customPriceMax ? parseInt(customPriceMax) : null;
-      if (cmin !== null || cmax !== null) {
-        if (cmin !== null && s.price < cmin) return false;
-        if (cmax !== null && s.price > cmax) return false;
-        return true;
-      }
-      const pr = PRICE_RANGES.find(p => p.key === selectedPriceRange);
-      if (!pr) return true;
-      return s.price >= pr.min && s.price <= pr.max;
-    });
-  const homeSorted = [...homeFiltered].sort((a, b) => {
-    if (sort === "rating") {
-      if (b.rating !== a.rating) return b.rating - a.rating;
-      return b.paymentCount - a.paymentCount;
-    }
-    if (sort === "distance") {
-      if (a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
-      return b.rating - a.rating;
-    }
-    if (b.paymentCount !== a.paymentCount) return b.paymentCount - a.paymentCount;
-    return b.rating - a.rating;
-  });
-  const finalHomeStudios = homeSorted;
   // 추천 스튜디오 = 어드민에서 '노출중'으로 편성한 광고 기준 (순서 유지).
   // 매칭 스튜디오 없거나 광고 0건이면 paymentCount 상위 4곳으로 fallback.
   const promotedStudios = (() => {
@@ -318,7 +284,7 @@ export default function ConsumerApp() {
     return b.rating - a.rating;
   }).slice(0, 5);
 
-  // 카테고리 탭: freeKeyword(자유검색) 우선 → 없으면 categoryCat + 지역
+  // 카테고리 탭: freeKeyword(자유검색) 우선 → 없으면 categoryCat + 지역 + 정렬
   const catFiltered = STUDIOS
     .filter(s => {
       if (freeKeyword) {
@@ -332,6 +298,18 @@ export default function ConsumerApp() {
       const kw = selectedRegion.trim().toLowerCase();
       return s.area.toLowerCase().includes(kw);
     });
+  const catSorted = [...catFiltered].sort((a, b) => {
+    if (sort === "rating") {
+      if (b.rating !== a.rating) return b.rating - a.rating;
+      return b.paymentCount - a.paymentCount;
+    }
+    if (sort === "distance") {
+      if (a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
+      return b.rating - a.rating;
+    }
+    if (b.paymentCount !== a.paymentCount) return b.paymentCount - a.paymentCount;
+    return b.rating - a.rating;
+  });
 
   const toggleOption = (id: number) => setSelectedOptions(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
@@ -620,116 +598,6 @@ export default function ConsumerApp() {
                 </div>
               </div>
 
-              <div className="mt-6 px-4">
-                {(() => {
-                  const sortItems = [
-                    { key: "payments" as Sort, label: "결제순" },
-                    { key: "rating" as Sort, label: "평점순" },
-                    { key: "distance" as Sort, label: "거리순" },
-                  ];
-                  const currentLabel = sortItems.find(i => i.key === sort)?.label ?? "결제순";
-                  return (
-                    <div className="relative">
-                      <button
-                        onClick={() => setSortOpen(v => !v)}
-                        className="flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2.5">
-                        <div className="flex items-center gap-2">
-                          <SlidersHorizontal size={16} strokeWidth={1.8} className="text-gray-500" />
-                          <span className="text-[15px] font-bold text-gray-900">필터</span>
-                          <span className="text-[11px] text-gray-400">· {currentLabel}</span>
-                        </div>
-                        <ChevronDown size={16} strokeWidth={2} className={`text-gray-500 transition-transform ${sortOpen ? "rotate-180" : ""}`} />
-                      </button>
-                      {sortOpen && (
-                        <>
-                          <div className="fixed inset-0 z-20" onClick={() => setSortOpen(false)} />
-                          <div className="absolute left-0 right-0 top-full z-30 mt-1.5 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
-                            {sortItems.map(item => (
-                              <button
-                                key={item.key}
-                                onClick={() => { setSort(item.key); setSortOpen(false); }}
-                                className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition-colors ${
-                                  sort === item.key ? "bg-primary/5 text-primary font-semibold" : "text-gray-700 hover:bg-gray-50"
-                                }`}>
-                                {item.label}
-                                {sort === item.key && <Check size={16} strokeWidth={2.5} className="text-primary" />}
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  );
-                })()}
-              </div>
-
-              <div className="mt-4 px-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-[15px] font-bold text-gray-900">맞춤 결과</h3>
-                  <span className="text-xs text-gray-400">{finalHomeStudios.length}곳</span>
-                </div>
-                <div className="mt-3 flex gap-1.5 overflow-x-auto items-center" style={{ scrollbarWidth: 'none' }}>
-                  {PRICE_RANGES.map(p => (
-                    <button key={p.key} onClick={() => { setSelectedPriceRange(p.key); setCustomPriceMin(""); setCustomPriceMax(""); }}
-                      className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] border transition-all shrink-0 ${selectedPriceRange === p.key && !customPriceMin && !customPriceMax ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-100 text-gray-400 bg-gray-50"}`}>💰 {p.label}</button>
-                  ))}
-                  {/* 커스텀 범위 입력 */}
-                  <div className={`flex items-center gap-0.5 text-[10px] shrink-0 rounded-full border transition-all ${customPriceMin || customPriceMax ? "border-primary bg-primary/5 text-primary" : "border-gray-100 bg-gray-50 text-gray-400"} px-2 py-0.5`}>
-                    <input type="number" placeholder="최소" value={customPriceMin} onChange={e => setCustomPriceMin(e.target.value)}
-                      className="w-10 bg-transparent outline-none text-right" />
-                    <span>원</span>
-                    <span className="mx-0.5">~</span>
-                    <input type="number" placeholder="최대" value={customPriceMax} onChange={e => setCustomPriceMax(e.target.value)}
-                      className="w-10 bg-transparent outline-none text-right" />
-                    <span>원</span>
-                    {(customPriceMin || customPriceMax) && (
-                      <button onClick={() => { setCustomPriceMin(""); setCustomPriceMax(""); }} className="ml-0.5">✕</button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-4">
-                {finalHomeStudios.length === 0 ? (
-                  <div className="text-center py-12"><p className="text-gray-400 text-sm">조건에 맞는 스튜디오가 없습니다</p></div>
-                ) : finalHomeStudios.map(s => (
-                  <div key={s.id} onClick={() => openDetail(s)}
-                    className="w-full flex gap-3 py-4 border-b border-gray-50 cursor-pointer">
-                    <div className="w-[88px] h-[88px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={28} strokeWidth={1.5} /></div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm text-gray-900">{s.name}</p>
-                      <p className="text-xs text-gray-400 mt-0.5 truncate">{s.desc}</p>
-                      <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
-                        <p className="text-xs text-gray-400 shrink-0">{s.area}</p>
-                        {s.travelAvailable && (
-                          <span className="shrink-0 rounded-full border border-primary/30 bg-primary/5 px-1.5 py-0.5 text-[9px] font-medium text-primary">
-                            출장 가능
-                          </span>
-                        )}
-                        {s.tags.length > 0 && (
-                          <div className="flex gap-1 overflow-hidden min-w-0">
-                            {s.tags.slice(0, 3).map(t => (
-                              <span key={t} className="truncate text-[10px] font-medium text-primary">#{t}</span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1 mt-1.5">
-                        <span className="text-sm font-bold text-gray-900">₩{s.price.toLocaleString()}</span>
-                        <span className="text-xs text-gray-400">/ 시간 · {s.vatIncluded ? "VAT 포함" : "VAT 별도"}</span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-yellow-500">★ {s.rating}</span>
-                        <span className="text-xs text-gray-400">({s.reviews})</span>
-                        <span className="text-xs text-gray-300">|</span>
-                        <span className="text-xs text-gray-400">결제 {s.paymentCount}건</span>
-                        <span className="text-xs text-gray-300">|</span>
-                        <span className="text-xs text-gray-400">{s.distanceKm.toFixed(1)}km</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
 
@@ -767,11 +635,55 @@ export default function ConsumerApp() {
                     🔎 {freeKeyword.label}
                     <button onClick={() => setFreeKeyword(null)} className="text-primary/60 hover:text-primary ml-0.5" aria-label="검색어 삭제">✕</button>
                   </span>
-                  <p className="text-sm font-bold">검색 결과 {catFiltered.length}곳</p>
+                  <p className="text-sm font-bold">검색 결과 {catSorted.length}곳</p>
                 </div>
               ) : (
-                <p className="text-sm font-bold mb-3">&lsquo;{categoryCat}&rsquo; 스튜디오 {catFiltered.length}곳</p>
+                <p className="text-sm font-bold mb-3">&lsquo;{categoryCat}&rsquo; 스튜디오 {catSorted.length}곳</p>
               )}
+
+              {/* 정렬 드롭다운 */}
+              <div className="mb-3">
+                {(() => {
+                  const sortItems = [
+                    { key: "payments" as Sort, label: "결제순" },
+                    { key: "rating" as Sort, label: "평점순" },
+                    { key: "distance" as Sort, label: "거리순" },
+                  ];
+                  const currentLabel = sortItems.find(i => i.key === sort)?.label ?? "결제순";
+                  return (
+                    <div className="relative">
+                      <button
+                        onClick={() => setSortOpen(v => !v)}
+                        className="flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <SlidersHorizontal size={16} strokeWidth={1.8} className="text-gray-500" />
+                          <span className="text-sm font-bold text-gray-900">정렬</span>
+                          <span className="text-[11px] text-gray-400">· {currentLabel}</span>
+                        </div>
+                        <ChevronDown size={16} strokeWidth={2} className={`text-gray-500 transition-transform ${sortOpen ? "rotate-180" : ""}`} />
+                      </button>
+                      {sortOpen && (
+                        <>
+                          <div className="fixed inset-0 z-20" onClick={() => setSortOpen(false)} />
+                          <div className="absolute left-0 right-0 top-full z-30 mt-1.5 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
+                            {sortItems.map(item => (
+                              <button
+                                key={item.key}
+                                onClick={() => { setSort(item.key); setSortOpen(false); }}
+                                className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition-colors ${
+                                  sort === item.key ? "bg-primary/5 text-primary font-semibold" : "text-gray-700 hover:bg-gray-50"
+                                }`}>
+                                {item.label}
+                                {sort === item.key && <Check size={16} strokeWidth={2.5} className="text-primary" />}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
 
               {/* 스튜디오 리스트 상단 광고 배너 (REQ-113) */}
               <div className="mb-3 overflow-hidden rounded-xl">
@@ -785,7 +697,7 @@ export default function ConsumerApp() {
                 </div>
               </div>
 
-              {catFiltered.map(s => (
+              {catSorted.map(s => (
                 <div key={s.id} onClick={() => openDetail(s, categoryCat)}
                   className="flex gap-3 py-3 border-b border-gray-50 cursor-pointer">
                   <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={22} strokeWidth={1.5} /></div>
