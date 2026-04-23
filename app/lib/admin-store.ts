@@ -475,6 +475,19 @@ function sanitizeNoShowReports(input: unknown): NoShowReport[] {
   return out;
 }
 
+// 프로토타입 시연용 — 첫 로드 시 소비자 알림/어드민 신고함에 샘플 1건 노출
+const DEFAULT_NOSHOW_REPORTS: NoShowReport[] = [
+  {
+    id: "ns-sample-1",
+    bookingId: "B-2026-0138",
+    consumerName: "김포토",
+    studioName: "펫모먼츠 스튜디오",
+    reportedAt: Date.now() - 1000 * 60 * 60 * 3, // 3시간 전
+    reason: "예약 시간 30분 지났으나 미도착·연락 두절",
+    resolved: false,
+  },
+];
+
 export function useNoShowReports(): [
   NoShowReport[],
   (r: Omit<NoShowReport, "id" | "reportedAt" | "resolved">) => void,
@@ -483,8 +496,8 @@ export function useNoShowReports(): [
 ] {
   const value = useStored<NoShowReport[]>(
     K_NOSHOW_REPORTS,
-    [],
-    (raw) => (raw === undefined ? [] : sanitizeNoShowReports(raw)),
+    DEFAULT_NOSHOW_REPORTS,
+    (raw) => (raw === undefined ? DEFAULT_NOSHOW_REPORTS : sanitizeNoShowReports(raw)),
   );
   const add = (r: Omit<NoShowReport, "id" | "reportedAt" | "resolved">) => {
     const next: NoShowReport = { ...r, id: `ns-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, reportedAt: Date.now(), resolved: false };
