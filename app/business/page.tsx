@@ -135,12 +135,50 @@ export default function BusinessApp() {
   // 한 업체 계정에 스튜디오 여러 개 가능, 각 스튜디오 = 단일 카테고리
   type MyStudio = { id: string; name: string; category: string; address: string; intro: string; photoCount: number; tags: string[] };
   const [myStudios, setMyStudios] = useState<MyStudio[]>([
-    { id: "s-1", name: "루미에르 스튜디오", category: "프로필", address: "서울시 강남구 역삼동 123-4", intro: "서울 강남에 위치한 프로필 전문 스튜디오. 자연광·경력 10년 작가진.", photoCount: 6, tags: ["증명사진", "취업프로필", "이력서"] },
+    { id: "s-1", name: "루미에르 스튜디오", category: "프로필", address: "서울시 강남구 역삼동 123-4", intro: `✨ 루미에르 스튜디오 — 자연광이 가장 따뜻한 시간
+'루미에르(Lumière)'는 프랑스어로 '빛'을 뜻합니다. 과장된 보정이 아닌, 자연광 속에서 가장 편안한 당신의 얼굴을 기록하는 강남 역삼 프로필 전문 스튜디오입니다.
+
+👤 작가 소개
+12년 경력의 이현우 실장과 7년 경력의 김지혜 팀장이 함께합니다. 2014년 오픈 이후 누적 10,000명 이상의 프로필을 촬영했으며, 삼성·LG·현대·카카오 등 대기업 임직원 프로필부터 취업·이직 준비생, SNS·배우 프로필까지 다양한 현장을 담아왔습니다.
+
+🎯 저희가 추구하는 톤
+과한 보정을 지양합니다. 얼굴형을 억지로 좁히거나 피부를 인형처럼 매끈하게 만들지 않아요. 원본이 가진 자연스러운 결을 살리고, 5년 뒤에 봐도 어색하지 않은 프로필을 만드는 것이 목표입니다.
+
+📋 촬영 프로세스
+1) 예약 — 포토팟 앱에서 원하시는 날짜·시간 선택
+2) 사전 상담 — 촬영 1~2일 전 카톡으로 복장·컨셉 무료 상담
+3) 도착 & 준비 — 전용 탈의실·파우더룸 이용
+4) 촬영 — 1컨셉 기준 30분, 200~300컷 테스트 후 선별
+5) 현장 셀렉 — 마음에 드는 컷 즉시 선택
+6) 보정 — 1주일 이내 이메일로 보정본 전달
+7) 재수정 — 최종 보정본 확인 후 1회 무료 재수정
+
+🏢 시설·장비
+• 면적: 25평 (메인 촬영 세트 3구역 + 탈의실 + 파우더룸)
+• 카메라: Canon EOS R5 (풀프레임 4,500만 화소)
+• 렌즈: 35mm·50mm·85mm 단렌즈 3종
+• 조명: Profoto B10 × 4기 (자연광 미러링 세팅)
+• 배경지: 화이트·그레이·베이지·블랙 4색
+
+💼 패키지 상세
+🎯 1컨셉 (기본) · ₩270,000 — 촬영 30분 / 보정본 4컷 / 단일 배경
+🎯 2컨셉 (가장 인기) · ₩420,000 — 촬영 60분 / 보정본 7컷 / 배경 2색
+🎯 3컨셉 (프리미엄) · ₩580,000 — 촬영 90분 / 보정본 12컷 / 배경 3색 + 헤어 타임
+
+📌 이용 안내
+🚇 강남역 2번 출구 도보 5분, 역삼역 3번 출구 도보 7분
+🚗 건물 지하주차장 1시간 무료
+👕 복장: 면·린넨 소재 권장, 여벌 2벌 지참
+
+🎁 이번 달 이벤트
+• 리뷰 작성 시 다음 촬영 ₩20,000 할인 쿠폰
+• 친구 추천 시 양측 각 ₩10,000 적립`, photoCount: 6, tags: ["증명사진", "취업프로필", "이력서"] },
     { id: "s-2", name: "루미에르 비즈컷", category: "비즈니스", address: "서울시 강남구 역삼동 123-4 별관", intro: "임직원·대표 프로필 전용 스튜디오. 팀 촬영 공간 별도.", photoCount: 4, tags: ["사내프로필", "대표프로필", "단체촬영"] },
   ]);
   const [editingStudioId, setEditingStudioId] = useState<string | null>(null); // null = 새 등록
   const [selectedCat, setSelectedCat] = useState<string>("프로필");
   const [studioTagInputs, setStudioTagInputs] = useState<[string, string, string]>(["", "", ""]);
+  const [introText, setIntroText] = useState<string>("");
   const [replyModal, setReplyModal] = useState<{ idx: number; author: string; text: string } | null>(null);
   const [replyDraft, setReplyDraft] = useState("");
   const [savedReplies, setSavedReplies] = useState<Record<number, string>>({});
@@ -288,8 +326,9 @@ export default function BusinessApp() {
 
   const handleSaveStudio = () => {
     const cleanedTags = studioTagInputs.map(t => t.trim()).filter(Boolean).slice(0, 3);
+    const finalIntro = introText.trim() || "스튜디오 소개를 작성하세요";
     if (editingStudioId && editingStudio) {
-      setMyStudios(prev => prev.map(s => s.id === editingStudioId ? { ...s, category: selectedCat, tags: cleanedTags } : s));
+      setMyStudios(prev => prev.map(s => s.id === editingStudioId ? { ...s, category: selectedCat, tags: cleanedTags, intro: finalIntro } : s));
     } else {
       const newId = `s-${Date.now()}`;
       setMyStudios(prev => [...prev, {
@@ -297,7 +336,7 @@ export default function BusinessApp() {
         name: "새 스튜디오",
         category: selectedCat,
         address: "주소 입력",
-        intro: "스튜디오 소개를 작성하세요",
+        intro: finalIntro,
         photoCount: 0,
         tags: cleanedTags,
       }]);
@@ -305,6 +344,7 @@ export default function BusinessApp() {
     setRegistered(true);
     setEditingStudioId(null);
     setStudioTagInputs(["", "", ""]);
+    setIntroText("");
   };
 
   const handleEditStudio = (id: string) => {
@@ -313,6 +353,7 @@ export default function BusinessApp() {
     setEditingStudioId(id);
     setSelectedCat(s.category);
     setStudioTagInputs([s.tags[0] ?? "", s.tags[1] ?? "", s.tags[2] ?? ""]);
+    setIntroText(s.intro ?? "");
     setRegistered(false);
   };
 
@@ -325,6 +366,7 @@ export default function BusinessApp() {
     setEditingStudioId(null);
     setSelectedCat(adminCategories[0] ?? "프로필");
     setStudioTagInputs(["", "", ""]);
+    setIntroText("");
     setRegistered(false);
   };
 
@@ -981,15 +1023,21 @@ export default function BusinessApp() {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-xs text-gray-500 font-medium">스튜디오 소개</label>
-                    <span className="text-[10px] text-gray-400">소비자 상세 화면에 노출</span>
+                    <span className="text-[10px] text-gray-400">소비자 상세 화면에 노출 · 최대 4,000자</span>
                   </div>
                   <textarea
-                    defaultValue={isEdit ? editingStudio!.intro : ""}
-                    rows={4}
-                    maxLength={500}
-                    placeholder="스튜디오의 특징, 분위기, 작가 소개 등을 자유롭게 작성해주세요 (최대 500자)"
-                    className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm border border-gray-100 outline-none focus:border-primary resize-none"
+                    value={introText}
+                    onChange={e => setIntroText(e.target.value)}
+                    rows={8}
+                    maxLength={4000}
+                    placeholder="브랜드 스토리·작가 소개·촬영 프로세스·시설·패키지·FAQ·오시는 길 등을 자유롭게 작성해주세요. 섹션 이모지(✨👤📋🏢💼📌❓🎁📍)로 구분하면 소비자에게 더 잘 읽힙니다. (최대 4,000자)"
+                    className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm border border-gray-100 outline-none focus:border-primary resize-y"
                   />
+                  <div className="flex items-center justify-end mt-1">
+                    <span className={`text-[10px] ${introText.length > 3800 ? "text-red-500 font-bold" : "text-gray-400"}`}>
+                      {introText.length.toLocaleString()} / 4,000자
+                    </span>
+                  </div>
                 </div>
 
                 <div>
