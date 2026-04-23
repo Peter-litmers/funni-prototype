@@ -8,7 +8,7 @@ import {
   CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal, Tag, ChevronDown,
   type LucideIcon
 } from "lucide-react";
-import { useCategories, useHomeKeywords, matchesKeyword, useAds, type HomeKeyword } from "../lib/admin-store";
+import { useCategories, useHomeKeywords, matchesKeyword, useAds, useRefundMatrix, pickRefundRate, REFUND_PERIOD_LABELS, type HomeKeyword } from "../lib/admin-store";
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   "프로필": Camera,
@@ -171,6 +171,7 @@ export default function ConsumerApp() {
   const [adminCategories] = useCategories();
   const [homeKeywords] = useHomeKeywords();
   const [ads] = useAds();
+  const [refundMatrix] = useRefundMatrix();
   const CATEGORIES = [{ name: "전체", Icon: LayoutGrid }, ...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }))];
   const HOME_CATEGORY_GRID = adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }));
   const [screen, setScreen] = useState<Screen>("home");
@@ -1097,7 +1098,22 @@ export default function ConsumerApp() {
           )}
 
           {/* ===== CANCEL MODAL ===== */}
-          {cancelModal && (
+          {cancelModal && (() => {
+            const bk = upcomingBookings[cancelModal.idx];
+            const cat = bk?.cat ?? "";
+            const parseDate = (s: string) => {
+              const m = /(\d{4})\.(\d{1,2})\.(\d{1,2})/.exec(s);
+              if (!m) return null;
+              return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+            };
+            const shootDate = bk ? parseDate(bk.date) : null;
+            const today = new Date("2026-04-23");
+            const daysUntil = shootDate ? Math.floor((shootDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+            const price = bk ? Number(bk.price.replace(/[^\d]/g, "")) : 0;
+            const { period, rate, fromDefault } = pickRefundRate(refundMatrix, cat, daysUntil);
+            const refundAmount = Math.round(price * rate / 100);
+            const fee = price - refundAmount;
+            return (
             <div className="absolute inset-0 z-50 flex items-end justify-center bg-black/40" onClick={() => setCancelModal(null)}>
               <div onClick={(e) => e.stopPropagation()}
                 className="w-full bg-white rounded-t-2xl p-4">
@@ -1107,10 +1123,35 @@ export default function ConsumerApp() {
                 </div>
                 <div className="bg-gray-50 rounded-xl p-3 mb-3">
                   <p className="text-xs font-bold mb-1">{cancelModal.studio}</p>
-                  <p className="text-[10px] text-gray-500 leading-relaxed">
-                    취소 요청 후 업체 승인 시 환불 처리됩니다. 환불 기준:<br/>
-                    • 7일 전 전액 · 3~6일 전 80% · 1~2일 전 50% · 당일 20%
-                  </p>
+                  <div className="flex items-center gap-1.5 flex-wrap text-[10px] text-gray-500 mb-2">
+                    <span className="bg-white rounded px-1.5 py-0.5 font-medium">{cat}</span>
+                    <span>·</span>
+                    <span>촬영까지 {daysUntil >= 0 ? `${daysUntil}일` : "지남"}</span>
+                    <span>·</span>
+                    <span>구간: <b>{REFUND_PERIOD_LABELS[period]}</b></span>
+                  </div>
+                  <div className="bg-white rounded-lg p-2.5 border border-gray-100">
+                    <div className="flex justify-between items-baseline mb-1">
+                      <span className="text-[11px] text-gray-500">결제 금액</span>
+                      <span className="text-xs font-medium">₩{price.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-baseline mb-1">
+                      <span className="text-[11px] text-gray-500">적용 환불율</span>
+                      <span className="text-xs font-medium text-primary">{rate}%</span>
+                    </div>
+                    <div className="flex justify-between items-baseline mb-1">
+                      <span className="text-[11px] text-gray-500">취소 수수료</span>
+                      <span className="text-xs text-gray-500">-₩{fee.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-baseline pt-1.5 border-t border-gray-100 mt-1.5">
+                      <span className="text-[11px] text-gray-700 font-bold">예상 환불 금액</span>
+                      <span className="text-sm font-bold text-red-500">₩{refundAmount.toLocaleString()}</span>
+                    </div>
+                  </div>
+                  {fromDefault && (
+                    <p className="text-[9px] text-amber-600 mt-1.5">※ &lsquo;{cat}&rsquo; 카테고리 환불율 미설정 — 첫 카테고리 기준값 적용</p>
+                  )}
+                  <p className="text-[9px] text-gray-400 mt-1.5">※ 최종 환불은 업체 승인 후 확정됩니다. 업체 귀책 취소는 100% 환불 + 업체 페널티.</p>
                 </div>
                 <p className="text-xs font-medium mb-1.5">취소 사유</p>
                 <textarea
@@ -1140,7 +1181,8 @@ export default function ConsumerApp() {
                 </div>
               </div>
             </div>
-          )}
+            );
+          })()}
 
           {/* ===== REVIEW WRITE (IA-030) ===== */}
           {screen === "reviewWrite" && (

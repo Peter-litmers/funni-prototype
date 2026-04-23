@@ -58,6 +58,7 @@ const K_BLOCKED_MEMBERS = "photopot.blockedMembers";
 const K_REVIEW_HIDDEN = "photopot.reviewHidden";
 const K_REVIEW_DELETE_REQUESTS = "photopot.reviewDeleteRequests";
 const K_BOOKING_ACTIONS = "photopot.bookingActions";
+const K_REFUND_MATRIX = "photopot.refundMatrix";
 
 const CHANGE_EVENT = "photopot-admin-store-change";
 
@@ -420,6 +421,82 @@ export function useBookingActions(): [
     writeStored(K_BOOKING_ACTIONS, merged);
   };
   return [value, update];
+}
+
+// ===== 카테고리별 환불율 매트릭스 =====
+// 기간: d7 = 촬영 7일 이상 전, d3to6 = 3~6일 전, d1to2 = 1~2일 전, sameDay = 당일
+export type RefundPeriod = "d7" | "d3to6" | "d1to2" | "sameDay";
+export type RefundRow = Record<RefundPeriod, number>; // %, 0~100
+export type RefundMatrix = Record<string, RefundRow>; // key: 카테고리명
+
+export const REFUND_PERIOD_LABELS: Record<RefundPeriod, string> = {
+  d7: "7일 이상 전",
+  d3to6: "3~6일 전",
+  d1to2: "1~2일 전",
+  sameDay: "당일",
+};
+
+const STANDARD_ROW: RefundRow = { d7: 100, d3to6: 80, d1to2: 50, sameDay: 20 };
+const STRICT_WEDDING_ROW: RefundRow = { d7: 100, d3to6: 50, d1to2: 0, sameDay: 0 };
+
+const DEFAULT_REFUND_MATRIX: RefundMatrix = {
+  "프로필": { ...STANDARD_ROW },
+  "바디프로필": { ...STANDARD_ROW },
+  "웨딩": { ...STRICT_WEDDING_ROW },
+  "가족": { ...STANDARD_ROW },
+  "반려동물": { ...STANDARD_ROW },
+  "비즈니스": { ...STANDARD_ROW },
+  "커플": { ...STANDARD_ROW },
+  "아기": { ...STANDARD_ROW },
+};
+
+function sanitizeRefundRow(input: unknown): RefundRow {
+  const clamp = (v: unknown) => {
+    const n = typeof v === "number" && Number.isFinite(v) ? v : 0;
+    return Math.max(0, Math.min(100, Math.round(n)));
+  };
+  const o = (input && typeof input === "object" ? (input as Record<string, unknown>) : {}) as Record<string, unknown>;
+  return {
+    d7: clamp(o.d7),
+    d3to6: clamp(o.d3to6),
+    d1to2: clamp(o.d1to2),
+    sameDay: clamp(o.sameDay),
+  };
+}
+
+function sanitizeRefundMatrix(input: unknown): RefundMatrix {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return DEFAULT_REFUND_MATRIX;
+  const out: RefundMatrix = {};
+  for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+    if (typeof k === "string" && k.trim()) {
+      out[k] = sanitizeRefundRow(v);
+    }
+  }
+  return out;
+}
+
+export function useRefundMatrix(): [RefundMatrix, (next: RefundMatrix) => void] {
+  const value = useStored<RefundMatrix>(
+    K_REFUND_MATRIX,
+    DEFAULT_REFUND_MATRIX,
+    (raw) => (raw === undefined ? DEFAULT_REFUND_MATRIX : sanitizeRefundMatrix(raw)),
+  );
+  return [value, (next) => writeStored(K_REFUND_MATRIX, sanitizeRefundMatrix(next))];
+}
+
+// 카테고리 + 촬영일·오늘 → 환불율(%) 계산. 카테고리 누락 시 첫 행 fallback.
+export function pickRefundRate(matrix: RefundMatrix, category: string, daysUntilShoot: number): {
+  period: RefundPeriod;
+  rate: number;
+  fromDefault: boolean;
+} {
+  const row = matrix[category] ?? Object.values(matrix)[0] ?? STANDARD_ROW;
+  const fromDefault = !matrix[category];
+  let period: RefundPeriod = "sameDay";
+  if (daysUntilShoot >= 7) period = "d7";
+  else if (daysUntilShoot >= 3) period = "d3to6";
+  else if (daysUntilShoot >= 1) period = "d1to2";
+  return { period, rate: row[period], fromDefault };
 }
 
 // 칩/자유검색 매칭: 각 별칭은 공백 분리 AND, 별칭들 사이는 OR.

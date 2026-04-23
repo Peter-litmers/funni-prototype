@@ -18,6 +18,9 @@ import {
   useHiddenReviews,
   useReviewDeleteRequests,
   useBookingActions,
+  useRefundMatrix,
+  REFUND_PERIOD_LABELS,
+  type RefundPeriod,
   type AdEntry,
   type BannerEntry,
 } from "../lib/admin-store";
@@ -76,6 +79,7 @@ export default function AdminWeb() {
   const [hiddenReviews, hideReview, unhideReview] = useHiddenReviews();
   const [deleteRequests, decideDeleteRequest] = useReviewDeleteRequests();
   const [bookingActions, updateBookingAction] = useBookingActions();
+  const [refundMatrix, setRefundMatrix] = useRefundMatrix();
 
   const [adModal, setAdModal] = useState<AdEntry | null>(null);
   const [adModalMode, setAdModalMode] = useState<"create" | "edit">("edit");
@@ -1441,6 +1445,90 @@ export default function AdminWeb() {
             {/* 정책 카드 리스트 */}
             {POLICY_CATALOG.filter(s => s.id === policySection).map(section => (
               <div key={section.id} className="space-y-3">
+                {/* 취소·환불 섹션: 카테고리별 환불율 매트릭스 (실반영 설정) */}
+                {section.id === "cancel" && (
+                  <div className="bg-white rounded-xl shadow-sm border border-primary/20 p-4">
+                    <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                      <div>
+                        <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                          카테고리별 환불율 매트릭스
+                          <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">실반영</span>
+                        </h3>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          촬영일까지 남은 일수 구간별로 카테고리마다 환불율을 다르게 설정할 수 있습니다. 저장 즉시 소비자 취소 계산에 반영.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (!confirm("매트릭스를 기본값으로 초기화합니다. 진행할까요?")) return;
+                          const next: typeof refundMatrix = {};
+                          for (const c of categories) {
+                            next[c] = c === "웨딩"
+                              ? { d7: 100, d3to6: 50, d1to2: 0, sameDay: 0 }
+                              : { d7: 100, d3to6: 80, d1to2: 50, sameDay: 20 };
+                          }
+                          setRefundMatrix(next);
+                        }}
+                        className="text-[11px] text-gray-500 bg-gray-100 px-3 py-1.5 rounded hover:bg-gray-200"
+                      >기본값으로 초기화</button>
+                    </div>
+
+                    <div className="overflow-x-auto mt-3">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-gray-100">
+                            <th className="p-2 text-left font-medium text-gray-500 text-xs w-28">카테고리</th>
+                            {(["d7", "d3to6", "d1to2", "sameDay"] as RefundPeriod[]).map(p => (
+                              <th key={p} className="p-2 text-center font-medium text-gray-500 text-xs">
+                                {REFUND_PERIOD_LABELS[p]}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {categories.map(cat => {
+                            const row = refundMatrix[cat] ?? { d7: 100, d3to6: 80, d1to2: 50, sameDay: 20 };
+                            return (
+                              <tr key={cat} className="border-b border-gray-50">
+                                <td className="p-2 font-medium text-gray-700">{cat}</td>
+                                {(["d7", "d3to6", "d1to2", "sameDay"] as RefundPeriod[]).map(p => (
+                                  <td key={p} className="p-2">
+                                    <div className="flex items-center justify-center gap-1">
+                                      <input
+                                        type="number"
+                                        min={0}
+                                        max={100}
+                                        value={row[p]}
+                                        onChange={e => {
+                                          const v = Math.max(0, Math.min(100, Number(e.target.value) || 0));
+                                          setRefundMatrix({
+                                            ...refundMatrix,
+                                            [cat]: { ...row, [p]: v },
+                                          });
+                                        }}
+                                        className="w-14 bg-gray-50 rounded-lg px-2 py-1 text-sm text-center border border-gray-200 focus:border-primary outline-none"
+                                      />
+                                      <span className="text-xs text-gray-400">%</span>
+                                    </div>
+                                  </td>
+                                ))}
+                              </tr>
+                            );
+                          })}
+                          {categories.length === 0 && (
+                            <tr><td colSpan={5} className="p-4 text-center text-xs text-gray-400">카테고리가 없습니다. 카테고리 탭에서 먼저 추가하세요.</td></tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="mt-3 bg-amber-50 rounded-lg p-2.5 text-[11px] text-amber-800 leading-relaxed">
+                      💡 예: 웨딩 = 3~6일 전 취소 시 <b>50%</b> 환불 (48시간 이내 드레스·스태프 일정이 들어가서 타이트함). 프로필 = 같은 시점에도 <b>80%</b> 환불 가능 (준비 리소스 상대적으로 적음). <br />
+                      ※ 업체별 개별 환불율 오버라이드는 본 계약 범위 외 — 통일 매트릭스 정책입니다.
+                    </div>
+                  </div>
+                )}
+
                 {section.items.map(item => {
                   const entry = policies[item.id];
                   const currentValue = entry?.value ?? item.defaultValue;
