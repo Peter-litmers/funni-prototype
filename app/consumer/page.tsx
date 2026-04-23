@@ -933,19 +933,14 @@ export default function ConsumerApp() {
           {screen === "home" && (
             <div className="pb-6">
               <div className="px-4 pt-2">
-                <div>
-                  <p className="text-[11px] text-gray-400">포토팟 큐레이션</p>
-                  <h2 className="mt-1 text-xl font-bold leading-tight text-gray-900">오늘의 촬영에 맞는 스튜디오를 찾아보세요</h2>
-                </div>
-
-                <div className="mt-4 flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-3 focus-within:border-primary transition-colors">
+                <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-3 focus-within:border-primary transition-colors">
                   <Search size={16} strokeWidth={1.8} className="text-gray-400 shrink-0" />
                   <input
                     type="text"
                     value={homeSearchInput}
                     onChange={e => setHomeSearchInput(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter") runHomeSearch(); }}
-                    placeholder="스튜디오·지역·태그로 검색 (예: 성수 프로필)"
+                    placeholder=""
                     className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
                   />
                   {homeSearchInput && (
@@ -970,7 +965,7 @@ export default function ConsumerApp() {
                         return (
                           <span
                             key={k.label}
-                            className="shrink-0 whitespace-nowrap text-[13px] font-medium text-primary tracking-tight pr-1"
+                            className="shrink-0 whitespace-nowrap text-[13px] font-medium text-primary pr-1"
                             style={{ letterSpacing: "-0.01em" }}
                           >
                             {k.label}
@@ -981,11 +976,8 @@ export default function ConsumerApp() {
                         <button
                           key={k.label}
                           onClick={() => applyHomeKeyword(k.label)}
-                          className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
-                            activeKeyword === k.label
-                              ? "border-primary bg-primary/5 text-primary"
-                              : "border-gray-200 bg-white text-gray-500"
-                          }`}
+                          className="shrink-0 whitespace-nowrap text-xs text-gray-600 hover:text-primary underline underline-offset-4 decoration-gray-300 hover:decoration-primary decoration-1 transition-colors"
+                          style={{ letterSpacing: "-0.01em" }}
                         >
                           {k.label}
                         </button>
