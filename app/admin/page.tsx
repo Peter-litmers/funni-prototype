@@ -684,7 +684,8 @@ export default function AdminWeb() {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="p-3 text-left"><input type="checkbox" /></th>
-                      <th className="p-3 text-left font-medium text-gray-500">업체</th>
+                      <th className="p-3 text-left font-medium text-gray-500">업체 (아이디-스튜디오)</th>
+                      <th className="p-3 text-left font-medium text-gray-500">카테고리</th>
                       <th className="p-3 text-left font-medium text-gray-500">예약건수</th>
                       <th className="p-3 text-left font-medium text-gray-500">총액 (촬영+옵션)</th>
                       <th className="p-3 text-left font-medium text-gray-500">수수료율</th>
@@ -693,20 +694,26 @@ export default function AdminWeb() {
                   </thead>
                   <tbody>
                     {[
-                      { name: "루미에르 스튜디오", count: 8, base: 580000, options: 100000 },
-                      { name: "블룸 웨딩홀", count: 3, base: 450000, options: 70000 },
-                      { name: "브랜드컷 스튜디오", count: 12, base: 340000, options: 0 },
+                      { account: "lumiere_biz", studio: "루미에르 스튜디오", category: "프로필", count: 8, base: 580000, options: 100000 },
+                      { account: "lumiere_biz", studio: "루미에르 비즈컷", category: "비즈니스", count: 4, base: 210000, options: 30000 },
+                      { account: "bloom_wedding", studio: "블룸 웨딩홀", category: "웨딩", count: 3, base: 450000, options: 70000 },
+                      { account: "brandcut", studio: "브랜드컷 스튜디오", category: "비즈니스", count: 12, base: 340000, options: 0 },
                     ].map((s, i) => {
                       const total = s.base + s.options;
-                      const { rate, isOverride } = getFeeForBusiness(s.name, feeRate, bizFees);
+                      const { rate, isOverride } = getFeeForBusiness(s.studio, feeRate, bizFees);
                       const net = Math.round(total * (1 - rate / 100));
                       return (
                         <tr key={i} className="border-t border-gray-50">
                           <td className="p-3"><input type="checkbox" /></td>
                           <td className="p-3">
-                            <p className="font-medium">{s.name}</p>
+                            <p className="font-medium">
+                              <span className="text-gray-400 font-mono text-xs">{s.account}</span>
+                              <span className="text-gray-300 mx-1">-</span>
+                              <span>{s.studio}</span>
+                            </p>
                             {isOverride && <span className="text-[9px] text-primary bg-primary/10 px-1.5 py-0.5 rounded">개별 {rate}%</span>}
                           </td>
+                          <td className="p-3"><span className="text-[11px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{s.category}</span></td>
                           <td className="p-3">{s.count}건</td>
                           <td className="p-3">
                             <p>₩{total.toLocaleString()}</p>

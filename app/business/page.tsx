@@ -132,7 +132,14 @@ export default function BusinessApp() {
   const [customPriceMax, setCustomPriceMax] = useState("");
   const [activeKeyword, setActiveKeyword] = useState("인기");
   const [freeKeyword, setFreeKeyword] = useState<HomeKeyword | null>(null);
-  const [selectedCats, setSelectedCats] = useState<string[]>(["프로필", "바디프로필"]);
+  // 한 업체 계정에 스튜디오 여러 개 가능, 각 스튜디오 = 단일 카테고리
+  type MyStudio = { id: string; name: string; category: string; address: string; intro: string; photoCount: number };
+  const [myStudios, setMyStudios] = useState<MyStudio[]>([
+    { id: "s-1", name: "루미에르 스튜디오", category: "프로필", address: "서울시 강남구 역삼동 123-4", intro: "서울 강남에 위치한 프로필 전문 스튜디오. 자연광·경력 10년 작가진.", photoCount: 6 },
+    { id: "s-2", name: "루미에르 비즈컷", category: "비즈니스", address: "서울시 강남구 역삼동 123-4 별관", intro: "임직원·대표 프로필 전용 스튜디오. 팀 촬영 공간 별도.", photoCount: 4 },
+  ]);
+  const [editingStudioId, setEditingStudioId] = useState<string | null>(null); // null = 새 등록
+  const [selectedCat, setSelectedCat] = useState<string>("프로필");
   const [replyModal, setReplyModal] = useState<{ idx: number; author: string; text: string } | null>(null);
   const [replyDraft, setReplyDraft] = useState("");
   const [savedReplies, setSavedReplies] = useState<Record<number, string>>({});
@@ -275,8 +282,44 @@ export default function BusinessApp() {
       return s.area.toLowerCase().includes(selectedRegion.trim().toLowerCase());
     });
 
-  const toggleCat = (c: string) => {
-    setSelectedCats(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
+  // 편집 중인 스튜디오 조회 (없으면 빈 값 = 신규)
+  const editingStudio = editingStudioId ? myStudios.find(s => s.id === editingStudioId) ?? null : null;
+
+  const handleSaveStudio = () => {
+    if (editingStudioId && editingStudio) {
+      setMyStudios(prev => prev.map(s => s.id === editingStudioId ? { ...s, category: selectedCat } : s));
+    } else {
+      const newId = `s-${Date.now()}`;
+      setMyStudios(prev => [...prev, {
+        id: newId,
+        name: "새 스튜디오",
+        category: selectedCat,
+        address: "주소 입력",
+        intro: "스튜디오 소개를 작성하세요",
+        photoCount: 0,
+      }]);
+    }
+    setRegistered(true);
+    setEditingStudioId(null);
+  };
+
+  const handleEditStudio = (id: string) => {
+    const s = myStudios.find(x => x.id === id);
+    if (!s) return;
+    setEditingStudioId(id);
+    setSelectedCat(s.category);
+    setRegistered(false);
+  };
+
+  const handleDeleteStudio = (id: string) => {
+    if (!confirm("이 스튜디오를 삭제할까요?")) return;
+    setMyStudios(prev => prev.filter(s => s.id !== id));
+  };
+
+  const handleAddNewStudio = () => {
+    setEditingStudioId(null);
+    setSelectedCat(adminCategories[0] ?? "프로필");
+    setRegistered(false);
   };
 
   const todayBookings = bookings.filter(b => b.month === 5 && b.date === 10 && b.status !== "완료");
@@ -897,18 +940,32 @@ export default function BusinessApp() {
           )}
 
           {/* ===== STUDIO REGISTER ===== */}
-          {screen === "register" && !registered && (
+          {screen === "register" && !registered && (() => {
+            const isEdit = !!editingStudio;
+            return (
             <div className="p-4">
-              <h2 className="text-base font-bold mb-4">스튜디오 등록</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-bold">{isEdit ? `${editingStudio!.name} 수정` : "새 스튜디오 등록"}</h2>
+                {myStudios.length > 0 && (
+                  <button onClick={() => { setRegistered(true); setEditingStudioId(null); }}
+                    className="text-xs text-gray-400">취소</button>
+                )}
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 text-[11px] text-amber-800">
+                💡 한 스튜디오는 한 카테고리에 등록됩니다. 여러 카테고리 운영 시 각각 별도 스튜디오로 등록해주세요. (예: &ldquo;루미에르 스튜디오&rdquo; - 프로필 / &ldquo;루미에르 비즈컷&rdquo; - 비즈니스)
+              </div>
 
               <div className="space-y-4">
                 <div>
                   <label className="text-xs text-gray-500 mb-1.5 block font-medium">스튜디오 이름</label>
-                  <input type="text" defaultValue="루미에르 스튜디오" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm border border-gray-100 outline-none focus:border-primary" />
+                  <input type="text" defaultValue={isEdit ? editingStudio!.name : ""} placeholder="예: 루미에르 스튜디오"
+                    className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm border border-gray-100 outline-none focus:border-primary" />
                 </div>
                 <div>
                   <label className="text-xs text-gray-500 mb-1.5 block font-medium">주소</label>
-                  <input type="text" defaultValue="서울시 강남구 역삼동 123-4" className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm border border-gray-100 outline-none focus:border-primary" />
+                  <input type="text" defaultValue={isEdit ? editingStudio!.address : ""} placeholder="서울시 강남구 ..."
+                    className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm border border-gray-100 outline-none focus:border-primary" />
                 </div>
                 <div>
                   <label className="text-xs text-gray-500 mb-1.5 block font-medium">연락처</label>
@@ -921,7 +978,7 @@ export default function BusinessApp() {
                     <span className="text-[10px] text-gray-400">소비자 상세 화면에 노출</span>
                   </div>
                   <textarea
-                    defaultValue="서울 강남에 위치한 프로필·비즈니스 전문 스튜디오입니다. 자연광을 살린 촬영 공간과 경력 10년 이상 작가진이 함께합니다. 촬영 전 무료 상담을 제공해드려요."
+                    defaultValue={isEdit ? editingStudio!.intro : ""}
                     rows={4}
                     maxLength={500}
                     placeholder="스튜디오의 특징, 분위기, 작가 소개 등을 자유롭게 작성해주세요 (최대 500자)"
@@ -930,120 +987,104 @@ export default function BusinessApp() {
                 </div>
 
                 <div>
-                  <label className="text-xs text-gray-500 mb-1.5 block font-medium">카테고리 (복수 선택)</label>
+                  <label className="text-xs text-gray-500 mb-1.5 block font-medium">카테고리 (한 스튜디오 = 한 카테고리)</label>
                   <div className="flex flex-wrap gap-2">
                     {adminCategories.map(c => (
-                      <button key={c} onClick={() => toggleCat(c)}
+                      <button key={c} onClick={() => setSelectedCat(c)}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                          selectedCats.includes(c) ? "bg-primary text-white border-primary" : "bg-white text-gray-400 border-gray-200"
+                          selectedCat === c ? "bg-primary text-white border-primary" : "bg-white text-gray-400 border-gray-200"
                         }`}>
-                        {selectedCats.includes(c) ? "✓ " : ""}{c}
+                        {selectedCat === c ? "✓ " : ""}{c}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Per-Category 패키지 + 예약금 + 버퍼 시간 */}
-                {selectedCats.length > 0 && (
-                  <div>
-                    <label className="text-xs text-gray-500 mb-1.5 block font-medium">카테고리별 가격 패키지 · 예약금 · 버퍼 시간</label>
-                    {selectedCats.map((c, i) => {
-                      const defaultPackages = [
+                {/* 가격 패키지 + 예약금 + 버퍼 시간 (단일 카테고리) */}
+                <div>
+                  <label className="text-xs text-gray-500 mb-1.5 block font-medium">가격 패키지 · 예약금 · 버퍼 시간</label>
+                  <div className="bg-primary/5 rounded-xl p-3 border border-primary/10">
+                    <p className="text-sm font-bold text-gray-900 mb-2">{selectedCat} 촬영</p>
+
+                    <p className="text-[10px] text-gray-500 mb-1">가격 패키지 (여러 개 가능)</p>
+                    <div className="space-y-1.5 mb-2">
+                      {[
                         { title: "1컨셉", price: 270000, desc: "보정본 4컷 · 30분 소요" },
                         { title: "2컨셉", price: 420000, desc: "보정본 7컷 · 60분 소요" },
                         { title: "3컨셉", price: 580000, desc: "보정본 12컷 · 90분 소요" },
-                      ];
-                      return (
-                        <div key={c} className="bg-primary/5 rounded-xl p-3 mb-2 border border-primary/10">
-                          <p className="text-sm font-bold text-gray-900 mb-2">{c} 촬영</p>
-
-                          {/* 가격 패키지 목록 */}
-                          <p className="text-[10px] text-gray-500 mb-1">가격 패키지 (여러 개 가능)</p>
-                          <div className="space-y-1.5 mb-2">
-                            {defaultPackages.map((pkg, idx) => (
-                              <div key={idx} className="bg-white rounded-lg p-2 border border-gray-100">
-                                <div className="flex items-center gap-1.5 mb-1">
-                                  <input type="text" defaultValue={pkg.title} placeholder="예: 1컨셉 / 4컷 / 기본"
-                                    className="flex-1 bg-gray-50 rounded px-2 py-1 text-xs border border-transparent outline-none focus:border-primary" />
-                                  <div className="flex items-center gap-1">
-                                    <span className="text-xs">₩</span>
-                                    <input type="text" defaultValue={pkg.price.toLocaleString()}
-                                      className="w-24 bg-gray-50 rounded px-2 py-1 text-xs text-right border border-transparent outline-none focus:border-primary" />
-                                  </div>
-                                </div>
-                                <input type="text" defaultValue={pkg.desc} placeholder="보정본 컷수·소요시간·포함내역"
-                                  className="w-full bg-gray-50 rounded px-2 py-1 text-[11px] text-gray-500 border border-transparent outline-none focus:border-primary" />
-                              </div>
-                            ))}
-                            <button className="w-full text-xs text-primary bg-white border border-dashed border-primary/30 rounded-lg py-1.5 font-medium">
-                              + 패키지 추가
-                            </button>
-                          </div>
-
-                          {/* 추가 옵션 (원본·보정 추가) */}
-                          <p className="text-[10px] text-gray-500 mb-1 mt-2">추가 옵션 (선택)</p>
-                          <div className="space-y-1 mb-2">
-                            {[{ name: "원본 추가", price: 40000 }, { name: "보정 컷 추가", price: 40000 }].map((opt, idx) => (
-                              <div key={idx} className="flex items-center gap-1.5 bg-white rounded-lg p-1.5 border border-gray-100">
-                                <input type="text" defaultValue={opt.name} className="flex-1 bg-gray-50 rounded px-2 py-1 text-xs border border-transparent outline-none focus:border-primary" />
-                                <span className="text-xs">+₩</span>
-                                <input type="text" defaultValue={opt.price.toLocaleString()} className="w-20 bg-gray-50 rounded px-2 py-1 text-xs text-right border border-transparent outline-none focus:border-primary" />
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* 예약금 + 버퍼 */}
-                          <div className="grid grid-cols-2 gap-1.5 mb-1">
-                            <div>
-                              <p className="text-[10px] text-gray-500 mb-0.5">예약금</p>
-                              <input type="text" defaultValue={`₩${(50000 + i * 10000).toLocaleString()}`}
-                                className="w-full bg-white rounded-lg px-2 py-1.5 text-xs border border-gray-100 outline-none focus:border-primary" />
-                            </div>
-                            <div>
-                              <p className="text-[10px] text-gray-500 mb-0.5">버퍼 시간 (청소·준비)</p>
-                              <select defaultValue="30" className="w-full bg-white rounded-lg px-2 py-1.5 text-xs border border-gray-100 outline-none focus:border-primary">
-                                <option value="0">없음</option>
-                                <option value="15">15분</option>
-                                <option value="30">30분</option>
-                                <option value="60">1시간</option>
-                                <option value="90">1시간 30분</option>
-                                <option value="120">2시간</option>
-                              </select>
+                      ].map((pkg, idx) => (
+                        <div key={idx} className="bg-white rounded-lg p-2 border border-gray-100">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <input type="text" defaultValue={pkg.title} placeholder="예: 1컨셉 / 4컷 / 기본"
+                              className="flex-1 bg-gray-50 rounded px-2 py-1 text-xs border border-transparent outline-none focus:border-primary" />
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs">₩</span>
+                              <input type="text" defaultValue={pkg.price.toLocaleString()}
+                                className="w-24 bg-gray-50 rounded px-2 py-1 text-xs text-right border border-transparent outline-none focus:border-primary" />
                             </div>
                           </div>
+                          <input type="text" defaultValue={pkg.desc} placeholder="보정본 컷수·소요시간·포함내역"
+                            className="w-full bg-gray-50 rounded px-2 py-1 text-[11px] text-gray-500 border border-transparent outline-none focus:border-primary" />
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                      ))}
+                      <button className="w-full text-xs text-primary bg-white border border-dashed border-primary/30 rounded-lg py-1.5 font-medium">
+                        + 패키지 추가
+                      </button>
+                    </div>
 
-                {/* 카테고리별 포트폴리오 업로드 (REQ-103 / IA-060) */}
+                    <p className="text-[10px] text-gray-500 mb-1 mt-2">추가 옵션 (선택)</p>
+                    <div className="space-y-1 mb-2">
+                      {[{ name: "원본 추가", price: 40000 }, { name: "보정 컷 추가", price: 40000 }].map((opt, idx) => (
+                        <div key={idx} className="flex items-center gap-1.5 bg-white rounded-lg p-1.5 border border-gray-100">
+                          <input type="text" defaultValue={opt.name} className="flex-1 bg-gray-50 rounded px-2 py-1 text-xs border border-transparent outline-none focus:border-primary" />
+                          <span className="text-xs">+₩</span>
+                          <input type="text" defaultValue={opt.price.toLocaleString()} className="w-20 bg-gray-50 rounded px-2 py-1 text-xs text-right border border-transparent outline-none focus:border-primary" />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-1.5 mb-1">
+                      <div>
+                        <p className="text-[10px] text-gray-500 mb-0.5">예약금</p>
+                        <input type="text" defaultValue="₩50,000"
+                          className="w-full bg-white rounded-lg px-2 py-1.5 text-xs border border-gray-100 outline-none focus:border-primary" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-gray-500 mb-0.5">버퍼 시간 (청소·준비)</p>
+                        <select defaultValue="30" className="w-full bg-white rounded-lg px-2 py-1.5 text-xs border border-gray-100 outline-none focus:border-primary">
+                          <option value="0">없음</option>
+                          <option value="15">15분</option>
+                          <option value="30">30분</option>
+                          <option value="60">1시간</option>
+                          <option value="90">1시간 30분</option>
+                          <option value="120">2시간</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 포트폴리오 업로드 (단일 카테고리) */}
                 <div>
-                  <label className="text-xs text-gray-500 mb-1.5 block font-medium">카테고리별 포트폴리오 (카테고리당 최대 30장, 동영상 불가)</label>
-                  {selectedCats.length === 0 ? (
-                    <div className="bg-gray-50 rounded-xl p-4 text-center">
-                      <p className="text-xs text-gray-400">카테고리를 먼저 선택하세요</p>
+                  <label className="text-xs text-gray-500 mb-1.5 block font-medium">포트폴리오 (최대 30장, 동영상 불가)</label>
+                  <div className="bg-gray-50 rounded-xl p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-bold">{selectedCat} 포트폴리오</p>
+                      <span className="text-[10px] text-gray-400">{isEdit ? editingStudio!.photoCount : 0} / 30장</span>
                     </div>
-                  ) : selectedCats.map((c, catIdx) => (
-                    <div key={c} className="bg-gray-50 rounded-xl p-3 mb-2">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm font-bold">{c} 포트폴리오</p>
-                        <span className="text-[10px] text-gray-400">{catIdx === 0 ? 6 : catIdx === 1 ? 4 : 0} / 30장</span>
-                      </div>
-                      <div className="grid grid-cols-5 gap-1.5">
-                        {(() => {
-                          const count = catIdx === 0 ? 6 : catIdx === 1 ? 4 : 0;
-                          return Array.from({ length: Math.min(count + 1, 10) }).map((_, i) => (
-                            <div key={i} className={`aspect-square rounded-lg flex items-center justify-center ${
-                              i < count ? "bg-gray-200" : "bg-white border-2 border-dashed border-gray-300 text-gray-300 text-lg cursor-pointer hover:border-primary hover:text-primary"
-                            }`}>
-                              {i >= count && "+"}
-                            </div>
-                          ));
-                        })()}
-                      </div>
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {(() => {
+                        const count = isEdit ? editingStudio!.photoCount : 0;
+                        return Array.from({ length: Math.min(count + 1, 10) }).map((_, i) => (
+                          <div key={i} className={`aspect-square rounded-lg flex items-center justify-center ${
+                            i < count ? "bg-gray-200" : "bg-white border-2 border-dashed border-gray-300 text-gray-300 text-lg cursor-pointer hover:border-primary hover:text-primary"
+                          }`}>
+                            {i >= count && "+"}
+                          </div>
+                        ));
+                      })()}
                     </div>
-                  ))}
+                  </div>
                 </div>
 
                 {/* 헤어/메이크업 옵션 3종 (REQ-103) */}
@@ -1119,80 +1160,79 @@ export default function BusinessApp() {
                   </div>
                 </div>
 
-                <button onClick={() => setRegistered(true)}
-                  className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm">등록하기</button>
+                <button onClick={handleSaveStudio}
+                  className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm">
+                  {isEdit ? "수정 저장" : "등록하기"}
+                </button>
               </div>
             </div>
-          )}
+            );
+          })()}
 
-          {/* Studio Registered */}
+          {/* Studio Registered — My Studios List */}
           {screen === "register" && registered && (
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-bold">내 스튜디오</h2>
-                <button onClick={() => setRegistered(false)} className="text-xs text-primary font-medium">수정</button>
+                <h2 className="text-base font-bold">내 스튜디오 <span className="text-xs text-gray-400 font-normal">({myStudios.length}개)</span></h2>
+                <button onClick={handleAddNewStudio}
+                  className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-medium">+ 새 스튜디오 추가</button>
               </div>
 
-              <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl h-40 flex items-center justify-center text-gray-400 mb-4"><ImageIcon size={48} strokeWidth={1} /></div>
-
-              <h3 className="text-lg font-bold mb-1">루미에르 스튜디오</h3>
-              <p className="text-xs text-gray-400 mb-3">서울시 강남구 역삼동 123-4</p>
-
-              <div className="flex gap-2 mb-4">
-                {selectedCats.map(c => (
-                  <span key={c} className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full font-medium">{c}</span>
-                ))}
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 mb-4 text-[11px] text-amber-800">
+                💡 한 계정에 여러 스튜디오를 개별 등록·운영할 수 있습니다. 각 스튜디오는 단일 카테고리로 운영됩니다.
               </div>
 
-              <div className="bg-gray-50 rounded-xl p-3 mb-4">
-                <p className="text-xs text-gray-500 mb-1 font-medium">스튜디오 소개</p>
-                <p className="text-sm text-gray-700 leading-relaxed">서울 강남에 위치한 프로필·비즈니스 전문 스튜디오입니다. 자연광을 살린 촬영 공간과 경력 10년 이상 작가진이 함께합니다. 촬영 전 무료 상담을 제공해드려요.</p>
-              </div>
-
-              <div className="space-y-2 mb-4">
-                {selectedCats.map((c) => (
-                  <div key={c} className="bg-gray-50 rounded-xl p-3">
-                    <p className="text-sm font-bold mb-2">{c} 촬영 패키지</p>
-                    <div className="space-y-1.5">
-                      {[
-                        { title: "1컨셉", price: 270000, desc: "보정본 4컷 · 30분 소요" },
-                        { title: "2컨셉", price: 420000, desc: "보정본 7컷 · 60분 소요" },
-                        { title: "3컨셉", price: 580000, desc: "보정본 12컷 · 90분 소요" },
-                      ].map((pkg, idx) => (
-                        <div key={idx} className="flex justify-between items-start bg-white rounded-lg p-2 border border-gray-100">
-                          <div>
-                            <p className="text-xs font-medium">{pkg.title}</p>
-                            <p className="text-[10px] text-gray-400">{pkg.desc}</p>
+              {myStudios.length === 0 ? (
+                <div className="bg-gray-50 rounded-2xl p-8 text-center">
+                  <p className="text-sm text-gray-400 mb-3">등록된 스튜디오가 없습니다</p>
+                  <button onClick={handleAddNewStudio}
+                    className="bg-primary text-white px-4 py-2 rounded-lg text-xs font-medium">첫 스튜디오 등록하기</button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {myStudios.map(s => (
+                    <div key={s.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                      <div className="bg-gradient-to-br from-gray-100 to-gray-200 h-28 flex items-center justify-center text-gray-400">
+                        <ImageIcon size={36} strokeWidth={1} />
+                      </div>
+                      <div className="p-3">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-bold truncate">{s.name}</h3>
+                            <p className="text-[10px] text-gray-400 truncate">{s.address}</p>
                           </div>
-                          <span className="text-sm font-bold">₩{pkg.price.toLocaleString()}</span>
+                          <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium shrink-0">{s.category}</span>
                         </div>
-                      ))}
+                        <p className="text-[11px] text-gray-600 mt-1.5 line-clamp-2 leading-relaxed">{s.intro}</p>
+                        <div className="flex items-center gap-2 mt-2 text-[10px] text-gray-400">
+                          <span>📸 {s.photoCount}/30장</span>
+                          <span>·</span>
+                          <span>⭐ 4.8</span>
+                        </div>
+                        <div className="flex gap-1.5 mt-3">
+                          <button onClick={() => handleEditStudio(s.id)}
+                            className="flex-1 bg-primary/5 text-primary text-xs font-medium py-2 rounded-lg">수정</button>
+                          <button onClick={() => handleDeleteStudio(s.id)}
+                            className="bg-red-50 text-red-500 text-xs font-medium py-2 px-3 rounded-lg">삭제</button>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-[10px] text-gray-400 mt-1.5">+ 원본 추가 ₩40,000 / 보정 컷 추가 ₩40,000</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="bg-gray-50 rounded-xl p-3 mb-4">
-                <p className="text-xs text-gray-500 mb-2">포트폴리오</p>
-                <div className="grid grid-cols-4 gap-1">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="aspect-square bg-gray-200 rounded-lg" />
                   ))}
                 </div>
-                <p className="text-[10px] text-gray-400 mt-1">6 / 30장</p>
-              </div>
+              )}
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-primary/5 rounded-xl p-3 text-center border border-primary/10">
-                  <p className="text-[10px] text-gray-500">총 예약</p>
-                  <p className="text-lg font-bold text-primary">{bookings.length}건</p>
+              {myStudios.length > 0 && (
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="bg-primary/5 rounded-xl p-3 text-center border border-primary/10">
+                    <p className="text-[10px] text-gray-500">총 예약</p>
+                    <p className="text-lg font-bold text-primary">{bookings.length}건</p>
+                  </div>
+                  <div className="bg-yellow-50 rounded-xl p-3 text-center border border-yellow-100">
+                    <p className="text-[10px] text-gray-500">평균 평점</p>
+                    <p className="text-lg font-bold text-yellow-600">4.8 ★</p>
+                  </div>
                 </div>
-                <div className="bg-yellow-50 rounded-xl p-3 text-center border border-yellow-100">
-                  <p className="text-[10px] text-gray-500">평균 평점</p>
-                  <p className="text-lg font-bold text-yellow-600">4.8 ★</p>
-                </div>
-              </div>
+              )}
             </div>
           )}
 
