@@ -51,6 +51,13 @@ const K_FEE_RATE = "photopot.feeRate";
 const K_BIZ_FEES = "photopot.bizFees";
 const K_POLICIES = "photopot.policies.drafts";
 const K_HOME_KEYWORDS = "photopot.homeKeywords";
+const K_DISMISSED = "photopot.dismissedNotes";
+const K_ADS = "photopot.ads";
+const K_BANNERS = "photopot.banners";
+const K_BLOCKED_MEMBERS = "photopot.blockedMembers";
+const K_REVIEW_HIDDEN = "photopot.reviewHidden";
+const K_REVIEW_DELETE_REQUESTS = "photopot.reviewDeleteRequests";
+const K_BOOKING_ACTIONS = "photopot.bookingActions";
 
 const CHANGE_EVENT = "photopot-admin-store-change";
 
@@ -179,6 +186,240 @@ export function useHomeKeywords(): [HomeKeyword[], (next: HomeKeyword[]) => void
     (raw) => (raw === undefined ? DEFAULT_HOME_KEYWORDS : sanitizeHomeKeywords(raw)),
   );
   return [value, (next) => writeStored(K_HOME_KEYWORDS, sanitizeHomeKeywords(next))];
+}
+
+// "대표 확인 대기" 등 클릭으로 닫을 수 있는 뱃지/안내. key 기준으로 dismiss 저장.
+export function useDismissed(): [Set<string>, (key: string) => void, (key: string) => void] {
+  const value = useStored<string[]>(
+    K_DISMISSED,
+    [],
+    (raw) => (raw === undefined ? [] : sanitizeStringArray(raw, [])),
+  );
+  const dismiss = (key: string) => {
+    if (value.includes(key)) return;
+    writeStored(K_DISMISSED, [...value, key]);
+  };
+  const restore = (key: string) => {
+    writeStored(K_DISMISSED, value.filter(k => k !== key));
+  };
+  return [new Set(value), dismiss, restore];
+}
+
+// ===== 광고(상단 프리미엄 노출) =====
+export type AdEntry = {
+  id: string;
+  studio: string;
+  cat: string;
+  periodStart: string; // YYYY-MM-DD
+  periodEnd: string;
+  status: "노출중" | "대기" | "종료";
+};
+
+const DEFAULT_ADS: AdEntry[] = [
+  { id: "ad-1", studio: "루미에르 스튜디오", cat: "프로필", periodStart: "2026-04-01", periodEnd: "2026-04-30", status: "노출중" },
+  { id: "ad-2", studio: "선셋 포토랩", cat: "바디프로필", periodStart: "2026-04-15", periodEnd: "2026-05-15", status: "노출중" },
+  { id: "ad-3", studio: "블룸 웨딩 스튜디오", cat: "웨딩", periodStart: "2026-04-10", periodEnd: "2026-05-10", status: "노출중" },
+  { id: "ad-4", studio: "브랜드컷 스튜디오", cat: "비즈니스", periodStart: "2026-05-01", periodEnd: "2026-05-31", status: "대기" },
+];
+
+function sanitizeAds(input: unknown): AdEntry[] {
+  if (!Array.isArray(input)) return DEFAULT_ADS;
+  const out: AdEntry[] = [];
+  for (const it of input) {
+    if (!it || typeof it !== "object") continue;
+    const obj = it as Record<string, unknown>;
+    const id = typeof obj.id === "string" ? obj.id : null;
+    const studio = typeof obj.studio === "string" ? obj.studio : null;
+    if (!id || !studio) continue;
+    out.push({
+      id,
+      studio,
+      cat: typeof obj.cat === "string" ? obj.cat : "",
+      periodStart: typeof obj.periodStart === "string" ? obj.periodStart : "",
+      periodEnd: typeof obj.periodEnd === "string" ? obj.periodEnd : "",
+      status: obj.status === "노출중" || obj.status === "대기" || obj.status === "종료" ? obj.status : "대기",
+    });
+  }
+  return out;
+}
+
+export function useAds(): [AdEntry[], (next: AdEntry[]) => void] {
+  const value = useStored<AdEntry[]>(
+    K_ADS,
+    DEFAULT_ADS,
+    (raw) => (raw === undefined ? DEFAULT_ADS : sanitizeAds(raw)),
+  );
+  return [value, (next) => writeStored(K_ADS, sanitizeAds(next))];
+}
+
+// ===== 배너 =====
+export type BannerEntry = {
+  id: string;
+  title: string;
+  position: string;
+  periodStart: string;
+  periodEnd: string;
+  status: "노출중" | "대기" | "종료";
+};
+
+const DEFAULT_BANNERS: BannerEntry[] = [
+  { id: "bn-1", title: "프로필 촬영 특가", position: "메인 상단", periodStart: "2026-04-01", periodEnd: "2026-04-30", status: "노출중" },
+  { id: "bn-2", title: "반려동물 촬영전", position: "카테고리", periodStart: "2026-04-15", periodEnd: "2026-05-15", status: "노출중" },
+  { id: "bn-3", title: "웨딩 촬영 패키지", position: "메인 중간", periodStart: "2026-05-01", periodEnd: "2026-05-31", status: "대기" },
+];
+
+function sanitizeBanners(input: unknown): BannerEntry[] {
+  if (!Array.isArray(input)) return DEFAULT_BANNERS;
+  const out: BannerEntry[] = [];
+  for (const it of input) {
+    if (!it || typeof it !== "object") continue;
+    const obj = it as Record<string, unknown>;
+    const id = typeof obj.id === "string" ? obj.id : null;
+    const title = typeof obj.title === "string" ? obj.title : null;
+    if (!id || !title) continue;
+    out.push({
+      id,
+      title,
+      position: typeof obj.position === "string" ? obj.position : "메인 상단",
+      periodStart: typeof obj.periodStart === "string" ? obj.periodStart : "",
+      periodEnd: typeof obj.periodEnd === "string" ? obj.periodEnd : "",
+      status: obj.status === "노출중" || obj.status === "대기" || obj.status === "종료" ? obj.status : "대기",
+    });
+  }
+  return out;
+}
+
+export function useBanners(): [BannerEntry[], (next: BannerEntry[]) => void] {
+  const value = useStored<BannerEntry[]>(
+    K_BANNERS,
+    DEFAULT_BANNERS,
+    (raw) => (raw === undefined ? DEFAULT_BANNERS : sanitizeBanners(raw)),
+  );
+  return [value, (next) => writeStored(K_BANNERS, sanitizeBanners(next))];
+}
+
+// ===== 차단 회원 =====
+export function useBlockedMembers(): [Set<string>, (name: string) => void, (name: string) => void] {
+  const value = useStored<string[]>(
+    K_BLOCKED_MEMBERS,
+    [],
+    (raw) => (raw === undefined ? [] : sanitizeStringArray(raw, [])),
+  );
+  const block = (name: string) => {
+    if (value.includes(name)) return;
+    writeStored(K_BLOCKED_MEMBERS, [...value, name]);
+  };
+  const unblock = (name: string) => writeStored(K_BLOCKED_MEMBERS, value.filter(n => n !== name));
+  return [new Set(value), block, unblock];
+}
+
+// ===== 리뷰 숨김 =====
+export function useHiddenReviews(): [Set<string>, (id: string) => void, (id: string) => void] {
+  const value = useStored<string[]>(
+    K_REVIEW_HIDDEN,
+    [],
+    (raw) => (raw === undefined ? [] : sanitizeStringArray(raw, [])),
+  );
+  const hide = (id: string) => {
+    if (value.includes(id)) return;
+    writeStored(K_REVIEW_HIDDEN, [...value, id]);
+  };
+  const unhide = (id: string) => writeStored(K_REVIEW_HIDDEN, value.filter(x => x !== id));
+  return [new Set(value), hide, unhide];
+}
+
+// ===== 리뷰 삭제 요청 =====
+export type ReviewDeleteRequest = {
+  id: string;
+  reviewId: string;
+  studio: string;
+  author: string;
+  rating: number;
+  text: string;
+  reason: string;
+  requestedAt: number;
+  status: "대기" | "승인" | "거절";
+};
+
+const DEFAULT_DELETE_REQUESTS: ReviewDeleteRequest[] = [
+  { id: "rdr-1", reviewId: "rv-101", studio: "루미에르 스튜디오", author: "김**", rating: 2, text: "사진 보정이 기대와 달랐어요. 다음엔 더 상세하게 논의하고 싶네요.", reason: "오해 소지가 있는 내용으로 재촬영 후 삭제 요청", requestedAt: Date.now() - 1000 * 60 * 60 * 2, status: "대기" },
+  { id: "rdr-2", reviewId: "rv-102", studio: "펫모먼츠 스튜디오", author: "박**", rating: 1, text: "시간이 밀려서 대기했어요.", reason: "업체 답글로 사과 전달 완료 - 고객 요청으로 삭제 검토", requestedAt: Date.now() - 1000 * 60 * 60 * 26, status: "대기" },
+];
+
+function sanitizeDeleteRequests(input: unknown): ReviewDeleteRequest[] {
+  if (!Array.isArray(input)) return DEFAULT_DELETE_REQUESTS;
+  const out: ReviewDeleteRequest[] = [];
+  for (const it of input) {
+    if (!it || typeof it !== "object") continue;
+    const obj = it as Record<string, unknown>;
+    const id = typeof obj.id === "string" ? obj.id : null;
+    if (!id) continue;
+    out.push({
+      id,
+      reviewId: typeof obj.reviewId === "string" ? obj.reviewId : "",
+      studio: typeof obj.studio === "string" ? obj.studio : "",
+      author: typeof obj.author === "string" ? obj.author : "",
+      rating: typeof obj.rating === "number" ? obj.rating : 0,
+      text: typeof obj.text === "string" ? obj.text : "",
+      reason: typeof obj.reason === "string" ? obj.reason : "",
+      requestedAt: typeof obj.requestedAt === "number" ? obj.requestedAt : 0,
+      status: obj.status === "승인" || obj.status === "거절" ? obj.status : "대기",
+    });
+  }
+  return out;
+}
+
+export function useReviewDeleteRequests(): [
+  ReviewDeleteRequest[],
+  (id: string, status: "승인" | "거절") => void,
+] {
+  const value = useStored<ReviewDeleteRequest[]>(
+    K_REVIEW_DELETE_REQUESTS,
+    DEFAULT_DELETE_REQUESTS,
+    (raw) => (raw === undefined ? DEFAULT_DELETE_REQUESTS : sanitizeDeleteRequests(raw)),
+  );
+  const decide = (id: string, status: "승인" | "거절") => {
+    const next = value.map(r => (r.id === id ? { ...r, status } : r));
+    writeStored(K_REVIEW_DELETE_REQUESTS, next);
+  };
+  return [value, decide];
+}
+
+// ===== 예약 액션 상태 (환불/노쇼 플래그 등) =====
+export type BookingActionEntry = {
+  refunded?: boolean;
+  noShow?: boolean;
+  note?: string;
+};
+
+export function useBookingActions(): [
+  Record<string, BookingActionEntry>,
+  (id: string, next: BookingActionEntry) => void,
+] {
+  const value = useStored<Record<string, BookingActionEntry>>(
+    K_BOOKING_ACTIONS,
+    {},
+    (raw) => {
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+      const result: Record<string, BookingActionEntry> = {};
+      for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+        if (v && typeof v === "object") {
+          const o = v as Record<string, unknown>;
+          result[k] = {
+            refunded: typeof o.refunded === "boolean" ? o.refunded : undefined,
+            noShow: typeof o.noShow === "boolean" ? o.noShow : undefined,
+            note: typeof o.note === "string" ? o.note : undefined,
+          };
+        }
+      }
+      return result;
+    },
+  );
+  const update = (id: string, next: BookingActionEntry) => {
+    const merged = { ...value, [id]: { ...value[id], ...next } };
+    writeStored(K_BOOKING_ACTIONS, merged);
+  };
+  return [value, update];
 }
 
 // 칩/자유검색 매칭: 각 별칭은 공백 분리 AND, 별칭들 사이는 OR.

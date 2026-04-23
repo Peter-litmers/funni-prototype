@@ -25,7 +25,6 @@ export const POLICY_CATALOG: PolicySection[] = [
         id: "auth.social",
         title: "소셜 로그인",
         defaultValue: "카카오 + 네이버 + 구글 (3종 모두 지원)",
-        note: "킥오프에서 구글 추가 확정",
       },
       {
         id: "auth.business-docs",
@@ -48,7 +47,7 @@ export const POLICY_CATALOG: PolicySection[] = [
         id: "fee.default-rate",
         title: "기본 수수료율",
         defaultValue: "10%",
-        note: "업체별 개별 Override 가능 (어드민 대시보드에서 설정)",
+        note: "어드민 대시보드에서 업체별 개별 설정 가능",
       },
       {
         id: "fee.calc-base",
@@ -186,7 +185,6 @@ export const POLICY_CATALOG: PolicySection[] = [
         id: "review.photos",
         title: "사진 첨부",
         defaultValue: "불가 (계약 범위 외)",
-        note: "추후 확장 검토 시 별도 견적",
       },
       {
         id: "review.business-reply",
@@ -284,7 +282,6 @@ export const POLICY_CATALOG: PolicySection[] = [
         id: "discover.sort-options",
         title: "정렬 옵션",
         defaultValue: "결제순 / 평점순 / 거리순",
-        note: "가격 낮은순은 제거 — 브랜드 이미지 보호",
       },
       {
         id: "discover.categories",

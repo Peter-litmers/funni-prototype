@@ -8,7 +8,7 @@ import {
   CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal, Tag, ChevronDown,
   type LucideIcon
 } from "lucide-react";
-import { useCategories, useHomeKeywords, matchesKeyword, type HomeKeyword } from "../lib/admin-store";
+import { useCategories, useHomeKeywords, matchesKeyword, useAds, type HomeKeyword } from "../lib/admin-store";
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   "프로필": Camera,
@@ -170,6 +170,7 @@ const TIMES = ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","
 export default function ConsumerApp() {
   const [adminCategories] = useCategories();
   const [homeKeywords] = useHomeKeywords();
+  const [ads] = useAds();
   const CATEGORIES = [{ name: "전체", Icon: LayoutGrid }, ...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }))];
   const HOME_CATEGORY_GRID = adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }));
   const [screen, setScreen] = useState<Screen>("home");
@@ -299,7 +300,16 @@ export default function ConsumerApp() {
     return b.rating - a.rating;
   });
   const finalHomeStudios = homeSorted;
-  const promotedStudios = [...STUDIOS].sort((a, b) => b.paymentCount - a.paymentCount).slice(0, 4);
+  // 추천 스튜디오 = 어드민에서 '노출중'으로 편성한 광고 기준 (순서 유지).
+  // 매칭 스튜디오 없거나 광고 0건이면 paymentCount 상위 4곳으로 fallback.
+  const promotedStudios = (() => {
+    const adStudios = ads
+      .filter(a => a.status === "노출중")
+      .map(a => STUDIOS.find(s => s.name === a.studio))
+      .filter((s): s is typeof STUDIOS[number] => !!s);
+    if (adStudios.length > 0) return adStudios.slice(0, 4);
+    return [...STUDIOS].sort((a, b) => b.paymentCount - a.paymentCount).slice(0, 4);
+  })();
   const hotStudios = [...STUDIOS].sort((a, b) => {
     if (b.paymentCount !== a.paymentCount) return b.paymentCount - a.paymentCount;
     return b.rating - a.rating;

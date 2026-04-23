@@ -3,11 +3,58 @@ import { useState } from "react";
 import Link from "next/link";
 import { Users, Building2, Calendar, DollarSign, ImageIcon, X } from "lucide-react";
 import PolicyForm from "../components/PolicyForm";
-import { useCategories, useRegions, useFeeRate, useBusinessFees, getFeeForBusiness, usePolicies, useHomeKeywords } from "../lib/admin-store";
+import {
+  useCategories,
+  useRegions,
+  useFeeRate,
+  useBusinessFees,
+  getFeeForBusiness,
+  usePolicies,
+  useHomeKeywords,
+  useDismissed,
+  useAds,
+  useBanners,
+  useBlockedMembers,
+  useHiddenReviews,
+  useReviewDeleteRequests,
+  useBookingActions,
+  type AdEntry,
+  type BannerEntry,
+} from "../lib/admin-store";
 import { POLICY_CATALOG, formatTimestamp } from "../lib/policy-catalog";
 
 function PolicyBadge({ label }: { label: string }) {
   return <span className="policy-badge">⚠️ {label}</span>;
+}
+
+// 닫을 수 있는 "대표 확인 대기" 등 노트 배지. key로 dismiss 상태 저장.
+function DismissibleNote({
+  id,
+  children,
+  dismissed,
+  onDismiss,
+  className = "text-[10px] bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-medium inline-flex items-center gap-1.5",
+}: {
+  id: string;
+  children: React.ReactNode;
+  dismissed: Set<string>;
+  onDismiss: (key: string) => void;
+  className?: string;
+}) {
+  if (dismissed.has(id)) return null;
+  return (
+    <span className={className}>
+      {children}
+      <button
+        onClick={() => onDismiss(id)}
+        className="text-yellow-600 hover:text-yellow-900 leading-none"
+        title="확인 완료로 표시"
+        aria-label="닫기"
+      >
+        <X size={10} strokeWidth={2} />
+      </button>
+    </span>
+  );
 }
 
 type Tab = "dashboard" | "businesses" | "settlement" | "ads" | "members" | "categories" | "banners" | "bookings" | "payments" | "reviews" | "policies";
@@ -22,6 +69,24 @@ export default function AdminWeb() {
   const [feeRate, setFeeRate] = useFeeRate();
   const [bizFees, setBizFees] = useBusinessFees();
   const [policies, updatePolicy, resetPolicy] = usePolicies();
+  const [dismissed, dismissNote] = useDismissed();
+  const [ads, setAds] = useAds();
+  const [banners, setBanners] = useBanners();
+  const [blockedMembers, blockMember, unblockMember] = useBlockedMembers();
+  const [hiddenReviews, hideReview, unhideReview] = useHiddenReviews();
+  const [deleteRequests, decideDeleteRequest] = useReviewDeleteRequests();
+  const [bookingActions, updateBookingAction] = useBookingActions();
+
+  const [adModal, setAdModal] = useState<AdEntry | null>(null);
+  const [adModalMode, setAdModalMode] = useState<"create" | "edit">("edit");
+  const [bannerModal, setBannerModal] = useState<BannerEntry | null>(null);
+  const [bannerModalMode, setBannerModalMode] = useState<"create" | "edit">("edit");
+  const [bookingDetail, setBookingDetail] = useState<null | { id: string; consumer: string; studio: string; date: string; amount: string; status: string }>(null);
+  const [bookingSearch, setBookingSearch] = useState("");
+  const [bookingStatusFilter, setBookingStatusFilter] = useState<string>("전체");
+  const [memberSearch, setMemberSearch] = useState("");
+  const [memberDetail, setMemberDetail] = useState<null | { name: string; type: string; joined: string; status: string }>(null);
+  const [reviewSearch, setReviewSearch] = useState("");
   const [policyEdit, setPolicyEdit] = useState<{ id: string; value: string } | null>(null);
   const [policyHistoryId, setPolicyHistoryId] = useState<string | null>(null);
   const [policySection, setPolicySection] = useState<string>(POLICY_CATALOG[0].id);
@@ -84,6 +149,34 @@ export default function AdminWeb() {
     [next[idx], next[target]] = [next[target], next[idx]];
     setHomeKeywords(next);
   };
+
+  const upsertAd = (ad: AdEntry) => {
+    if (ads.some(a => a.id === ad.id)) {
+      setAds(ads.map(a => (a.id === ad.id ? ad : a)));
+    } else {
+      setAds([...ads, ad]);
+    }
+  };
+  const removeAd = (id: string) => setAds(ads.filter(a => a.id !== id));
+  const moveAd = (idx: number, dir: -1 | 1) => {
+    const next = [...ads];
+    const target = idx + dir;
+    if (target < 0 || target >= next.length) return;
+    [next[idx], next[target]] = [next[target], next[idx]];
+    setAds(next);
+  };
+  const toggleAdStatus = (id: string) => {
+    setAds(ads.map(a => (a.id === id ? { ...a, status: a.status === "노출중" ? "대기" : "노출중" } : a)));
+  };
+
+  const upsertBanner = (b: BannerEntry) => {
+    if (banners.some(x => x.id === b.id)) {
+      setBanners(banners.map(x => (x.id === b.id ? b : x)));
+    } else {
+      setBanners([...banners, b]);
+    }
+  };
+  const removeBanner = (id: string) => setBanners(banners.filter(b => b.id !== id));
 
   const setBizFeeOverride = (name: string, rate: number | null) => {
     const next = { ...bizFees };
@@ -395,7 +488,9 @@ export default function AdminWeb() {
             <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold">운영 정책 기준치</h3>
-                <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-medium">대표 확인 대기</span>
+                <DismissibleNote id="admin.settlement-guidelines" dismissed={dismissed} onDismiss={dismissNote}>
+                  대표 확인 대기
+                </DismissibleNote>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -558,7 +653,13 @@ export default function AdminWeb() {
               <p className="text-[10px] text-gray-500">• 정산 기준: 월별 기준, 주별 조회 가능</p>
               <p className="text-[10px] text-gray-500">• 정산 단위: 업체별 일괄 정산</p>
               <p className="text-[10px] text-gray-500">• 수수료 차등: 기본 10%, 업체별 개별 설정 가능</p>
-              <p className="text-[10px] text-gray-500">• 환불 반영: 정산 완료 전 발생 건은 정산액에서 차감, 정산 완료 후 발생 건은 다음 정산에서 차감 (대표 확인 대기)</p>
+              <div className="text-[10px] text-gray-500 flex flex-wrap items-center gap-2">
+                <span>• 환불 반영: 정산 완료 전 발생 건은 정산액에서 차감, 정산 완료 후 발생 건은 다음 정산에서 차감</span>
+                <DismissibleNote id="admin.settlement-refund-note" dismissed={dismissed} onDismiss={dismissNote}
+                  className="text-[9px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full font-medium inline-flex items-center gap-1">
+                  대표 확인 대기
+                </DismissibleNote>
+              </div>
             </div>
 
             {/* Settlement Table */}
@@ -623,7 +724,22 @@ export default function AdminWeb() {
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold">광고 관리 (상단 노출)</h2>
-              <button className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium">+ 광고 업체 추가</button>
+              <button
+                onClick={() => {
+                  setAdModalMode("create");
+                  setAdModal({
+                    id: `ad-${Date.now()}`,
+                    studio: "",
+                    cat: categories[0] ?? "프로필",
+                    periodStart: "",
+                    periodEnd: "",
+                    status: "대기",
+                  });
+                }}
+                className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium"
+              >
+                + 광고 업체 추가
+              </button>
             </div>
 
             <div className="policy-area p-4 mb-6">
@@ -637,7 +753,9 @@ export default function AdminWeb() {
             <div className="bg-white rounded-xl p-4 shadow-sm mb-6">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-bold text-sm">광고 노출 기간 기본값</h3>
-                <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-medium">대표 확인 대기</span>
+                <DismissibleNote id="admin.ads-period-default" dismissed={dismissed} onDismiss={dismissNote}>
+                  대표 확인 대기
+                </DismissibleNote>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -677,56 +795,102 @@ export default function AdminWeb() {
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    { order: 1, studio: "루미에르 스튜디오", cat: "프로필", period: "04.01~04.30", status: "노출중" },
-                    { order: 2, studio: "선셋 포토랩", cat: "바디프로필", period: "04.15~05.15", status: "노출중" },
-                    { order: 3, studio: "블룸 웨딩 스튜디오", cat: "웨딩", period: "04.10~05.10", status: "노출중" },
-                    { order: 4, studio: "브랜드컷 스튜디오", cat: "비즈니스", period: "05.01~05.31", status: "대기" },
-                  ].map((a, i) => (
-                    <tr key={i} className="border-t border-gray-50">
-                      <td className="p-4"><div className="flex items-center gap-1"><span className="font-mono text-xs text-gray-400">#{a.order}</span><button className="text-[10px] text-gray-400">▲</button><button className="text-[10px] text-gray-400">▼</button></div></td>
+                  {ads.length === 0 && (
+                    <tr><td colSpan={6} className="p-6 text-center text-xs text-gray-400">등록된 광고가 없습니다. &lsquo;+ 광고 업체 추가&rsquo;로 편성하세요.</td></tr>
+                  )}
+                  {ads.map((a, i) => {
+                    const period = a.periodStart && a.periodEnd
+                      ? `${a.periodStart.slice(5).replace("-", ".")}~${a.periodEnd.slice(5).replace("-", ".")}`
+                      : "기간 미설정";
+                    return (
+                    <tr key={a.id} className="border-t border-gray-50">
+                      <td className="p-4">
+                        <div className="flex items-center gap-1">
+                          <span className="font-mono text-xs text-gray-400">#{i + 1}</span>
+                          <button onClick={() => moveAd(i, -1)} disabled={i === 0} className="text-[10px] text-gray-400 disabled:opacity-30">▲</button>
+                          <button onClick={() => moveAd(i, 1)} disabled={i === ads.length - 1} className="text-[10px] text-gray-400 disabled:opacity-30">▼</button>
+                        </div>
+                      </td>
                       <td className="p-4 font-medium">{a.studio}</td>
                       <td className="p-4 text-gray-500 hidden md:table-cell"><span className="bg-gray-100 text-xs px-2 py-0.5 rounded">{a.cat}</span></td>
-                      <td className="p-4 text-gray-500 text-xs hidden md:table-cell">{a.period}</td>
-                      <td className="p-4"><span className={`text-xs px-2 py-1 rounded-full ${a.status === "노출중" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{a.status}</span></td>
-                      <td className="p-4"><div className="flex gap-1"><button className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">수정</button><button className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded">중지</button></div></td>
+                      <td className="p-4 text-gray-500 text-xs hidden md:table-cell">{period}</td>
+                      <td className="p-4">
+                        <button onClick={() => toggleAdStatus(a.id)}
+                          className={`text-xs px-2 py-1 rounded-full ${a.status === "노출중" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
+                          title="클릭해서 상태 전환">{a.status}</button>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex gap-1">
+                          <button onClick={() => { setAdModalMode("edit"); setAdModal({ ...a }); }}
+                            className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">수정</button>
+                          <button onClick={() => { if (confirm(`'${a.studio}' 광고를 삭제할까요?`)) removeAd(a.id); }}
+                            className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">삭제</button>
+                        </div>
+                      </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
 
-            {/* 미리보기 */}
+            {/* 미리보기 — 현재 노출중 광고 기반 */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="font-bold mb-4 text-sm">유저 앱 프리미엄 영역 미리보기</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {["루미에르 스튜디오", "선셋 포토랩", "블룸 웨딩 스튜디오"].map((name, i) => (
-                  <div key={i} className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-4 relative">
-                    <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
-                    <div className="flex items-center gap-3 mt-6">
-                      <div className="w-12 h-12 bg-white/60 rounded-lg flex items-center justify-center text-gray-400"><ImageIcon size={18} strokeWidth={1.5} /></div>
-                      <div>
-                        <p className="text-xs font-bold">{name}</p>
-                        <p className="text-[10px] text-gray-500">서울 · 프리미엄 구좌 #{i + 1}</p>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-sm">유저 앱 프리미엄 영역 미리보기</h3>
+                <span className="text-[10px] text-gray-400">소비자 홈 &lsquo;지금 추천하는 스튜디오&rsquo;에 실시간 반영</span>
+              </div>
+              {ads.filter(a => a.status === "노출중").length === 0 ? (
+                <p className="text-xs text-gray-400 text-center py-6">&lsquo;노출중&rsquo; 상태 광고가 없습니다. 위 테이블에서 상태를 전환하세요.</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {ads.filter(a => a.status === "노출중").map((a, i) => (
+                    <div key={a.id} className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-4 relative">
+                      <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD #{i + 1}</span>
+                      <div className="flex items-center gap-3 mt-6">
+                        <div className="w-12 h-12 bg-white/60 rounded-lg flex items-center justify-center text-gray-400"><ImageIcon size={18} strokeWidth={1.5} /></div>
+                        <div>
+                          <p className="text-xs font-bold">{a.studio}</p>
+                          <p className="text-[10px] text-gray-500">{a.cat} · 프리미엄 구좌</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {tab === "members" && (
+        {tab === "members" && (() => {
+          const MEMBERS = [
+            { name: "김포토", nick: "포토팟유저", type: "소비자", date: "2026.04.10", bookings: 5 },
+            { name: "이촬영", nick: "촬영러버", type: "소비자", date: "2026.04.08", bookings: 2 },
+            { name: "박스튜", nick: "스튜디오박", type: "소비자", date: "2026.04.05", bookings: 0 },
+            { name: "루미에르(주)", nick: "-", type: "업체", date: "2026.03.20", bookings: 0 },
+            { name: "선셋포토(주)", nick: "-", type: "업체", date: "2026.04.01", bookings: 0 },
+          ];
+          const q = memberSearch.trim().toLowerCase();
+          const filtered = MEMBERS.filter(m => {
+            if (q && !(m.name.toLowerCase().includes(q) || m.nick.toLowerCase().includes(q))) return false;
+            return true;
+          });
+          return (
           <div>
             <h2 className="text-xl font-bold mb-6">회원 관리</h2>
 
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
               <div className="p-4 border-b border-gray-100 flex gap-2">
-                <input type="text" placeholder="이름, 닉네임, 이메일 검색..." className="flex-1 bg-gray-100 rounded-xl px-4 py-3 text-sm" />
-                {["전체", "소비자", "업체"].map(f => (
-                  <button key={f} className={`px-3 py-2 rounded-lg text-xs font-medium ${f === "전체" ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{f}</button>
-                ))}
+                <input
+                  type="text"
+                  value={memberSearch}
+                  onChange={e => setMemberSearch(e.target.value)}
+                  placeholder="이름, 닉네임 검색..."
+                  className="flex-1 bg-gray-100 rounded-xl px-4 py-3 text-sm outline-none"
+                />
+                {memberSearch && (
+                  <button onClick={() => setMemberSearch("")} className="text-xs text-gray-400 px-2">지우기</button>
+                )}
               </div>
               <table className="w-full text-sm">
                 <thead className="bg-gray-50">
@@ -741,28 +905,42 @@ export default function AdminWeb() {
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    { name: "김포토", nick: "포토팟유저", type: "소비자", date: "2026.04.10", bookings: 5, status: "활성" },
-                    { name: "이촬영", nick: "촬영러버", type: "소비자", date: "2026.04.08", bookings: 2, status: "활성" },
-                    { name: "박스튜", nick: "스튜디오박", type: "소비자", date: "2026.04.05", bookings: 0, status: "활성" },
-                    { name: "루미에르(주)", nick: "-", type: "업체", date: "2026.03.20", bookings: 0, status: "활성" },
-                    { name: "선셋포토(주)", nick: "-", type: "업체", date: "2026.04.01", bookings: 0, status: "차단" },
-                  ].map((m, i) => (
-                    <tr key={i} className="border-t border-gray-50">
+                  {filtered.length === 0 && (
+                    <tr><td colSpan={7} className="p-6 text-center text-xs text-gray-400">검색 결과가 없습니다.</td></tr>
+                  )}
+                  {filtered.map((m) => {
+                    const isBlocked = blockedMembers.has(m.name);
+                    const status = isBlocked ? "차단" : "활성";
+                    return (
+                    <tr key={m.name} className="border-t border-gray-50">
                       <td className="p-4 font-medium">{m.name}</td>
                       <td className="p-4 text-gray-500 text-xs hidden md:table-cell">{m.nick}</td>
                       <td className="p-4"><span className={`text-xs px-2 py-0.5 rounded-full ${m.type === "소비자" ? "bg-blue-100 text-blue-700" : "bg-primary/10 text-primary"}`}>{m.type}</span></td>
                       <td className="p-4 text-gray-500 hidden md:table-cell text-xs">{m.date}</td>
                       <td className="p-4 text-gray-500 hidden md:table-cell">{m.bookings}건</td>
-                      <td className="p-4"><span className={`text-xs px-2 py-1 rounded-full ${m.status === "활성" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-500"}`}>{m.status}</span></td>
-                      <td className="p-4">{m.status === "활성" ? <button className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded">차단</button> : <button className="text-xs text-green-600 px-2 py-1 bg-green-50 rounded">해제</button>}</td>
+                      <td className="p-4"><span className={`text-xs px-2 py-1 rounded-full ${status === "활성" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-500"}`}>{status}</span></td>
+                      <td className="p-4">
+                        <div className="flex gap-1">
+                          <button onClick={() => setMemberDetail({ name: m.name, type: m.type, joined: m.date, status })}
+                            className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">상세</button>
+                          {isBlocked ? (
+                            <button onClick={() => unblockMember(m.name)}
+                              className="text-xs text-green-600 px-2 py-1 bg-green-50 rounded hover:bg-green-100">차단 해제</button>
+                          ) : (
+                            <button onClick={() => { if (confirm(`${m.name} 계정을 차단할까요?`)) blockMember(m.name); }}
+                              className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">차단</button>
+                          )}
+                        </div>
+                      </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* ===== CATEGORIES (REQ-116) ===== */}
         {tab === "categories" && (
@@ -904,7 +1082,22 @@ export default function AdminWeb() {
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold">배너 관리</h2>
-              <button className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium">+ 배너 등록</button>
+              <button
+                onClick={() => {
+                  setBannerModalMode("create");
+                  setBannerModal({
+                    id: `bn-${Date.now()}`,
+                    title: "",
+                    position: "메인 상단",
+                    periodStart: "",
+                    periodEnd: "",
+                    status: "대기",
+                  });
+                }}
+                className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium"
+              >
+                + 배너 등록
+              </button>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -920,20 +1113,37 @@ export default function AdminWeb() {
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    { title: "프로필 촬영 특가", position: "메인 상단", period: "04.01~04.30", status: "노출중" },
-                    { title: "반려동물 촬영전", position: "카테고리", period: "04.15~05.15", status: "노출중" },
-                    { title: "웨딩 촬영 패키지", position: "메인 중간", period: "05.01~05.31", status: "대기" },
-                  ].map((b, i) => (
-                    <tr key={i} className="border-t border-gray-50">
+                  {banners.length === 0 && (
+                    <tr><td colSpan={6} className="p-6 text-center text-xs text-gray-400">등록된 배너가 없습니다.</td></tr>
+                  )}
+                  {banners.map((b) => {
+                    const period = b.periodStart && b.periodEnd
+                      ? `${b.periodStart.slice(5).replace("-", ".")}~${b.periodEnd.slice(5).replace("-", ".")}`
+                      : "기간 미설정";
+                    return (
+                    <tr key={b.id} className="border-t border-gray-50">
                       <td className="p-4"><div className="w-16 h-10 bg-gradient-to-r from-rose-200 to-pink-200 rounded" /></td>
                       <td className="p-4 font-medium">{b.title}</td>
                       <td className="p-4 text-gray-500 hidden md:table-cell">{b.position}</td>
-                      <td className="p-4 text-gray-500 hidden md:table-cell text-xs">{b.period}</td>
-                      <td className="p-4"><span className={`text-xs px-2 py-1 rounded-full ${b.status === "노출중" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{b.status}</span></td>
-                      <td className="p-4"><div className="flex gap-1"><button className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">수정</button><button className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded">삭제</button></div></td>
+                      <td className="p-4 text-gray-500 hidden md:table-cell text-xs">{period}</td>
+                      <td className="p-4">
+                        <button
+                          onClick={() => upsertBanner({ ...b, status: b.status === "노출중" ? "대기" : "노출중" })}
+                          className={`text-xs px-2 py-1 rounded-full ${b.status === "노출중" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
+                          title="클릭해서 상태 전환"
+                        >{b.status}</button>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex gap-1">
+                          <button onClick={() => { setBannerModalMode("edit"); setBannerModal({ ...b }); }}
+                            className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">수정</button>
+                          <button onClick={() => { if (confirm(`'${b.title}' 배너를 삭제할까요?`)) removeBanner(b.id); }}
+                            className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">삭제</button>
+                        </div>
+                      </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -941,7 +1151,22 @@ export default function AdminWeb() {
         )}
 
         {/* ===== BOOKINGS (REQ-118) ===== */}
-        {tab === "bookings" && (
+        {tab === "bookings" && (() => {
+          const BOOKINGS = [
+            { id: "B-2026-0142", consumer: "김포토", studio: "루미에르", date: "05.10 14:00", amount: "₩100,000", status: "확정" },
+            { id: "B-2026-0141", consumer: "이촬영", studio: "선셋 포토랩", date: "05.18 10:00", amount: "₩160,000", status: "확정" },
+            { id: "B-2026-0140", consumer: "박스튜", studio: "블룸 웨딩", date: "05.25 10:00", amount: "₩800,000", status: "대기" },
+            { id: "B-2026-0135", consumer: "최민지", studio: "브랜드컷 스튜디오", date: "04.20 13:00", amount: "₩80,000", status: "완료" },
+            { id: "B-2026-0130", consumer: "한소희", studio: "펫모먼츠 스튜디오", date: "04.15 15:00", amount: "₩120,000", status: "취소" },
+          ];
+          const statusToFilter: Record<string, string> = { 확정: "예정", 대기: "예정", 완료: "완료", 취소: "취소" };
+          const q = bookingSearch.trim().toLowerCase();
+          const filtered = BOOKINGS.filter(b => {
+            if (q && !(b.consumer.toLowerCase().includes(q) || b.studio.toLowerCase().includes(q) || b.id.toLowerCase().includes(q))) return false;
+            if (bookingStatusFilter !== "전체" && statusToFilter[b.status] !== bookingStatusFilter) return false;
+            return true;
+          });
+          return (
           <div>
             <h2 className="text-xl font-bold mb-6">예약 관리</h2>
             <div className="mb-4 rounded-xl bg-amber-50 p-4 text-[11px] text-amber-700">
@@ -950,10 +1175,12 @@ export default function AdminWeb() {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <div className="p-4 border-b border-gray-100 flex gap-2">
-                <input type="text" placeholder="소비자명, 업체명 검색..." className="flex-1 bg-gray-100 rounded-xl px-4 py-2.5 text-sm" />
+              <div className="p-4 border-b border-gray-100 flex gap-2 flex-wrap">
+                <input type="text" value={bookingSearch} onChange={e => setBookingSearch(e.target.value)}
+                  placeholder="소비자명, 업체명, 예약번호 검색..." className="flex-1 min-w-[180px] bg-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none" />
                 {["전체", "예정", "완료", "취소"].map(f => (
-                  <button key={f} className={`px-3 py-2 rounded-lg text-xs font-medium ${f === "전체" ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{f}</button>
+                  <button key={f} onClick={() => setBookingStatusFilter(f)}
+                    className={`px-3 py-2 rounded-lg text-xs font-medium ${bookingStatusFilter === f ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{f}</button>
                 ))}
               </div>
               <table className="w-full text-sm">
@@ -965,30 +1192,56 @@ export default function AdminWeb() {
                     <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">날짜</th>
                     <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">금액</th>
                     <th className="text-left p-4 font-medium text-gray-500">상태</th>
+                    <th className="text-left p-4 font-medium text-gray-500">액션</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    { id: "B-2026-0142", consumer: "김포토", studio: "루미에르", date: "05.10 14:00", amount: "₩100,000", status: "확정" },
-                    { id: "B-2026-0141", consumer: "이촬영", studio: "선셋 포토랩", date: "05.18 10:00", amount: "₩160,000", status: "확정" },
-                    { id: "B-2026-0140", consumer: "박스튜", studio: "블룸 웨딩", date: "05.25 10:00", amount: "₩800,000", status: "대기" },
-                    { id: "B-2026-0135", consumer: "최민지", studio: "브랜드컷 스튜디오", date: "04.20 13:00", amount: "₩80,000", status: "완료" },
-                    { id: "B-2026-0130", consumer: "한소희", studio: "펫모먼츠 스튜디오", date: "04.15 15:00", amount: "₩120,000", status: "취소" },
-                  ].map((b, i) => (
-                    <tr key={i} className="border-t border-gray-50">
+                  {filtered.length === 0 && (
+                    <tr><td colSpan={7} className="p-6 text-center text-xs text-gray-400">검색 결과가 없습니다.</td></tr>
+                  )}
+                  {filtered.map((b) => {
+                    const action = bookingActions[b.id] ?? {};
+                    return (
+                    <tr key={b.id} className="border-t border-gray-50">
                       <td className="p-4 font-mono text-xs text-gray-400">{b.id}</td>
                       <td className="p-4">{b.consumer}</td>
                       <td className="p-4">{b.studio}</td>
                       <td className="p-4 text-gray-500 hidden md:table-cell text-xs">{b.date}</td>
                       <td className="p-4 font-medium hidden md:table-cell">{b.amount}</td>
-                      <td className="p-4"><span className={`text-xs px-2 py-1 rounded-full ${b.status === "확정" ? "bg-green-100 text-green-700" : b.status === "완료" ? "bg-gray-200 text-gray-500" : b.status === "취소" ? "bg-red-100 text-red-500" : "bg-amber-100 text-amber-700"}`}>{b.status}</span></td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <span className={`text-xs px-2 py-1 rounded-full ${b.status === "확정" ? "bg-green-100 text-green-700" : b.status === "완료" ? "bg-gray-200 text-gray-500" : b.status === "취소" ? "bg-red-100 text-red-500" : "bg-amber-100 text-amber-700"}`}>{b.status}</span>
+                          {action.refunded && <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded">환불됨</span>}
+                          {action.noShow && <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">노쇼</span>}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex gap-1 flex-wrap">
+                          <button onClick={() => setBookingDetail(b)}
+                            className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">상세</button>
+                          {!action.refunded && b.status !== "완료" && (
+                            <button onClick={() => { if (confirm(`${b.id} 건을 환불 처리할까요? (토스 환불 API 호출 시뮬)`)) updateBookingAction(b.id, { refunded: true }); }}
+                              className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">환불</button>
+                          )}
+                          {!action.noShow && (
+                            <button onClick={() => updateBookingAction(b.id, { noShow: !action.noShow })}
+                              className="text-xs text-amber-700 px-2 py-1 bg-amber-50 rounded hover:bg-amber-100">노쇼 표시</button>
+                          )}
+                          {action.noShow && (
+                            <button onClick={() => updateBookingAction(b.id, { noShow: false })}
+                              className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">노쇼 취소</button>
+                          )}
+                        </div>
+                      </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* ===== PAYMENTS (REQ-118) ===== */}
         {tab === "payments" && (
@@ -1036,13 +1289,81 @@ export default function AdminWeb() {
         )}
 
         {/* ===== REVIEWS (REQ-120) ===== */}
-        {tab === "reviews" && (
+        {tab === "reviews" && (() => {
+          const REVIEWS = [
+            { id: "rv-001", studio: "루미에르", author: "김**", rating: 5, text: "분위기 너무 좋아요! 사진 결과물도 만족합니다", date: "04.10" },
+            { id: "rv-002", studio: "루미에르", author: "이**", rating: 4, text: "접근성이 좋고 시설이 깔끔해요", date: "04.08" },
+            { id: "rv-003", studio: "선셋 포토랩", author: "박**", rating: 5, text: "바디프로필 전문! 조명이 정말 좋습니다", date: "04.05" },
+            { id: "rv-004", studio: "블룸 웨딩", author: "최**", rating: 3, text: "가격 대비 보통이었어요", date: "04.02" },
+            { id: "rv-005", studio: "브랜드컷 스튜디오", author: "한**", rating: 5, text: "팀 프로필 결과물이 기대 이상이에요", date: "03.28" },
+          ];
+          const q = reviewSearch.trim().toLowerCase();
+          const filtered = REVIEWS.filter(r => {
+            if (!q) return true;
+            return r.studio.toLowerCase().includes(q) || r.author.toLowerCase().includes(q) || r.text.toLowerCase().includes(q);
+          });
+          const pendingRequests = deleteRequests.filter(r => r.status === "대기");
+          const processedRequests = deleteRequests.filter(r => r.status !== "대기");
+          return (
           <div>
             <h2 className="text-xl font-bold mb-6">리뷰 관리</h2>
 
+            {/* 삭제 요청 별도 카드 */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 border border-amber-200">
+              <div className="p-4 border-b border-amber-100 bg-amber-50/50 flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-sm">리뷰 삭제 요청</h3>
+                  <p className="text-[10px] text-gray-500 mt-0.5">소비자가 사유와 함께 제출. 관리자 승인 시 실제 삭제 · 거절 시 유지</p>
+                </div>
+                <span className="text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-medium">대기 {pendingRequests.length}건</span>
+              </div>
+              {pendingRequests.length === 0 ? (
+                <p className="p-6 text-center text-xs text-gray-400">대기 중인 삭제 요청이 없습니다.</p>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {pendingRequests.map(req => (
+                    <div key={req.id} className="p-4 flex items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="text-xs font-bold">{req.studio}</span>
+                          <span className="text-[10px] text-gray-400">{req.author}</span>
+                          <span className="text-yellow-500 text-[10px]">{"★".repeat(req.rating)}{"☆".repeat(5 - req.rating)}</span>
+                          <span className="text-[10px] text-gray-400">{new Date(req.requestedAt).toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>
+                        </div>
+                        <p className="text-xs text-gray-700 bg-gray-50 rounded p-2 mb-2">&ldquo;{req.text}&rdquo;</p>
+                        <p className="text-[11px] text-amber-800"><span className="font-bold">요청 사유:</span> {req.reason}</p>
+                      </div>
+                      <div className="flex gap-1 shrink-0">
+                        <button onClick={() => { if (confirm("이 리뷰를 삭제할까요?")) { decideDeleteRequest(req.id, "승인"); hideReview(req.reviewId); } }}
+                          className="text-xs bg-primary text-white px-3 py-1.5 rounded hover:bg-primary/90">승인 (삭제)</button>
+                        <button onClick={() => decideDeleteRequest(req.id, "거절")}
+                          className="text-xs text-gray-500 bg-gray-100 px-3 py-1.5 rounded hover:bg-gray-200">거절 (유지)</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {processedRequests.length > 0 && (
+                <details className="border-t border-gray-100">
+                  <summary className="p-3 text-[11px] text-gray-500 cursor-pointer hover:bg-gray-50">처리 완료 요청 {processedRequests.length}건 펼치기</summary>
+                  <div className="divide-y divide-gray-100">
+                    {processedRequests.map(req => (
+                      <div key={req.id} className="p-3 flex items-center gap-3 text-[11px]">
+                        <span className={`px-2 py-0.5 rounded-full ${req.status === "승인" ? "bg-red-100 text-red-600" : "bg-gray-100 text-gray-500"}`}>{req.status}</span>
+                        <span className="flex-1 text-gray-500 truncate">{req.studio} · {req.author} · {req.reason}</span>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
+            </div>
+
+            {/* 전체 리뷰 관리 */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
               <div className="p-4 border-b border-gray-100 flex gap-2">
-                <input type="text" placeholder="스튜디오명, 작성자 검색..." className="flex-1 bg-gray-100 rounded-xl px-4 py-2.5 text-sm" />
+                <input type="text" value={reviewSearch} onChange={e => setReviewSearch(e.target.value)}
+                  placeholder="스튜디오명, 작성자, 내용 검색..." className="flex-1 bg-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none" />
+                {reviewSearch && (<button onClick={() => setReviewSearch("")} className="text-xs text-gray-400 px-2">지우기</button>)}
               </div>
               <table className="w-full text-sm">
                 <thead className="bg-gray-50">
@@ -1056,27 +1377,38 @@ export default function AdminWeb() {
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    { studio: "루미에르", author: "김**", rating: 5, text: "분위기 너무 좋아요! 사진 결과물도 만족합니다", date: "04.10" },
-                    { studio: "루미에르", author: "이**", rating: 4, text: "접근성이 좋고 시설이 깔끔해요", date: "04.08" },
-                    { studio: "선셋 포토랩", author: "박**", rating: 5, text: "바디프로필 전문! 조명이 정말 좋습니다", date: "04.05" },
-                    { studio: "블룸 웨딩", author: "최**", rating: 3, text: "가격 대비 보통이었어요", date: "04.02" },
-                    { studio: "브랜드컷 스튜디오", author: "한**", rating: 5, text: "팀 프로필 결과물이 기대 이상이에요", date: "03.28" },
-                  ].map((r, i) => (
-                    <tr key={i} className="border-t border-gray-50">
+                  {filtered.length === 0 && (
+                    <tr><td colSpan={6} className="p-6 text-center text-xs text-gray-400">검색 결과가 없습니다.</td></tr>
+                  )}
+                  {filtered.map((r) => {
+                    const isHidden = hiddenReviews.has(r.id);
+                    return (
+                    <tr key={r.id} className={`border-t border-gray-50 ${isHidden ? "opacity-50" : ""}`}>
                       <td className="p-4 font-medium">{r.studio}</td>
                       <td className="p-4">{r.author}</td>
                       <td className="p-4 text-yellow-500 text-xs">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</td>
                       <td className="p-4 text-gray-500 text-xs hidden md:table-cell max-w-[200px] truncate">{r.text}</td>
                       <td className="p-4 text-gray-500 text-xs hidden md:table-cell">{r.date}</td>
-                      <td className="p-4"><div className="flex gap-1"><button className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">숨김</button><button className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded">삭제</button></div></td>
+                      <td className="p-4">
+                        <div className="flex gap-1">
+                          {isHidden ? (
+                            <button onClick={() => unhideReview(r.id)} className="text-xs text-green-600 px-2 py-1 bg-green-50 rounded hover:bg-green-100">복구</button>
+                          ) : (
+                            <button onClick={() => hideReview(r.id)} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">숨김</button>
+                          )}
+                          <button onClick={() => alert("삭제는 소비자의 '삭제 요청' 후 본 어드민에서 승인하는 방식입니다 (위 카드에서 처리).")}
+                            className="text-xs text-gray-400 px-2 py-1 bg-gray-50 rounded" title="소비자 삭제 요청 → 어드민 승인 정책">직접 삭제 불가</button>
+                        </div>
+                      </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* ===== POLICIES ===== */}
         {tab === "policies" && (
@@ -1124,7 +1456,14 @@ export default function AdminWeb() {
                               <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">DRAFT 수정됨</span>
                             )}
                             {item.note && (
-                              <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">{item.note}</span>
+                              <DismissibleNote
+                                id={`policy.note.${item.id}`}
+                                dismissed={dismissed}
+                                onDismiss={dismissNote}
+                                className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full inline-flex items-center gap-1"
+                              >
+                                {item.note}
+                              </DismissibleNote>
                             )}
                           </div>
                           {isEdited && (
@@ -1331,7 +1670,13 @@ export default function AdminWeb() {
                         <p className="text-sm font-bold text-gray-600">1회</p>
                       </div>
                     </div>
-                    <p className="text-[10px] text-gray-400 mt-2">※ 정지 기준은 운영 초기 수립 후 본 영역에 연동 (킥오프: 대표 확인 대기)</p>
+                    <div className="text-[10px] text-gray-400 mt-2 flex flex-wrap items-center gap-2">
+                      <span>※ 정지 기준은 운영 초기 수립 후 본 영역에 연동</span>
+                      <DismissibleNote id="admin.biz-suspend-criteria" dismissed={dismissed} onDismiss={dismissNote}
+                        className="text-[9px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full font-medium inline-flex items-center gap-1">
+                        대표 확인 대기
+                      </DismissibleNote>
+                    </div>
                   </div>
 
                   <div className="flex gap-2 mt-4">
@@ -1384,6 +1729,205 @@ export default function AdminWeb() {
           </div>
         </div>
       )}
+
+      {/* ===== 광고 편집/추가 모달 ===== */}
+      {adModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setAdModal(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="font-bold text-base">{adModalMode === "create" ? "광고 업체 추가" : "광고 수정"}</h3>
+              <button onClick={() => setAdModal(null)} className="text-gray-400"><X size={18} strokeWidth={1.5} /></button>
+            </div>
+            <div className="p-5 space-y-3">
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">스튜디오명</label>
+                <input type="text" value={adModal.studio}
+                  onChange={e => setAdModal({ ...adModal, studio: e.target.value })}
+                  placeholder="예: 루미에르 스튜디오"
+                  className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200 outline-none focus:border-primary" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">카테고리</label>
+                <select value={adModal.cat}
+                  onChange={e => setAdModal({ ...adModal, cat: e.target.value })}
+                  className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200 outline-none focus:border-primary">
+                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">노출 시작</label>
+                  <input type="date" value={adModal.periodStart}
+                    onChange={e => setAdModal({ ...adModal, periodStart: e.target.value })}
+                    className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200 outline-none focus:border-primary" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">노출 종료</label>
+                  <input type="date" value={adModal.periodEnd}
+                    onChange={e => setAdModal({ ...adModal, periodEnd: e.target.value })}
+                    className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200 outline-none focus:border-primary" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">상태</label>
+                <div className="flex gap-2">
+                  {(["노출중", "대기", "종료"] as const).map(s => (
+                    <button key={s} onClick={() => setAdModal({ ...adModal, status: s })}
+                      className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium ${adModal.status === s ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{s}</button>
+                  ))}
+                </div>
+              </div>
+              <p className="text-[10px] text-gray-400">※ 저장 시 소비자 홈 &lsquo;지금 추천하는 스튜디오&rsquo; 섹션의 프리미엄 영역에 &lsquo;노출중&rsquo; 광고만 즉시 반영됩니다.</p>
+            </div>
+            <div className="p-4 border-t border-gray-100 flex justify-end gap-2">
+              <button onClick={() => setAdModal(null)} className="text-xs text-gray-500 bg-gray-100 px-4 py-2 rounded-lg">취소</button>
+              <button
+                onClick={() => { if (!adModal.studio.trim()) { alert("스튜디오명을 입력하세요"); return; } upsertAd(adModal); setAdModal(null); }}
+                disabled={!adModal.studio.trim()}
+                className={`text-xs px-4 py-2 rounded-lg font-medium ${adModal.studio.trim() ? "bg-primary text-white" : "bg-gray-200 text-gray-400"}`}
+              >저장</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== 배너 편집/추가 모달 ===== */}
+      {bannerModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setBannerModal(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="font-bold text-base">{bannerModalMode === "create" ? "배너 등록" : "배너 수정"}</h3>
+              <button onClick={() => setBannerModal(null)} className="text-gray-400"><X size={18} strokeWidth={1.5} /></button>
+            </div>
+            <div className="p-5 space-y-3">
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">제목</label>
+                <input type="text" value={bannerModal.title}
+                  onChange={e => setBannerModal({ ...bannerModal, title: e.target.value })}
+                  placeholder="예: 프로필 촬영 특가"
+                  className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200 outline-none focus:border-primary" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">노출 위치</label>
+                <select value={bannerModal.position}
+                  onChange={e => setBannerModal({ ...bannerModal, position: e.target.value })}
+                  className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200 outline-none focus:border-primary">
+                  {["메인 상단", "메인 중간", "카테고리", "상세 하단"].map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">노출 시작</label>
+                  <input type="date" value={bannerModal.periodStart}
+                    onChange={e => setBannerModal({ ...bannerModal, periodStart: e.target.value })}
+                    className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200 outline-none focus:border-primary" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">노출 종료</label>
+                  <input type="date" value={bannerModal.periodEnd}
+                    onChange={e => setBannerModal({ ...bannerModal, periodEnd: e.target.value })}
+                    className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200 outline-none focus:border-primary" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">상태</label>
+                <div className="flex gap-2">
+                  {(["노출중", "대기", "종료"] as const).map(s => (
+                    <button key={s} onClick={() => setBannerModal({ ...bannerModal, status: s })}
+                      className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium ${bannerModal.status === s ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{s}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="p-4 border-t border-gray-100 flex justify-end gap-2">
+              <button onClick={() => setBannerModal(null)} className="text-xs text-gray-500 bg-gray-100 px-4 py-2 rounded-lg">취소</button>
+              <button
+                onClick={() => { if (!bannerModal.title.trim()) { alert("제목을 입력하세요"); return; } upsertBanner(bannerModal); setBannerModal(null); }}
+                disabled={!bannerModal.title.trim()}
+                className={`text-xs px-4 py-2 rounded-lg font-medium ${bannerModal.title.trim() ? "bg-primary text-white" : "bg-gray-200 text-gray-400"}`}
+              >저장</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== 예약 상세 모달 ===== */}
+      {bookingDetail && (() => {
+        const action = bookingActions[bookingDetail.id] ?? {};
+        return (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setBookingDetail(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <p className="font-mono text-xs text-gray-400">{bookingDetail.id}</p>
+                <h3 className="font-bold text-base">{bookingDetail.consumer} → {bookingDetail.studio}</h3>
+              </div>
+              <button onClick={() => setBookingDetail(null)} className="text-gray-400"><X size={18} strokeWidth={1.5} /></button>
+            </div>
+            <div className="p-5 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-gray-50 rounded-lg p-3"><p className="text-[10px] text-gray-400">일시</p><p className="text-sm font-medium">{bookingDetail.date}</p></div>
+                <div className="bg-gray-50 rounded-lg p-3"><p className="text-[10px] text-gray-400">결제 금액</p><p className="text-sm font-medium">{bookingDetail.amount}</p></div>
+                <div className="bg-gray-50 rounded-lg p-3"><p className="text-[10px] text-gray-400">상태</p><p className="text-sm font-medium">{bookingDetail.status}</p></div>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-[10px] text-gray-400">플래그</p>
+                  <p className="text-sm font-medium">
+                    {action.refunded && <span className="text-red-500">환불됨</span>}
+                    {action.noShow && <span className="text-amber-700 ml-1">노쇼</span>}
+                    {!action.refunded && !action.noShow && <span className="text-gray-400">없음</span>}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">어드민 메모</label>
+                <textarea rows={3} value={action.note ?? ""}
+                  onChange={e => updateBookingAction(bookingDetail.id, { note: e.target.value })}
+                  placeholder="예: 업체 요청으로 취소 처리 / CS 통화 내용 요약"
+                  className="w-full bg-gray-50 rounded-lg px-3 py-2 text-xs border border-gray-200 outline-none focus:border-primary resize-none" />
+              </div>
+            </div>
+            <div className="p-4 border-t border-gray-100 flex justify-end gap-2">
+              <button onClick={() => setBookingDetail(null)} className="text-xs text-gray-500 bg-gray-100 px-4 py-2 rounded-lg">닫기</button>
+            </div>
+          </div>
+        </div>
+        );
+      })()}
+
+      {/* ===== 회원 상세 모달 ===== */}
+      {memberDetail && (() => {
+        const isBlocked = blockedMembers.has(memberDetail.name);
+        return (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setMemberDetail(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-base">{memberDetail.name}</h3>
+                <p className="text-[10px] text-gray-400">{memberDetail.type} · 가입 {memberDetail.joined}</p>
+              </div>
+              <button onClick={() => setMemberDetail(null)} className="text-gray-400"><X size={18} strokeWidth={1.5} /></button>
+            </div>
+            <div className="p-5 space-y-3 text-xs text-gray-600">
+              <p>• 최근 로그인: 2026.04.22 18:42 (iOS)</p>
+              <p>• 누적 결제: ₩320,000 · 5건</p>
+              <p>• 누적 리뷰: 3건 (평균 4.7)</p>
+              <p>• 누적 CS: 1건</p>
+              <p>• 계정 상태: {isBlocked ? <span className="text-red-500 font-bold">차단됨</span> : <span className="text-green-600 font-bold">활성</span>}</p>
+            </div>
+            <div className="p-4 border-t border-gray-100 flex justify-end gap-2">
+              {isBlocked ? (
+                <button onClick={() => { unblockMember(memberDetail.name); setMemberDetail(null); }}
+                  className="text-xs text-green-600 bg-green-50 px-4 py-2 rounded-lg hover:bg-green-100">차단 해제</button>
+              ) : (
+                <button onClick={() => { if (confirm(`${memberDetail.name} 계정을 차단할까요?`)) { blockMember(memberDetail.name); setMemberDetail(null); } }}
+                  className="text-xs text-red-500 bg-red-50 px-4 py-2 rounded-lg hover:bg-red-100">차단</button>
+              )}
+              <button onClick={() => setMemberDetail(null)} className="text-xs text-gray-500 bg-gray-100 px-4 py-2 rounded-lg">닫기</button>
+            </div>
+          </div>
+        </div>
+        );
+      })()}
     </div>
   );
 }
