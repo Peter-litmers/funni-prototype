@@ -3,7 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Users, Building2, Calendar, DollarSign, ImageIcon, X } from "lucide-react";
 import PolicyForm from "../components/PolicyForm";
-import { useCategories, useRegions, useFeeRate, useBusinessFees, getFeeForBusiness, usePolicies } from "../lib/admin-store";
+import { useCategories, useRegions, useFeeRate, useBusinessFees, getFeeForBusiness, usePolicies, useHomeKeywords } from "../lib/admin-store";
 import { POLICY_CATALOG, formatTimestamp } from "../lib/policy-catalog";
 
 function PolicyBadge({ label }: { label: string }) {
@@ -18,6 +18,7 @@ export default function AdminWeb() {
   const [bizDetailView, setBizDetailView] = useState<"info" | "portfolio" | "calendar">("info");
   const [categories, setCategories] = useCategories();
   const [regions, setRegions] = useRegions();
+  const [homeKeywords, setHomeKeywords] = useHomeKeywords();
   const [feeRate, setFeeRate] = useFeeRate();
   const [bizFees, setBizFees] = useBusinessFees();
   const [policies, updatePolicy, resetPolicy] = usePolicies();
@@ -52,6 +53,36 @@ export default function AdminWeb() {
   const addRegion = () => {
     const name = prompt("새 지역 이름을 입력하세요 (예: 서울 마포)");
     if (name && name.trim()) setRegions([...regions, name.trim()]);
+  };
+
+  const updateHomeKeywordLabel = (idx: number, label: string) => {
+    const updated = [...homeKeywords];
+    updated[idx] = { ...updated[idx], label };
+    setHomeKeywords(updated);
+  };
+  const updateHomeKeywordAliases = (idx: number, raw: string) => {
+    const aliases = raw.split(",").map(s => s.trim()).filter(Boolean);
+    const updated = [...homeKeywords];
+    updated[idx] = { ...updated[idx], aliases };
+    setHomeKeywords(updated);
+  };
+  const removeHomeKeyword = (idx: number) => setHomeKeywords(homeKeywords.filter((_, i) => i !== idx));
+  const addHomeKeyword = () => {
+    const label = prompt("새 추천 검색어 라벨을 입력하세요 (예: 주말 웨딩, 증명사진)");
+    if (!label || !label.trim()) return;
+    const aliasesRaw =
+      prompt(
+        "매칭할 별칭(검색 단어)을 쉼표로 구분해 입력하세요\n예) 증명사진, 이력서, 취업 프로필\n\n※ 각 별칭 안의 공백은 AND 매칭, 별칭 간에는 OR 매칭.\n※ 비워두면 라벨 자체로만 매칭합니다 (카테고리명과 일치하면 카테고리 필터).",
+      ) || "";
+    const aliases = aliasesRaw.split(",").map(s => s.trim()).filter(Boolean);
+    setHomeKeywords([...homeKeywords, { label: label.trim(), aliases }]);
+  };
+  const moveHomeKeyword = (idx: number, dir: -1 | 1) => {
+    const next = [...homeKeywords];
+    const target = idx + dir;
+    if (target < 0 || target >= next.length) return;
+    [next[idx], next[target]] = [next[target], next[idx]];
+    setHomeKeywords(next);
   };
 
   const setBizFeeOverride = (name: string, rate: number | null) => {
@@ -796,6 +827,74 @@ export default function AdminWeb() {
                   <p className="text-xs text-gray-400 text-center py-6">지역이 없습니다.</p>
                 )}
               </div>
+            </div>
+
+            <div className="mt-6 bg-white rounded-xl shadow-sm p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-bold">홈 추천 검색어</h3>
+                <button onClick={addHomeKeyword} className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-medium">+ 추가</button>
+              </div>
+              <p className="text-[11px] text-gray-500 mb-3">
+                소비자 홈 상단 검색창 아래 칩으로 노출됩니다. 칩 클릭 시 카테고리 탭으로 이동하며,
+                <b> 라벨</b>이 카테고리명과 일치하면 카테고리 필터, 아니면 <b>별칭</b>으로 자유 검색합니다.
+                <br />
+                <span className="text-gray-400">※ 별칭 안 공백은 AND · 별칭 간 OR · 비워두면 라벨 단독 매칭</span>
+              </p>
+              <div className="space-y-2">
+                {homeKeywords.map((k, i) => (
+                  <div key={`${k.label}-${i}`} className="border border-gray-100 rounded-lg p-3 bg-gray-50/30">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-gray-400 w-5">{i + 1}</span>
+                      <input
+                        type="text"
+                        value={k.label}
+                        onChange={(e) => updateHomeKeywordLabel(i, e.target.value)}
+                        placeholder="라벨 (예: 증명사진)"
+                        className="text-sm font-semibold bg-transparent outline-none border-b border-transparent focus:border-primary flex-1"
+                      />
+                      {k.aliases.length === 0 && categories.includes(k.label) ? (
+                        <span className="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">카테고리</span>
+                      ) : k.aliases.length > 0 ? (
+                        <span className="text-[10px] text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">별칭 {k.aliases.length}</span>
+                      ) : (
+                        <span className="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">라벨 단독</span>
+                      )}
+                      <div className="flex gap-1">
+                        <button onClick={() => moveHomeKeyword(i, -1)} disabled={i === 0}
+                          className="text-[10px] text-gray-400 px-2 py-1 disabled:opacity-30">▲</button>
+                        <button onClick={() => moveHomeKeyword(i, 1)} disabled={i === homeKeywords.length - 1}
+                          className="text-[10px] text-gray-400 px-2 py-1 disabled:opacity-30">▼</button>
+                        <button onClick={() => removeHomeKeyword(i)}
+                          className="text-[10px] text-red-400 px-2 py-1">삭제</button>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-start gap-3">
+                      <span className="text-[10px] text-gray-400 w-5 pt-1.5">↳</span>
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          value={k.aliases.join(", ")}
+                          onChange={(e) => updateHomeKeywordAliases(i, e.target.value)}
+                          placeholder="별칭 쉼표 구분 (예: 증명사진, 이력서, 취업 프로필)"
+                          className="w-full text-xs bg-white outline-none border border-gray-200 focus:border-primary rounded px-2 py-1"
+                        />
+                        <p className="text-[10px] text-gray-400 mt-1">
+                          각 별칭은 스튜디오명·설명·지역·카테고리에서 검색됩니다. 공백 있는 별칭(예: &ldquo;취업 프로필&rdquo;)은 두 단어 모두 포함돼야 매칭.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {homeKeywords.length === 0 && (
+                <p className="text-xs text-gray-400 text-center py-6">
+                  추천 검색어가 없습니다. 비워두면 홈 상단 칩 영역이 숨겨집니다.
+                </p>
+              )}
+              <p className="mt-3 text-[11px] text-amber-700 bg-amber-50 rounded-lg p-2">
+                💡 업체가 별도 태그를 달지 않아도 운영자가 별칭만 관리하면 관련 스튜디오가 자동 노출됩니다.
+                시즌 프로모션(5월 가족 · 6월 웨딩) · 지역 조합(성수 프로필) · 상황(당일 예약) 모두 여기서 편성.
+              </p>
             </div>
           </div>
         )}

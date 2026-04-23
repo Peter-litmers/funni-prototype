@@ -30,11 +30,27 @@ const DEFAULT_BUSINESS_FEES: Record<string, number> = {
   "블룸 웨딩 스튜디오": 8,
 };
 
+export type HomeKeyword = {
+  label: string;
+  aliases: string[]; // 각 별칭은 공백 AND 매칭, 별칭 간 OR. 비어있으면 label로만 매칭
+};
+
+const DEFAULT_HOME_KEYWORDS: HomeKeyword[] = [
+  { label: "인기", aliases: [] },
+  { label: "증명사진", aliases: ["증명사진", "이력서", "취업 프로필"] },
+  { label: "성수 프로필", aliases: ["성수 프로필", "성수 바디프로필"] },
+  { label: "주말 웨딩", aliases: ["주말 웨딩", "웨딩 스냅", "본식 웨딩"] },
+  { label: "가족 스냅", aliases: ["가족 스냅", "3대 가족", "가족사진"] },
+  { label: "반려 가족", aliases: ["반려동물", "반려 가족", "펫"] },
+  { label: "바디프로필", aliases: [] },
+];
+
 const K_CATEGORIES = "photopot.categories";
 const K_REGIONS = "photopot.regions";
 const K_FEE_RATE = "photopot.feeRate";
 const K_BIZ_FEES = "photopot.bizFees";
 const K_POLICIES = "photopot.policies.drafts";
+const K_HOME_KEYWORDS = "photopot.homeKeywords";
 
 const CHANGE_EVENT = "photopot-admin-store-change";
 
@@ -130,6 +146,51 @@ export function useRegions(): [string[], (next: string[]) => void] {
     (raw) => (raw === undefined ? DEFAULT_REGIONS : sanitizeStringArray(raw, DEFAULT_REGIONS)),
   );
   return [value, (next) => writeStored(K_REGIONS, sanitizeStringArray(next, []))];
+}
+
+function sanitizeHomeKeywords(input: unknown): HomeKeyword[] {
+  if (!Array.isArray(input)) return DEFAULT_HOME_KEYWORDS;
+  const result: HomeKeyword[] = [];
+  for (const item of input) {
+    // 하위호환: 이전 버전에서 string[]로 저장됐을 수 있음
+    if (typeof item === "string") {
+      if (item.trim()) result.push({ label: item.trim(), aliases: [] });
+      continue;
+    }
+    if (!item || typeof item !== "object") continue;
+    const obj = item as Record<string, unknown>;
+    const label = typeof obj.label === "string" ? obj.label.trim() : "";
+    if (!label) continue;
+    const aliases = Array.isArray(obj.aliases)
+      ? obj.aliases
+          .filter((a): a is string => typeof a === "string")
+          .map(a => a.trim())
+          .filter(Boolean)
+      : [];
+    result.push({ label, aliases });
+  }
+  return result;
+}
+
+export function useHomeKeywords(): [HomeKeyword[], (next: HomeKeyword[]) => void] {
+  const value = useStored<HomeKeyword[]>(
+    K_HOME_KEYWORDS,
+    DEFAULT_HOME_KEYWORDS,
+    (raw) => (raw === undefined ? DEFAULT_HOME_KEYWORDS : sanitizeHomeKeywords(raw)),
+  );
+  return [value, (next) => writeStored(K_HOME_KEYWORDS, sanitizeHomeKeywords(next))];
+}
+
+// 칩/자유검색 매칭: 각 별칭은 공백 분리 AND, 별칭들 사이는 OR.
+// aliases가 비어있으면 label 자체를 쿼리로 사용.
+export function matchesKeyword(haystack: string, entry: HomeKeyword): boolean {
+  const queries = entry.aliases.length > 0 ? entry.aliases : [entry.label];
+  const h = haystack.toLowerCase();
+  return queries.some(q => {
+    const tokens = q.toLowerCase().split(/\s+/).filter(Boolean);
+    if (tokens.length === 0) return false;
+    return tokens.every(t => h.includes(t));
+  });
 }
 
 export function useFeeRate(): [number, (next: number) => void] {

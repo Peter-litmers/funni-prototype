@@ -8,7 +8,7 @@ import {
   DollarSign, BarChart3, Building2, ImageIcon, X, Star, Tag, Check, ChevronDown,
   type LucideIcon
 } from "lucide-react";
-import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness } from "../lib/admin-store";
+import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness, useHomeKeywords, matchesKeyword, type HomeKeyword } from "../lib/admin-store";
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   "프로필": Camera,
@@ -119,7 +119,7 @@ export default function BusinessApp() {
   const [feeRate] = useFeeRate();
   const [bizFees] = useBusinessFees();
   const CATEGORIES = [{ name: "전체", Icon: LayoutGrid }, ...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }))];
-  const HOME_KEYWORDS = ["인기", ...adminCategories];
+  const [homeKeywords] = useHomeKeywords();
   const myFee = getFeeForBusiness("루미에르 스튜디오", feeRate, bizFees);
   const [screen, setScreen] = useState<Screen>("home");
   const [tab, setTab] = useState<Tab>("home");
@@ -131,6 +131,7 @@ export default function BusinessApp() {
   const [customPriceMin, setCustomPriceMin] = useState("");
   const [customPriceMax, setCustomPriceMax] = useState("");
   const [activeKeyword, setActiveKeyword] = useState("인기");
+  const [freeKeyword, setFreeKeyword] = useState<HomeKeyword | null>(null);
   const [selectedCats, setSelectedCats] = useState<string[]>(["프로필", "바디프로필"]);
   const [replyModal, setReplyModal] = useState<{ idx: number; author: string; text: string } | null>(null);
   const [replyDraft, setReplyDraft] = useState("");
@@ -183,19 +184,45 @@ export default function BusinessApp() {
     return () => window.clearInterval(timer);
   }, [screen]);
 
-  // 카테고리가 어드민에서 삭제된 경우 선택된 키워드 초기화
+  // 어드민에서 키워드가 변경/삭제된 경우 현재 선택값을 안전하게 리셋
   useEffect(() => {
-    if (activeKeyword !== "인기" && !adminCategories.includes(activeKeyword)) {
-      setActiveKeyword("인기");
+    if (homeKeywords.length === 0) return;
+    if (!homeKeywords.some(k => k.label === activeKeyword)) {
+      setActiveKeyword(homeKeywords[0].label);
     }
-  }, [adminCategories, activeKeyword]);
+  }, [homeKeywords, activeKeyword]);
+
+  // 홈 추천 검색어 칩 클릭 → 카테고리 탭으로 전환하며 필터 적용
+  const applyHomeKeyword = (label: string) => {
+    setActiveKeyword(label);
+    const entry = homeKeywords.find(k => k.label === label);
+    if (!label || label === "인기" || !entry) {
+      setFreeKeyword(null);
+      setCategoryCat("전체");
+    } else if (entry.aliases.length === 0 && adminCategories.includes(label)) {
+      setFreeKeyword(null);
+      setCategoryCat(label);
+    } else {
+      setFreeKeyword(entry);
+      setCategoryCat("전체");
+    }
+    historyStack.current.push({ s: screen, t: tab });
+    setScreen("category");
+    setTab("category");
+  };
 
   const parseStudioPrice = (price: string) => Number(price.replace(/,/g, ""));
 
   const homeFiltered = STUDIOS
     .filter(s => {
-      if (activeKeyword === "인기") return true;
-      return s.cat === activeKeyword;
+      if (!activeKeyword || activeKeyword === "인기") return true;
+      const entry = homeKeywords.find(k => k.label === activeKeyword);
+      if (!entry) return true;
+      if (entry.aliases.length === 0 && adminCategories.includes(entry.label)) {
+        return s.cat === entry.label;
+      }
+      const haystack = `${s.name} ${s.desc} ${s.area} ${s.cat}`;
+      return matchesKeyword(haystack, entry);
     })
     .filter(s => {
       if (selectedRegion === "전체" || !selectedRegion.trim()) return true;
@@ -243,7 +270,14 @@ export default function BusinessApp() {
     return b.rating - a.rating;
   }).slice(0, 5);
 
-  const catFiltered = (categoryCat === "전체" ? STUDIOS : STUDIOS.filter(s => s.cat === categoryCat))
+  const catFiltered = STUDIOS
+    .filter(s => {
+      if (freeKeyword) {
+        const haystack = `${s.name} ${s.desc} ${s.area} ${s.cat}`;
+        return matchesKeyword(haystack, freeKeyword);
+      }
+      return categoryCat === "전체" || s.cat === categoryCat;
+    })
     .filter(s => {
       if (selectedRegion === "전체" || !selectedRegion.trim()) return true;
       return s.area.toLowerCase().includes(selectedRegion.trim().toLowerCase());
@@ -318,21 +352,23 @@ export default function BusinessApp() {
                   />
                 </div>
 
-                <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto pb-1">
-                  {HOME_KEYWORDS.map(keyword => (
-                    <button
-                      key={keyword}
-                      onClick={() => setActiveKeyword(keyword)}
-                      className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
-                        activeKeyword === keyword
-                          ? "border-primary bg-primary/5 text-primary"
-                          : "border-gray-200 bg-white text-gray-500"
-                      }`}
-                    >
-                      {keyword}
-                    </button>
-                  ))}
-                </div>
+                {homeKeywords.length > 0 && (
+                  <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto pb-1">
+                    {homeKeywords.map(k => (
+                      <button
+                        key={k.label}
+                        onClick={() => applyHomeKeyword(k.label)}
+                        className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
+                          activeKeyword === k.label
+                            ? "border-primary bg-primary/5 text-primary"
+                            : "border-gray-200 bg-white text-gray-500"
+                        }`}
+                      >
+                        {k.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="mx-4 mt-5 rounded-3xl bg-gray-50 p-3">
@@ -604,12 +640,12 @@ export default function BusinessApp() {
               <h2 className="text-base font-bold mb-4">카테고리</h2>
               <div className="grid grid-cols-4 gap-2 mb-4">
                 {CATEGORIES.map(c => (
-                  <button key={c.name} onClick={() => setCategoryCat(c.name)}
+                  <button key={c.name} onClick={() => { setFreeKeyword(null); setCategoryCat(c.name); }}
                     className="flex flex-col items-center gap-1.5 py-2">
-                    <div className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all ${categoryCat === c.name ? "border-primary bg-primary/5 text-primary" : "border-gray-200 bg-white text-gray-600"}`}>
+                    <div className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all ${!freeKeyword && categoryCat === c.name ? "border-primary bg-primary/5 text-primary" : "border-gray-200 bg-white text-gray-600"}`}>
                       <c.Icon size={20} strokeWidth={1.5} />
                     </div>
-                    <span className={`text-[10px] ${categoryCat === c.name ? "text-primary font-semibold" : "text-gray-600"}`}>{c.name}</span>
+                    <span className={`text-[10px] ${!freeKeyword && categoryCat === c.name ? "text-primary font-semibold" : "text-gray-600"}`}>{c.name}</span>
                   </button>
                 ))}
               </div>
@@ -625,7 +661,24 @@ export default function BusinessApp() {
                 </div>
               </div>
 
-              <p className="text-sm font-bold mb-3">&lsquo;{categoryCat}&rsquo; 스튜디오 {catFiltered.length}곳</p>
+              {freeKeyword ? (
+                <div className="mb-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold px-3 py-1">
+                      🔎 {freeKeyword.label}
+                      <button onClick={() => setFreeKeyword(null)} className="text-primary/60 hover:text-primary ml-0.5" aria-label="검색어 삭제">✕</button>
+                    </span>
+                    <p className="text-sm font-bold">검색 결과 {catFiltered.length}곳</p>
+                  </div>
+                  {freeKeyword.aliases.length > 0 && (
+                    <p className="mt-1.5 text-[10px] text-gray-400">
+                      매칭 별칭: {freeKeyword.aliases.join(" · ")}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm font-bold mb-3">&lsquo;{categoryCat}&rsquo; 스튜디오 {catFiltered.length}곳</p>
+              )}
 
               <div className="mb-3 overflow-hidden rounded-xl">
                 <div className="bg-gradient-to-r from-rose-100 to-pink-200 rounded-xl p-4 flex items-center gap-3 relative">
