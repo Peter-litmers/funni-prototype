@@ -530,9 +530,9 @@ export default function ConsumerApp() {
                           )}
                         </div>
                         {studio.tags.length > 0 && (
-                          <div className="mt-0.5 flex gap-1 overflow-hidden">
+                          <div className="mt-1 flex gap-1 flex-wrap">
                             {studio.tags.slice(0, 3).map(t => (
-                              <span key={t} className="truncate text-[10px] font-medium text-primary">#{t}</span>
+                              <span key={t} className="text-[10px] text-primary bg-primary/5 px-1.5 py-0.5 rounded-full">#{t}</span>
                             ))}
                           </div>
                         )}
@@ -582,9 +582,9 @@ export default function ConsumerApp() {
                           )}
                         </div>
                         {studio.tags.length > 0 && (
-                          <div className="mt-0.5 flex gap-1 overflow-hidden">
+                          <div className="mt-1 flex gap-1 flex-wrap">
                             {studio.tags.slice(0, 3).map(t => (
-                              <span key={t} className="truncate text-[10px] font-medium text-primary">#{t}</span>
+                              <span key={t} className="text-[10px] text-primary bg-primary/5 px-1.5 py-0.5 rounded-full">#{t}</span>
                             ))}
                           </div>
                         )}
@@ -710,14 +710,14 @@ export default function ConsumerApp() {
                           출장 가능
                         </span>
                       )}
-                      {s.tags.length > 0 && (
-                        <div className="flex gap-1 overflow-hidden min-w-0">
-                          {s.tags.slice(0, 3).map(t => (
-                            <span key={t} className="truncate text-[10px] font-medium text-primary">#{t}</span>
-                          ))}
-                        </div>
-                      )}
                     </div>
+                    {s.tags.length > 0 && (
+                      <div className="mt-1 flex gap-1 flex-wrap">
+                        {s.tags.slice(0, 3).map(t => (
+                          <span key={t} className="text-[10px] text-primary bg-primary/5 px-1.5 py-0.5 rounded-full">#{t}</span>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-sm font-bold">₩{s.price.toLocaleString()}</span>
                       <span className="text-xs text-yellow-500">★ {s.rating}</span>
