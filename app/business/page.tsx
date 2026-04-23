@@ -133,13 +133,14 @@ export default function BusinessApp() {
   const [activeKeyword, setActiveKeyword] = useState("인기");
   const [freeKeyword, setFreeKeyword] = useState<HomeKeyword | null>(null);
   // 한 업체 계정에 스튜디오 여러 개 가능, 각 스튜디오 = 단일 카테고리
-  type MyStudio = { id: string; name: string; category: string; address: string; intro: string; photoCount: number };
+  type MyStudio = { id: string; name: string; category: string; address: string; intro: string; photoCount: number; tags: string[] };
   const [myStudios, setMyStudios] = useState<MyStudio[]>([
-    { id: "s-1", name: "루미에르 스튜디오", category: "프로필", address: "서울시 강남구 역삼동 123-4", intro: "서울 강남에 위치한 프로필 전문 스튜디오. 자연광·경력 10년 작가진.", photoCount: 6 },
-    { id: "s-2", name: "루미에르 비즈컷", category: "비즈니스", address: "서울시 강남구 역삼동 123-4 별관", intro: "임직원·대표 프로필 전용 스튜디오. 팀 촬영 공간 별도.", photoCount: 4 },
+    { id: "s-1", name: "루미에르 스튜디오", category: "프로필", address: "서울시 강남구 역삼동 123-4", intro: "서울 강남에 위치한 프로필 전문 스튜디오. 자연광·경력 10년 작가진.", photoCount: 6, tags: ["자연광", "임직원", "이력서"] },
+    { id: "s-2", name: "루미에르 비즈컷", category: "비즈니스", address: "서울시 강남구 역삼동 123-4 별관", intro: "임직원·대표 프로필 전용 스튜디오. 팀 촬영 공간 별도.", photoCount: 4, tags: ["임직원", "대표프로필", "강남"] },
   ]);
   const [editingStudioId, setEditingStudioId] = useState<string | null>(null); // null = 새 등록
   const [selectedCat, setSelectedCat] = useState<string>("프로필");
+  const [studioTagInputs, setStudioTagInputs] = useState<[string, string, string]>(["", "", ""]);
   const [replyModal, setReplyModal] = useState<{ idx: number; author: string; text: string } | null>(null);
   const [replyDraft, setReplyDraft] = useState("");
   const [savedReplies, setSavedReplies] = useState<Record<number, string>>({});
@@ -286,8 +287,9 @@ export default function BusinessApp() {
   const editingStudio = editingStudioId ? myStudios.find(s => s.id === editingStudioId) ?? null : null;
 
   const handleSaveStudio = () => {
+    const cleanedTags = studioTagInputs.map(t => t.trim()).filter(Boolean).slice(0, 3);
     if (editingStudioId && editingStudio) {
-      setMyStudios(prev => prev.map(s => s.id === editingStudioId ? { ...s, category: selectedCat } : s));
+      setMyStudios(prev => prev.map(s => s.id === editingStudioId ? { ...s, category: selectedCat, tags: cleanedTags } : s));
     } else {
       const newId = `s-${Date.now()}`;
       setMyStudios(prev => [...prev, {
@@ -297,10 +299,12 @@ export default function BusinessApp() {
         address: "주소 입력",
         intro: "스튜디오 소개를 작성하세요",
         photoCount: 0,
+        tags: cleanedTags,
       }]);
     }
     setRegistered(true);
     setEditingStudioId(null);
+    setStudioTagInputs(["", "", ""]);
   };
 
   const handleEditStudio = (id: string) => {
@@ -308,6 +312,7 @@ export default function BusinessApp() {
     if (!s) return;
     setEditingStudioId(id);
     setSelectedCat(s.category);
+    setStudioTagInputs([s.tags[0] ?? "", s.tags[1] ?? "", s.tags[2] ?? ""]);
     setRegistered(false);
   };
 
@@ -319,6 +324,7 @@ export default function BusinessApp() {
   const handleAddNewStudio = () => {
     setEditingStudioId(null);
     setSelectedCat(adminCategories[0] ?? "프로필");
+    setStudioTagInputs(["", "", ""]);
     setRegistered(false);
   };
 
@@ -987,6 +993,33 @@ export default function BusinessApp() {
                 </div>
 
                 <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs text-gray-500 font-medium">해시태그 (3개)</label>
+                    <span className="text-[10px] text-gray-400">소비자 카드·상세에 #형식으로 노출</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[0, 1, 2].map(i => (
+                      <div key={i} className="flex items-center bg-gray-50 rounded-xl px-3 py-2.5 border border-gray-100 focus-within:border-primary">
+                        <span className="text-sm text-gray-400 mr-1">#</span>
+                        <input
+                          type="text"
+                          value={studioTagInputs[i]}
+                          onChange={e => {
+                            const next: [string, string, string] = [...studioTagInputs] as [string, string, string];
+                            next[i] = e.target.value.replace(/[\s#]/g, "");
+                            setStudioTagInputs(next);
+                          }}
+                          maxLength={10}
+                          placeholder={["자연광", "임직원", "이력서"][i]}
+                          className="flex-1 min-w-0 bg-transparent text-sm outline-none"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-1">※ 태그 1개당 최대 10자, 공백·# 없이 입력</p>
+                </div>
+
+                <div>
                   <label className="text-xs text-gray-500 mb-1.5 block font-medium">카테고리 (한 스튜디오 = 한 카테고리)</label>
                   <div className="flex flex-wrap gap-2">
                     {adminCategories.map(c => (
@@ -1203,6 +1236,13 @@ export default function BusinessApp() {
                           </div>
                           <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium shrink-0">{s.category}</span>
                         </div>
+                        {s.tags.length > 0 && (
+                          <div className="flex gap-1.5 flex-wrap mb-1">
+                            {s.tags.map(t => (
+                              <span key={t} className="text-[10px] text-primary bg-primary/5 px-1.5 py-0.5 rounded-full">#{t}</span>
+                            ))}
+                          </div>
+                        )}
                         <p className="text-[11px] text-gray-600 mt-1.5 line-clamp-2 leading-relaxed">{s.intro}</p>
                         <div className="flex items-center gap-2 mt-2 text-[10px] text-gray-400">
                           <span>📸 {s.photoCount}/30장</span>

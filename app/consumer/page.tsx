@@ -56,7 +56,7 @@ const HOME_AD_PAGES = [
 type StudioCategoryPortfolio = Record<string, number[]>;
 
 const STUDIOS: {
-  id: number; name: string; cats: string[]; desc: string; area: string;
+  id: number; name: string; cat: string; tags: string[]; desc: string; area: string;
   price: number; rating: number; reviews: number; phone: string;
   createdAt: string; location: string;
   portfolios: StudioCategoryPortfolio;
@@ -65,30 +65,32 @@ const STUDIOS: {
   paymentCount: number;
   distanceKm: number;
 }[] = [
-  { id: 1, name: "루미에르 스튜디오", cats: ["프로필", "비즈니스"], desc: "프로필촬영, 임직원 프로필, 이력서사진", area: "서울 강남구", price: 50000, rating: 4.8, reviews: 124, phone: "02-1234-5678", createdAt: "2026-04-10", location: "서울특별시 강남구 역삼동 123-4",
-    portfolios: { "프로필": [1,2,3,4,5,6], "비즈니스": [1,2,3,4,5,6] }, vatIncluded: true, travelAvailable: true, paymentCount: 302, distanceKm: 1.2 },
-  { id: 2, name: "선셋 포토랩", cats: ["바디프로필", "커플"], desc: "바디프로필, 커플촬영, 운동기록", area: "서울 성수동", price: 80000, rating: 4.9, reviews: 89, phone: "02-2345-6789", createdAt: "2026-03-28", location: "서울특별시 성동구 성수동 45-6",
-    portfolios: { "바디프로필": [1,2,3,4,5,6], "커플": [1,2,3,4,5,6] }, vatIncluded: false, travelAvailable: false, paymentCount: 287, distanceKm: 3.8 },
-  { id: 3, name: "블룸 웨딩 스튜디오", cats: ["웨딩"], desc: "웨딩스냅, 본식촬영, 야외웨딩", area: "서울 잠실", price: 200000, rating: 4.7, reviews: 56, phone: "02-3456-7890", createdAt: "2026-04-05", location: "서울특별시 송파구 잠실동 78-9",
+  { id: 1, name: "루미에르 스튜디오", cat: "프로필", tags: ["자연광", "임직원", "이력서"], desc: "프로필촬영, 임직원 프로필, 이력서사진", area: "서울 강남구", price: 50000, rating: 4.8, reviews: 124, phone: "02-1234-5678", createdAt: "2026-04-10", location: "서울특별시 강남구 역삼동 123-4",
+    portfolios: { "프로필": [1,2,3,4,5,6] }, vatIncluded: true, travelAvailable: true, paymentCount: 302, distanceKm: 1.2 },
+  { id: 13, name: "루미에르 비즈컷", cat: "비즈니스", tags: ["임직원", "대표프로필", "강남"], desc: "임직원·대표 프로필 전용, 팀 촬영 공간 별도", area: "서울 강남구", price: 60000, rating: 4.7, reviews: 38, phone: "02-1234-5678", createdAt: "2026-04-15", location: "서울특별시 강남구 역삼동 123-4 별관",
+    portfolios: { "비즈니스": [1,2,3,4,5,6] }, vatIncluded: true, travelAvailable: true, paymentCount: 48, distanceKm: 1.2 },
+  { id: 2, name: "선셋 포토랩", cat: "바디프로필", tags: ["성수동", "피트니스", "조명"], desc: "바디프로필, 운동기록, 피트니스 브랜딩", area: "서울 성수동", price: 80000, rating: 4.9, reviews: 89, phone: "02-2345-6789", createdAt: "2026-03-28", location: "서울특별시 성동구 성수동 45-6",
+    portfolios: { "바디프로필": [1,2,3,4,5,6] }, vatIncluded: false, travelAvailable: false, paymentCount: 287, distanceKm: 3.8 },
+  { id: 3, name: "블룸 웨딩 스튜디오", cat: "웨딩", tags: ["본식", "잠실", "야외"], desc: "웨딩스냅, 본식촬영, 야외웨딩", area: "서울 잠실", price: 200000, rating: 4.7, reviews: 56, phone: "02-3456-7890", createdAt: "2026-04-05", location: "서울특별시 송파구 잠실동 78-9",
     portfolios: { "웨딩": [1,2,3,4,5,6] }, vatIncluded: true, travelAvailable: true, paymentCount: 190, distanceKm: 6.1 },
-  { id: 4, name: "패밀리 모먼츠", cats: ["가족"], desc: "가족사진, 3대 가족 스냅, 주말 촬영", area: "경기 일산", price: 130000, rating: 4.5, reviews: 31, phone: "031-9234-5678", createdAt: "2026-04-06", location: "경기도 고양시 일산동구 장항동 101-9",
+  { id: 4, name: "패밀리 모먼츠", cat: "가족", tags: ["3대가족", "주말", "일산"], desc: "가족사진, 3대 가족 스냅, 주말 촬영", area: "경기 일산", price: 130000, rating: 4.5, reviews: 31, phone: "031-9234-5678", createdAt: "2026-04-06", location: "경기도 고양시 일산동구 장항동 101-9",
     portfolios: { "가족": [1,2,3,4,5,6] }, vatIncluded: true, travelAvailable: false, paymentCount: 57, distanceKm: 23.1 },
-  { id: 5, name: "펫모먼츠 스튜디오", cats: ["반려동물", "가족"], desc: "반려동물 촬영, 반려 가족 스냅, 맞춤 소품 제공", area: "서울 망원동", price: 90000, rating: 4.7, reviews: 44, phone: "02-4567-8901", createdAt: "2026-04-12", location: "서울특별시 마포구 망원동 45-6",
-    portfolios: { "반려동물": [1,2,3,4,5,6], "가족": [1,2,3,4,5,6] }, vatIncluded: false, travelAvailable: true, paymentCount: 154, distanceKm: 8.4 },
-  { id: 6, name: "브랜드컷 스튜디오", cats: ["비즈니스", "프로필"], desc: "브랜드 프로필, 팀 촬영, 대표 인터뷰컷", area: "서울 합정", price: 60000, rating: 4.7, reviews: 45, phone: "02-5678-9012", createdAt: "2026-04-08", location: "서울특별시 마포구 합정동 78-9",
-    portfolios: { "비즈니스": [1,2,3,4,5,6], "프로필": [1,2,3,4,5,6] }, vatIncluded: true, travelAvailable: false, paymentCount: 118, distanceKm: 7.9 },
-  { id: 7, name: "베이비데이 스튜디오", cats: ["아기", "프로필"], desc: "아기 촬영, 성장 스냅, 컨셉 프로필", area: "서울 신촌", price: 70000, rating: 4.6, reviews: 28, phone: "02-6789-0123", createdAt: "2026-04-14", location: "서울특별시 서대문구 신촌동 21-3",
-    portfolios: { "아기": [1,2,3,4,5,6], "프로필": [1,2,3,4,5,6] }, vatIncluded: true, travelAvailable: false, paymentCount: 84, distanceKm: 5.1 },
-  { id: 8, name: "아이덴티티 프로필", cats: ["프로필"], desc: "취업 프로필, 증명용 프로필, 개인 브랜딩 촬영", area: "서울 종로구", price: 30000, rating: 4.4, reviews: 52, phone: "02-7890-1234", createdAt: "2026-04-09", location: "서울특별시 종로구 관철동 14-7",
+  { id: 5, name: "펫모먼츠 스튜디오", cat: "반려동물", tags: ["맞춤소품", "실내", "망원"], desc: "반려동물 촬영, 반려 가족 스냅, 맞춤 소품 제공", area: "서울 망원동", price: 90000, rating: 4.7, reviews: 44, phone: "02-4567-8901", createdAt: "2026-04-12", location: "서울특별시 마포구 망원동 45-6",
+    portfolios: { "반려동물": [1,2,3,4,5,6] }, vatIncluded: false, travelAvailable: true, paymentCount: 154, distanceKm: 8.4 },
+  { id: 6, name: "브랜드컷 스튜디오", cat: "비즈니스", tags: ["팀촬영", "대표프로필", "합정"], desc: "브랜드 프로필, 팀 촬영, 대표 인터뷰컷", area: "서울 합정", price: 60000, rating: 4.7, reviews: 45, phone: "02-5678-9012", createdAt: "2026-04-08", location: "서울특별시 마포구 합정동 78-9",
+    portfolios: { "비즈니스": [1,2,3,4,5,6] }, vatIncluded: true, travelAvailable: false, paymentCount: 118, distanceKm: 7.9 },
+  { id: 7, name: "베이비데이 스튜디오", cat: "아기", tags: ["성장스냅", "신촌", "컨셉"], desc: "아기 촬영, 성장 스냅, 컨셉 프로필", area: "서울 신촌", price: 70000, rating: 4.6, reviews: 28, phone: "02-6789-0123", createdAt: "2026-04-14", location: "서울특별시 서대문구 신촌동 21-3",
+    portfolios: { "아기": [1,2,3,4,5,6] }, vatIncluded: true, travelAvailable: false, paymentCount: 84, distanceKm: 5.1 },
+  { id: 8, name: "아이덴티티 프로필", cat: "프로필", tags: ["취업", "증명사진", "개인브랜딩"], desc: "취업 프로필, 증명용 프로필, 개인 브랜딩 촬영", area: "서울 종로구", price: 30000, rating: 4.4, reviews: 52, phone: "02-7890-1234", createdAt: "2026-04-09", location: "서울특별시 종로구 관철동 14-7",
     portfolios: { "프로필": [1,2,3,4,5,6] }, vatIncluded: true, travelAvailable: false, paymentCount: 111, distanceKm: 4.4 },
-  { id: 9, name: "커플모먼트 스튜디오", cats: ["커플"], desc: "커플촬영, 기념일 스냅, 데이트 사진", area: "서울 연남동", price: 110000, rating: 4.8, reviews: 39, phone: "02-8901-2345", createdAt: "2026-04-03", location: "서울특별시 마포구 연남동 33-12",
+  { id: 9, name: "커플모먼트 스튜디오", cat: "커플", tags: ["기념일", "연남", "데이트"], desc: "커플촬영, 기념일 스냅, 데이트 사진", area: "서울 연남동", price: 110000, rating: 4.8, reviews: 39, phone: "02-8901-2345", createdAt: "2026-04-03", location: "서울특별시 마포구 연남동 33-12",
     portfolios: { "커플": [1,2,3,4,5,6] }, vatIncluded: true, travelAvailable: true, paymentCount: 92, distanceKm: 9.1 },
-  { id: 10, name: "프라이빗 웨딩하우스", cats: ["웨딩"], desc: "프라이빗 웨딩, 실내 촬영, 웨딩 스냅", area: "서울 청담동", price: 260000, rating: 4.9, reviews: 21, phone: "02-9012-3456", createdAt: "2026-04-16", location: "서울특별시 강남구 청담동 55-1",
+  { id: 10, name: "프라이빗 웨딩하우스", cat: "웨딩", tags: ["프라이빗", "청담", "실내"], desc: "프라이빗 웨딩, 실내 촬영, 웨딩 스냅", area: "서울 청담동", price: 260000, rating: 4.9, reviews: 21, phone: "02-9012-3456", createdAt: "2026-04-16", location: "서울특별시 강남구 청담동 55-1",
     portfolios: { "웨딩": [1,2,3,4,5,6] }, vatIncluded: false, travelAvailable: true, paymentCount: 61, distanceKm: 2.8 },
-  { id: 11, name: "바디에디션 랩", cats: ["바디프로필"], desc: "바디 프로필, 운동기록 촬영, 피트니스 브랜딩", area: "서울 성신여대", price: 150000, rating: 4.8, reviews: 26, phone: "02-9345-6789", createdAt: "2026-04-13", location: "서울특별시 성북구 동선동 45-2",
+  { id: 11, name: "바디에디션 랩", cat: "바디프로필", tags: ["운동기록", "피트니스", "성북"], desc: "바디 프로필, 운동기록 촬영, 피트니스 브랜딩", area: "서울 성신여대", price: 150000, rating: 4.8, reviews: 26, phone: "02-9345-6789", createdAt: "2026-04-13", location: "서울특별시 성북구 동선동 45-2",
     portfolios: { "바디프로필": [1,2,3,4,5,6] }, vatIncluded: false, travelAvailable: false, paymentCount: 73, distanceKm: 11.6 },
-  { id: 12, name: "비즈니스 데이랩", cats: ["비즈니스", "아기"], desc: "사내 프로필, 가족 동반 촬영, 아기 기념 스냅", area: "서울 서초구", price: 95000, rating: 4.7, reviews: 18, phone: "02-9123-4567", createdAt: "2026-04-11", location: "서울특별시 서초구 서초동 88-4",
-    portfolios: { "비즈니스": [1,2,3,4,5,6], "아기": [1,2,3,4,5,6] }, vatIncluded: true, travelAvailable: true, paymentCount: 49, distanceKm: 7.3 },
+  { id: 12, name: "비즈니스 데이랩", cat: "비즈니스", tags: ["사내프로필", "서초", "단체"], desc: "사내 프로필, 팀 스냅, 워크숍 단체 촬영", area: "서울 서초구", price: 95000, rating: 4.7, reviews: 18, phone: "02-9123-4567", createdAt: "2026-04-11", location: "서울특별시 서초구 서초동 88-4",
+    portfolios: { "비즈니스": [1,2,3,4,5,6] }, vatIncluded: true, travelAvailable: true, paymentCount: 49, distanceKm: 7.3 },
 ];
 
 const HAIR_MAKEUP_OPTIONS = [
@@ -320,10 +322,10 @@ export default function ConsumerApp() {
   const catFiltered = STUDIOS
     .filter(s => {
       if (freeKeyword) {
-        const haystack = `${s.name} ${s.desc} ${s.area} ${s.cats.join(" ")}`;
+        const haystack = `${s.name} ${s.desc} ${s.area} ${s.cat} ${s.tags.join(" ")}`;
         return matchesKeyword(haystack, freeKeyword);
       }
-      return categoryCat === "전체" || s.cats.includes(categoryCat);
+      return categoryCat === "전체" || s.cat === categoryCat;
     })
     .filter(s => {
       if (selectedRegion === "전체" || !selectedRegion.trim()) return true;
@@ -374,8 +376,7 @@ export default function ConsumerApp() {
     if (detailEntryCat && selectedStudio.portfolios[detailEntryCat]) {
       return { cat: detailEntryCat, photos: selectedStudio.portfolios[detailEntryCat] };
     }
-    const firstCat = selectedStudio.cats[0];
-    return { cat: firstCat, photos: selectedStudio.portfolios[firstCat] || [] };
+    return { cat: selectedStudio.cat, photos: selectedStudio.portfolios[selectedStudio.cat] || [] };
   })();
 
   const authScreens: Screen[] = ["login", "signup", "bizSignup", "forgotPassword"];
@@ -550,6 +551,13 @@ export default function ConsumerApp() {
                             </span>
                           )}
                         </div>
+                        {studio.tags.length > 0 && (
+                          <div className="mt-0.5 flex gap-1 overflow-hidden">
+                            {studio.tags.slice(0, 3).map(t => (
+                              <span key={t} className="truncate text-[10px] font-medium text-primary">#{t}</span>
+                            ))}
+                          </div>
+                        )}
                         <div className="mt-auto flex items-center justify-between pt-2 text-[11px]">
                           <span className="font-bold text-gray-900">₩{studio.price.toLocaleString()}</span>
                           <span className="text-yellow-500">★ {studio.rating}</span>
@@ -595,6 +603,13 @@ export default function ConsumerApp() {
                             </span>
                           )}
                         </div>
+                        {studio.tags.length > 0 && (
+                          <div className="mt-0.5 flex gap-1 overflow-hidden">
+                            {studio.tags.slice(0, 3).map(t => (
+                              <span key={t} className="truncate text-[10px] font-medium text-primary">#{t}</span>
+                            ))}
+                          </div>
+                        )}
                         <div className="mt-auto flex items-center justify-between pt-2 text-[11px] text-gray-500">
                           <span>결제 {studio.paymentCount}건</span>
                           <span className="text-yellow-500">★ {studio.rating}</span>
@@ -685,11 +700,18 @@ export default function ConsumerApp() {
                       <p className="font-bold text-sm text-gray-900">{s.name}</p>
                       <p className="text-xs text-gray-400 mt-0.5 truncate">{s.desc}</p>
                       <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
-                        <p className="text-xs text-gray-400 truncate min-w-0">{s.area}</p>
+                        <p className="text-xs text-gray-400 shrink-0">{s.area}</p>
                         {s.travelAvailable && (
                           <span className="shrink-0 rounded-full border border-primary/30 bg-primary/5 px-1.5 py-0.5 text-[9px] font-medium text-primary">
                             출장 가능
                           </span>
+                        )}
+                        {s.tags.length > 0 && (
+                          <div className="flex gap-1 overflow-hidden min-w-0">
+                            {s.tags.slice(0, 3).map(t => (
+                              <span key={t} className="truncate text-[10px] font-medium text-primary">#{t}</span>
+                            ))}
+                          </div>
                         )}
                       </div>
                       <div className="flex items-center gap-1 mt-1.5">
@@ -770,11 +792,18 @@ export default function ConsumerApp() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium">{s.name}</p>
                     <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
-                      <p className="text-xs text-gray-400 truncate min-w-0">{s.cats.join(", ")} · {s.area}</p>
+                      <p className="text-xs text-gray-400 shrink-0">{s.cat} · {s.area}</p>
                       {s.travelAvailable && (
                         <span className="shrink-0 rounded-full border border-primary/30 bg-primary/5 px-1.5 py-0.5 text-[9px] font-medium text-primary">
                           출장 가능
                         </span>
+                      )}
+                      {s.tags.length > 0 && (
+                        <div className="flex gap-1 overflow-hidden min-w-0">
+                          {s.tags.slice(0, 3).map(t => (
+                            <span key={t} className="truncate text-[10px] font-medium text-primary">#{t}</span>
+                          ))}
+                        </div>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
@@ -806,7 +835,14 @@ export default function ConsumerApp() {
                 {/* 스튜디오 소개 */}
                 <div className="bg-gray-50 rounded-xl p-4 mb-4">
                   <p className="text-xs text-gray-500 mb-2 font-medium">스튜디오 소개</p>
-                  <p className="text-sm text-gray-700 leading-relaxed">{selectedStudio.desc}. {selectedStudio.area}에 위치한 {selectedStudio.cats.join("·")} 전문 스튜디오입니다. 편안한 분위기에서 최고의 결과물을 제공해드려요.</p>
+                  <p className="text-sm text-gray-700 leading-relaxed">{selectedStudio.desc}. {selectedStudio.area}에 위치한 {selectedStudio.cat} 전문 스튜디오입니다. 편안한 분위기에서 최고의 결과물을 제공해드려요.</p>
+                  {selectedStudio.tags.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {selectedStudio.tags.map(t => (
+                        <span key={t} className="text-[11px] text-primary bg-primary/5 px-2 py-0.5 rounded-full">#{t}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* 가격 패키지 */}
@@ -1003,7 +1039,7 @@ export default function ConsumerApp() {
               <h2 className="text-lg font-bold mb-4">예약 확인</h2>
               <div className="bg-gray-50 rounded-xl p-4 mb-4">
                 <p className="font-bold text-sm">{selectedStudio.name}</p>
-                <p className="text-xs text-gray-400 mt-1">{selectedStudio.cats.join(", ")} · {selectedStudio.area}</p>
+                <p className="text-xs text-gray-400 mt-1">{selectedStudio.cat} · {selectedStudio.area}</p>
               </div>
               <div className="space-y-3 mb-4 px-1">
                 <div className="flex justify-between text-sm"><span className="text-gray-500">날짜</span><span className="font-medium">2026.05.{selectedDate} ({["목","금","토","일","월","화","수"][selectedDate - 8]})</span></div>

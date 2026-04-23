@@ -590,13 +590,13 @@ export default function AdminWeb() {
               <p className="text-[10px] text-gray-500">• 이용정지·퇴점 기준: 운영 초기 정책 수립 후 반영 (임시: 노쇼·소비자 CS 누적 시 어드민 재량 정지)</p>
             </div>
 
-            {/* Business List */}
+            {/* Business List — 한 아이디에 여러 스튜디오 개별 등록 */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="text-left p-4 font-medium text-gray-500">업체명</th>
-                    <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">카테고리</th>
+                    <th className="text-left p-4 font-medium text-gray-500">업체 (아이디-스튜디오)</th>
+                    <th className="text-left p-4 font-medium text-gray-500">카테고리</th>
                     <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">지역</th>
                     <th className="text-left p-4 font-medium text-gray-500">상태</th>
                     <th className="text-left p-4 font-medium text-gray-500">액션</th>
@@ -604,15 +604,25 @@ export default function AdminWeb() {
                 </thead>
                 <tbody>
                   {[
-                    { name: "루미에르 스튜디오", cats: "프로필, 바디프로필", area: "강남", status: "운영중", photos: 24 },
-                    { name: "선셋 포토랩", cats: "바디프로필", area: "성수", status: "승인대기", photos: 12 },
-                    { name: "블룸 웨딩홀", cats: "웨딩, 커플", area: "잠실", status: "운영중", photos: 30 },
-                    { name: "브랜드컷 스튜디오", cats: "비즈니스", area: "홍대", status: "정지", photos: 18 },
-                    { name: "펫모먼츠 스튜디오", cats: "반려동물, 가족", area: "합정", status: "운영중", photos: 15 },
-                  ].map((b, i) => (
+                    { account: "lumiere_biz", studio: "루미에르 스튜디오", category: "프로필", area: "강남", status: "운영중", photos: 18 },
+                    { account: "lumiere_biz", studio: "루미에르 비즈컷", category: "비즈니스", area: "강남", status: "운영중", photos: 12 },
+                    { account: "sunset_lab", studio: "선셋 포토랩", category: "바디프로필", area: "성수", status: "승인대기", photos: 12 },
+                    { account: "bloom_wedding", studio: "블룸 웨딩홀", category: "웨딩", area: "잠실", status: "운영중", photos: 24 },
+                    { account: "brandcut", studio: "브랜드컷 스튜디오", category: "비즈니스", area: "합정", status: "정지", photos: 18 },
+                    { account: "petmoments", studio: "펫모먼츠 스튜디오", category: "반려동물", area: "망원", status: "운영중", photos: 15 },
+                  ].map((b, i) => {
+                    // bizDetail 모달 호환성 위해 cats 필드 채움
+                    const bForModal = { name: b.studio, cats: b.category, area: b.area, status: b.status, photos: b.photos };
+                    return (
                     <tr key={i} className="border-t border-gray-50">
-                      <td className="p-4 font-medium">{b.name}</td>
-                      <td className="p-4 text-gray-500 hidden md:table-cell">{b.cats}</td>
+                      <td className="p-4">
+                        <p className="font-medium">
+                          <span className="text-gray-400 font-mono text-xs">{b.account}</span>
+                          <span className="text-gray-300 mx-1">-</span>
+                          <span>{b.studio}</span>
+                        </p>
+                      </td>
+                      <td className="p-4"><span className="text-[11px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{b.category}</span></td>
                       <td className="p-4 text-gray-500 hidden md:table-cell">{b.area}</td>
                       <td className="p-4">
                         <span className={`text-xs px-2 py-1 rounded-full ${
@@ -624,25 +634,27 @@ export default function AdminWeb() {
                           <div className="flex gap-1 flex-wrap">
                             <button className="text-xs bg-primary text-white px-3 py-1 rounded-lg">승인</button>
                             <button className="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-lg">거절</button>
-                            <button onClick={() => { setBizDetail(b); setBizDetailView("portfolio"); }} className="text-xs text-primary px-2 py-1"><ImageIcon size={12} strokeWidth={1.5} className="inline" /> 사진({b.photos})</button>
+                            <button onClick={() => { setBizDetail(bForModal); setBizDetailView("portfolio"); }} className="text-xs text-primary px-2 py-1"><ImageIcon size={12} strokeWidth={1.5} className="inline" /> 사진({b.photos})</button>
                           </div>
                         ) : b.status === "정지" ? (
                           <div className="flex gap-1">
                             <button className="text-xs text-green-600 px-2 py-1 bg-green-50 rounded">해제</button>
-                            <button onClick={() => { setBizDetail(b); setBizDetailView("calendar"); }} className="text-xs text-gray-400 px-2 py-1"><Calendar size={12} strokeWidth={1.5} className="inline" /> 달력</button>
+                            <button onClick={() => { setBizDetail(bForModal); setBizDetailView("calendar"); }} className="text-xs text-gray-400 px-2 py-1"><Calendar size={12} strokeWidth={1.5} className="inline" /> 달력</button>
                           </div>
                         ) : (
                           <div className="flex gap-1">
-                            <button onClick={() => { setBizDetail(b); setBizDetailView("info"); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">상세</button>
+                            <button onClick={() => { setBizDetail(bForModal); setBizDetailView("info"); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">상세</button>
                             <button className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded">정지</button>
-                            <button onClick={() => { setBizDetail(b); setBizDetailView("calendar"); }} className="text-xs text-gray-400 px-2 py-1"><Calendar size={12} strokeWidth={1.5} className="inline" /> 달력</button>
+                            <button onClick={() => { setBizDetail(bForModal); setBizDetailView("calendar"); }} className="text-xs text-gray-400 px-2 py-1"><Calendar size={12} strokeWidth={1.5} className="inline" /> 달력</button>
                           </div>
                         )}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
+              <p className="text-[11px] text-gray-400 p-3 border-t border-gray-50">💡 한 아이디에 여러 스튜디오를 개별 등록할 수 있습니다. 심사·정지는 스튜디오 단위로 적용.</p>
             </div>
           </div>
         )}
