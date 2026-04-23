@@ -935,20 +935,32 @@ export default function ConsumerApp() {
                 </div>
 
                 {homeKeywords.length > 0 && (
-                  <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto pb-1">
-                    {homeKeywords.map(k => (
-                      <button
-                        key={k.label}
-                        onClick={() => applyHomeKeyword(k.label)}
-                        className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
-                          activeKeyword === k.label
-                            ? "border-primary bg-primary/5 text-primary"
-                            : "border-gray-200 bg-white text-gray-500"
-                        }`}
-                      >
-                        {k.label}
-                      </button>
-                    ))}
+                  <div className="no-scrollbar mt-3 flex items-center gap-2 overflow-x-auto pb-1">
+                    {homeKeywords.map(k => {
+                      if (k.label === "인기") {
+                        return (
+                          <span
+                            key={k.label}
+                            className="shrink-0 whitespace-nowrap text-sm font-bold text-gray-900 pr-1"
+                          >
+                            {k.label}
+                          </span>
+                        );
+                      }
+                      return (
+                        <button
+                          key={k.label}
+                          onClick={() => applyHomeKeyword(k.label)}
+                          className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
+                            activeKeyword === k.label
+                              ? "border-primary bg-primary/5 text-primary"
+                              : "border-gray-200 bg-white text-gray-500"
+                          }`}
+                        >
+                          {k.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -1150,20 +1162,20 @@ export default function ConsumerApp() {
                 </div>
               </div>
 
-              {freeKeyword ? (
-                <div className="mb-3 flex items-center gap-2 flex-wrap">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold px-3 py-1">
-                    🔎 {freeKeyword.label}
-                    <button onClick={() => setFreeKeyword(null)} className="text-primary/60 hover:text-primary ml-0.5" aria-label="검색어 삭제">✕</button>
-                  </span>
-                  <p className="text-sm font-bold">검색 결과 {catSorted.length}곳</p>
-                </div>
-              ) : (
-                <p className="text-sm font-bold mb-3">&lsquo;{categoryCat}&rsquo; 스튜디오 {catSorted.length}곳</p>
-              )}
+              <div className="mb-3 flex items-center justify-between gap-3">
+                {freeKeyword ? (
+                  <div className="flex items-center gap-2 flex-wrap min-w-0">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold px-3 py-1 shrink-0">
+                      🔎 {freeKeyword.label}
+                      <button onClick={() => setFreeKeyword(null)} className="text-primary/60 hover:text-primary ml-0.5" aria-label="검색어 삭제">✕</button>
+                    </span>
+                    <p className="text-sm font-bold whitespace-nowrap">검색 결과 {catSorted.length}곳</p>
+                  </div>
+                ) : (
+                  <p className="text-sm font-bold whitespace-nowrap min-w-0 truncate">&lsquo;{categoryCat}&rsquo; 스튜디오 {catSorted.length}곳</p>
+                )}
 
-              {/* 정렬 드롭다운 */}
-              <div className="mb-3">
+                {/* 정렬 드롭다운 — 오른쪽 끝 */}
                 {(() => {
                   const sortItems = [
                     { key: "payments" as Sort, label: "예약순" },
@@ -1172,30 +1184,27 @@ export default function ConsumerApp() {
                   ];
                   const currentLabel = sortItems.find(i => i.key === sort)?.label ?? "예약순";
                   return (
-                    <div className="relative">
+                    <div className="relative shrink-0">
                       <button
                         onClick={() => setSortOpen(v => !v)}
-                        className="flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2.5">
-                        <div className="flex items-center gap-2">
-                          <SlidersHorizontal size={16} strokeWidth={1.8} className="text-gray-500" />
-                          <span className="text-sm font-bold text-gray-900">정렬</span>
-                          <span className="text-[11px] text-gray-400">· {currentLabel}</span>
-                        </div>
-                        <ChevronDown size={16} strokeWidth={2} className={`text-gray-500 transition-transform ${sortOpen ? "rotate-180" : ""}`} />
+                        className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5">
+                        <SlidersHorizontal size={13} strokeWidth={1.8} className="text-gray-500" />
+                        <span className="text-xs font-medium text-gray-700 whitespace-nowrap">{currentLabel}</span>
+                        <ChevronDown size={13} strokeWidth={2} className={`text-gray-500 transition-transform ${sortOpen ? "rotate-180" : ""}`} />
                       </button>
                       {sortOpen && (
                         <>
                           <div className="fixed inset-0 z-20" onClick={() => setSortOpen(false)} />
-                          <div className="absolute left-0 right-0 top-full z-30 mt-1.5 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
+                          <div className="absolute right-0 top-full z-30 mt-1.5 min-w-[120px] rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
                             {sortItems.map(item => (
                               <button
                                 key={item.key}
                                 onClick={() => { setSort(item.key); setSortOpen(false); }}
-                                className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition-colors ${
+                                className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-sm transition-colors ${
                                   sort === item.key ? "bg-primary/5 text-primary font-semibold" : "text-gray-700 hover:bg-gray-50"
                                 }`}>
                                 {item.label}
-                                {sort === item.key && <Check size={16} strokeWidth={2.5} className="text-primary" />}
+                                {sort === item.key && <Check size={14} strokeWidth={2.5} className="text-primary" />}
                               </button>
                             ))}
                           </div>
