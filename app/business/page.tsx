@@ -213,17 +213,9 @@ export default function BusinessApp() {
 
   const parseStudioPrice = (price: string) => Number(price.replace(/,/g, ""));
 
+  // 홈 맞춤 결과: 추천 검색어 칩과 독립. 지역·가격 필터만 적용.
+  // (칩 클릭은 카테고리 탭 라우팅 전용 → applyHomeKeyword)
   const homeFiltered = STUDIOS
-    .filter(s => {
-      if (!activeKeyword || activeKeyword === "인기") return true;
-      const entry = homeKeywords.find(k => k.label === activeKeyword);
-      if (!entry) return true;
-      if (entry.aliases.length === 0 && adminCategories.includes(entry.label)) {
-        return s.cat === entry.label;
-      }
-      const haystack = `${s.name} ${s.desc} ${s.area} ${s.cat}`;
-      return matchesKeyword(haystack, entry);
-    })
     .filter(s => {
       if (selectedRegion === "전체" || !selectedRegion.trim()) return true;
       return s.area.toLowerCase().includes(selectedRegion.trim().toLowerCase());
@@ -662,19 +654,12 @@ export default function BusinessApp() {
               </div>
 
               {freeKeyword ? (
-                <div className="mb-3">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold px-3 py-1">
-                      🔎 {freeKeyword.label}
-                      <button onClick={() => setFreeKeyword(null)} className="text-primary/60 hover:text-primary ml-0.5" aria-label="검색어 삭제">✕</button>
-                    </span>
-                    <p className="text-sm font-bold">검색 결과 {catFiltered.length}곳</p>
-                  </div>
-                  {freeKeyword.aliases.length > 0 && (
-                    <p className="mt-1.5 text-[10px] text-gray-400">
-                      매칭 별칭: {freeKeyword.aliases.join(" · ")}
-                    </p>
-                  )}
+                <div className="mb-3 flex items-center gap-2 flex-wrap">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold px-3 py-1">
+                    🔎 {freeKeyword.label}
+                    <button onClick={() => setFreeKeyword(null)} className="text-primary/60 hover:text-primary ml-0.5" aria-label="검색어 삭제">✕</button>
+                  </span>
+                  <p className="text-sm font-bold">검색 결과 {catFiltered.length}곳</p>
                 </div>
               ) : (
                 <p className="text-sm font-bold mb-3">&lsquo;{categoryCat}&rsquo; 스튜디오 {catFiltered.length}곳</p>

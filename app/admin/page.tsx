@@ -328,12 +328,12 @@ export default function AdminWeb() {
                   </div>
                 </div>
               </div>
-              <p className="text-xs text-gray-400 mt-2">실시간 저장 · 업체별 개별 수수료 override는 아래 표에서 관리</p>
+              <p className="text-xs text-gray-400 mt-2">실시간 저장 · 업체별 개별 수수료는 아래 표에서 관리</p>
 
               {/* Per-Business Fee Overrides */}
               <div className="mt-5">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-bold">업체별 수수료 개별 설정 (Override)</h4>
+                  <h4 className="text-sm font-bold">업체별 수수료 개별 설정</h4>
                   <span className="text-[10px] text-gray-400">빈 값 = 기본값 적용</span>
                 </div>
                 <div className="overflow-x-auto">
@@ -557,7 +557,7 @@ export default function AdminWeb() {
               <p className="text-[10px] text-gray-500 mt-1">• 정산 대상: 예약 시 받은 예약금 포함</p>
               <p className="text-[10px] text-gray-500">• 정산 기준: 월별 기준, 주별 조회 가능</p>
               <p className="text-[10px] text-gray-500">• 정산 단위: 업체별 일괄 정산</p>
-              <p className="text-[10px] text-gray-500">• 수수료 차등: 기본 10%, 업체별 override</p>
+              <p className="text-[10px] text-gray-500">• 수수료 차등: 기본 10%, 업체별 개별 설정 가능</p>
               <p className="text-[10px] text-gray-500">• 환불 반영: 정산 완료 전 발생 건은 정산액에서 차감, 정산 완료 후 발생 건은 다음 정산에서 차감 (대표 확인 대기)</p>
             </div>
 
@@ -1278,7 +1278,7 @@ export default function AdminWeb() {
                     <p className="text-sm text-gray-700 leading-relaxed">{bizDetail.area}에 위치한 {bizDetail.cats} 전문 스튜디오. 업체가 등록한 소개 문구가 여기에 표시됩니다. (어드민은 조회만, 수정은 업체 측에서 직접)</p>
                   </div>
 
-                  {/* 수수료율 Override */}
+                  {/* 수수료율 개별 설정 */}
                   <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-3">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-xs font-bold text-gray-700">수수료율 설정</p>
