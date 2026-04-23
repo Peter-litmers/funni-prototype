@@ -6,7 +6,7 @@ import {
   Camera, Home, LayoutGrid, User, Bell, Phone, Calendar, MapPin, Search, SlidersHorizontal,
   DollarSign, BarChart3, Building2, ImageIcon, X, Star, Check, ChevronDown,
 } from "lucide-react";
-import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness, useHomeKeywords, matchesKeyword, useCategoryIcons, type HomeKeyword } from "../lib/admin-store";
+import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness, useHomeKeywords, matchesKeyword, useCategoryIcons, useNoShowReports, countNoShowsFor, type HomeKeyword } from "../lib/admin-store";
 import { resolveCatIcon } from "../lib/category-icons";
 
 function BrandMark() {
@@ -96,6 +96,7 @@ export default function BusinessApp() {
   const [feeRate] = useFeeRate();
   const [bizFees] = useBusinessFees();
   const [categoryIcons] = useCategoryIcons();
+  const [noShowReports, addNoShowReport] = useNoShowReports();
   const getCatIcon = (name: string) => resolveCatIcon(name, categoryIcons);
   const CATEGORIES = [{ name: "전체", Icon: LayoutGrid }, ...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }))];
   const HOME_CATEGORY_GRID = adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }));
@@ -1478,16 +1479,37 @@ export default function BusinessApp() {
                 </div>
               )}
 
-              {(selectedBooking.status === "확정" || selectedBooking.status === "완료") && (
+              {(selectedBooking.status === "확정" || selectedBooking.status === "완료") && (() => {
+                const alreadyReported = noShowReports.some(r => r.bookingId === String(selectedBooking.id));
+                const currentCount = countNoShowsFor(noShowReports, selectedBooking.name);
+                return (
                 <>
                   <div className="mb-4 rounded-2xl bg-gray-50 p-3 border border-gray-200">
                     <p className="text-xs text-gray-500 mb-2">고객이 방문하지 않은 경우 (노쇼)</p>
-                    <button
-                      onClick={() => alert("노쇼로 기록되었습니다. 어드민 대시보드에 자동 반영되며, 소비자 CS 이력에 누적됩니다.")}
-                      className="w-full bg-white text-gray-700 py-2.5 rounded-xl text-sm font-medium border border-gray-300 hover:border-red-300 hover:text-red-600">
-                      ⚠️ 노쇼 처리
-                    </button>
-                    <p className="text-[10px] text-gray-400 mt-1.5">노쇼 누적은 소비자 이용제한 정책에 반영될 수 있습니다</p>
+                    {alreadyReported ? (
+                      <div className="w-full bg-amber-50 text-amber-700 py-2.5 rounded-xl text-sm font-medium border border-amber-200 text-center">
+                        ⚠️ 노쇼 신고 완료 · 어드민 확인 대기
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          const reason = prompt("노쇼 사유를 간단히 적어주세요 (선택)") || "";
+                          addNoShowReport({
+                            bookingId: String(selectedBooking.id),
+                            consumerName: selectedBooking.name,
+                            studioName: "루미에르 스튜디오",
+                            reason: reason.trim() || undefined,
+                          });
+                          alert(`노쇼 신고가 접수되었습니다.\n• 소비자(${selectedBooking.name})에게 알림 발송\n• 어드민 회원관리에 누적 카운트 자동 반영\n• 현재 ${selectedBooking.name}님 누적 노쇼: ${currentCount + 1}회`);
+                        }}
+                        className="w-full bg-white text-gray-700 py-2.5 rounded-xl text-sm font-medium border border-gray-300 hover:border-red-300 hover:text-red-600">
+                        ⚠️ 노쇼 처리
+                      </button>
+                    )}
+                    <p className="text-[10px] text-gray-400 mt-1.5">
+                      노쇼 누적은 소비자 이용제한 정책에 반영될 수 있습니다
+                      {currentCount > 0 && <span className="text-amber-700 font-medium"> · 현재 {selectedBooking.name}님 누적 {currentCount}회</span>}
+                    </p>
                   </div>
 
                   {selectedBooking.status === "확정" && (
@@ -1502,7 +1524,8 @@ export default function BusinessApp() {
                     </div>
                   )}
                 </>
-              )}
+                );
+              })()}
 
             </div>
           )}

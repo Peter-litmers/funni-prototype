@@ -60,6 +60,7 @@ const K_REVIEW_DELETE_REQUESTS = "photopot.reviewDeleteRequests";
 const K_BOOKING_ACTIONS = "photopot.bookingActions";
 const K_REFUND_MATRIX = "photopot.refundMatrix";
 const K_CATEGORY_ICONS = "photopot.categoryIcons";
+const K_NOSHOW_REPORTS = "photopot.noShowReports";
 
 const CHANGE_EVENT = "photopot-admin-store-change";
 
@@ -441,6 +442,63 @@ export function useCategoryIcons(): [Record<string, string>, (next: Record<strin
     (raw) => (raw === undefined ? {} : sanitizeCategoryIcons(raw)),
   );
   return [value, (next) => writeStored(K_CATEGORY_ICONS, sanitizeCategoryIcons(next))];
+}
+
+// ===== 업체→소비자 노쇼 신고 =====
+export type NoShowReport = {
+  id: string;
+  bookingId: string;
+  consumerName: string;
+  studioName: string;
+  reportedAt: number; // epoch ms
+  reason?: string;
+  resolved?: boolean; // 어드민이 처리(경고/이용정지 등)한 후 체크
+};
+
+function sanitizeNoShowReports(input: unknown): NoShowReport[] {
+  if (!Array.isArray(input)) return [];
+  const out: NoShowReport[] = [];
+  for (const it of input) {
+    if (!it || typeof it !== "object") continue;
+    const o = it as Record<string, unknown>;
+    if (typeof o.id !== "string" || typeof o.consumerName !== "string") continue;
+    out.push({
+      id: o.id,
+      bookingId: typeof o.bookingId === "string" ? o.bookingId : "",
+      consumerName: o.consumerName,
+      studioName: typeof o.studioName === "string" ? o.studioName : "",
+      reportedAt: typeof o.reportedAt === "number" ? o.reportedAt : 0,
+      reason: typeof o.reason === "string" ? o.reason : undefined,
+      resolved: typeof o.resolved === "boolean" ? o.resolved : false,
+    });
+  }
+  return out;
+}
+
+export function useNoShowReports(): [
+  NoShowReport[],
+  (r: Omit<NoShowReport, "id" | "reportedAt" | "resolved">) => void,
+  (id: string, resolved: boolean) => void,
+  (id: string) => void,
+] {
+  const value = useStored<NoShowReport[]>(
+    K_NOSHOW_REPORTS,
+    [],
+    (raw) => (raw === undefined ? [] : sanitizeNoShowReports(raw)),
+  );
+  const add = (r: Omit<NoShowReport, "id" | "reportedAt" | "resolved">) => {
+    const next: NoShowReport = { ...r, id: `ns-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, reportedAt: Date.now(), resolved: false };
+    writeStored(K_NOSHOW_REPORTS, [...value, next]);
+  };
+  const setResolved = (id: string, resolved: boolean) => {
+    writeStored(K_NOSHOW_REPORTS, value.map(r => r.id === id ? { ...r, resolved } : r));
+  };
+  const remove = (id: string) => writeStored(K_NOSHOW_REPORTS, value.filter(r => r.id !== id));
+  return [value, add, setResolved, remove];
+}
+
+export function countNoShowsFor(reports: NoShowReport[], consumerName: string): number {
+  return reports.filter(r => r.consumerName === consumerName).length;
 }
 
 // ===== 카테고리별 환불율 매트릭스 =====

@@ -20,6 +20,8 @@ import {
   useBookingActions,
   useRefundMatrix,
   useCategoryIcons,
+  useNoShowReports,
+  countNoShowsFor,
   REFUND_PERIOD_LABELS,
   type RefundPeriod,
   type AdEntry,
@@ -84,6 +86,7 @@ export default function AdminWeb() {
   const [refundMatrix, setRefundMatrix] = useRefundMatrix();
   const [categoryIcons, setCategoryIcons] = useCategoryIcons();
   const [iconPickerFor, setIconPickerFor] = useState<string | null>(null);
+  const [noShowReports, , setNoShowResolved] = useNoShowReports();
 
   const [adModal, setAdModal] = useState<AdEntry | null>(null);
   const [adModalMode, setAdModalMode] = useState<"create" | "edit">("edit");
@@ -902,9 +905,45 @@ export default function AdminWeb() {
             if (q && !(m.name.toLowerCase().includes(q) || m.nick.toLowerCase().includes(q))) return false;
             return true;
           });
+          const pendingNoShows = noShowReports.filter(r => !r.resolved);
           return (
           <div>
             <h2 className="text-xl font-bold mb-6">회원 관리</h2>
+
+            {/* 노쇼 신고 알림 — 업체가 접수한 신고 자동 집계 */}
+            <div className="mb-5 bg-white border border-amber-200 rounded-xl overflow-hidden">
+              <div className="p-4 border-b border-amber-100 bg-amber-50/50 flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-sm">노쇼 신고 접수함</h3>
+                  <p className="text-[10px] text-gray-500 mt-0.5">업체가 &lsquo;노쇼 처리&rsquo;한 건이 자동 누적됩니다. 누적 수는 아래 회원 이름 옆 칩으로 즉시 표시.</p>
+                </div>
+                <span className="text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-medium">대기 {pendingNoShows.length}건</span>
+              </div>
+              {pendingNoShows.length === 0 ? (
+                <p className="p-5 text-center text-xs text-gray-400">대기 중인 노쇼 신고가 없습니다.</p>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {pendingNoShows.slice(0, 5).map(r => {
+                    const count = countNoShowsFor(noShowReports, r.consumerName);
+                    return (
+                    <div key={r.id} className="p-3 flex items-center gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                          <span className="text-sm font-bold">{r.consumerName}</span>
+                          <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">노쇼 누적 {count}회</span>
+                          <span className="text-[10px] text-gray-400">{new Date(r.reportedAt).toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>
+                        </div>
+                        <p className="text-[11px] text-gray-500">{r.studioName} · 예약 {r.bookingId}</p>
+                        {r.reason && <p className="text-[11px] text-gray-700 mt-0.5 bg-gray-50 rounded px-2 py-1">사유: {r.reason}</p>}
+                      </div>
+                      <button onClick={() => setNoShowResolved(r.id, true)}
+                        className="text-xs bg-primary text-white px-3 py-1.5 rounded hover:bg-primary/90 shrink-0">확인</button>
+                    </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
               <div className="p-4 border-b border-gray-100 flex gap-2">
@@ -938,9 +977,19 @@ export default function AdminWeb() {
                   {filtered.map((m) => {
                     const isBlocked = blockedMembers.has(m.name);
                     const status = isBlocked ? "차단" : "활성";
+                    const noShowCount = m.type === "소비자" ? countNoShowsFor(noShowReports, m.name) : 0;
                     return (
                     <tr key={m.name} className="border-t border-gray-50">
-                      <td className="p-4 font-medium">{m.name}</td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-medium">{m.name}</span>
+                          {noShowCount > 0 && (
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${noShowCount >= 3 ? "bg-red-100 text-red-600" : "bg-amber-100 text-amber-700"}`}>
+                              노쇼 {noShowCount}
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td className="p-4 text-gray-500 text-xs hidden md:table-cell">{m.nick}</td>
                       <td className="p-4"><span className={`text-xs px-2 py-0.5 rounded-full ${m.type === "소비자" ? "bg-blue-100 text-blue-700" : "bg-primary/10 text-primary"}`}>{m.type}</span></td>
                       <td className="p-4 text-gray-500 hidden md:table-cell text-xs">{m.date}</td>
