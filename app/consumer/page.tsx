@@ -717,7 +717,7 @@ export default function ConsumerApp() {
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
   const [customPriceMin, setCustomPriceMin] = useState<string>("");
   const [customPriceMax, setCustomPriceMax] = useState<string>("");
-  const [activeKeyword, setActiveKeyword] = useState("인기");
+  const [activeKeyword, setActiveKeyword] = useState("인기 검색어");
   const [freeKeyword, setFreeKeyword] = useState<HomeKeyword | null>(null);
   const [detailEntryCat, setDetailEntryCat] = useState<string>(""); // 탐색 진입 카테고리
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -764,7 +764,7 @@ export default function ConsumerApp() {
   const applyHomeKeyword = (label: string) => {
     setActiveKeyword(label);
     const entry = homeKeywords.find(k => k.label === label);
-    if (!label || label === "인기" || !entry) {
+    if (!label || label === "인기" || label === "인기 검색어" || !entry) {
       setFreeKeyword(null);
       setCategoryCat("전체");
     } else if (entry.aliases.length === 0 && adminCategories.includes(label)) {
@@ -937,11 +937,12 @@ export default function ConsumerApp() {
                 {homeKeywords.length > 0 && (
                   <div className="no-scrollbar mt-3 flex items-center gap-2 overflow-x-auto pb-1">
                     {homeKeywords.map(k => {
-                      if (k.label === "인기") {
+                      if (k.label === "인기" || k.label === "인기 검색어") {
                         return (
                           <span
                             key={k.label}
-                            className="shrink-0 whitespace-nowrap text-sm font-bold text-gray-900 pr-1"
+                            className="shrink-0 whitespace-nowrap text-[13px] font-medium text-primary tracking-tight pr-1"
+                            style={{ letterSpacing: "-0.01em" }}
                           >
                             {k.label}
                           </span>

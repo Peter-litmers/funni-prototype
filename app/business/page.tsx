@@ -111,7 +111,7 @@ export default function BusinessApp() {
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
   const [customPriceMin, setCustomPriceMin] = useState("");
   const [customPriceMax, setCustomPriceMax] = useState("");
-  const [activeKeyword, setActiveKeyword] = useState("인기");
+  const [activeKeyword, setActiveKeyword] = useState("인기 검색어");
   const [freeKeyword, setFreeKeyword] = useState<HomeKeyword | null>(null);
   // 한 업체 계정에 스튜디오 여러 개 가능, 각 스튜디오 = 단일 카테고리
   type MyStudio = { id: string; name: string; category: string; address: string; intro: string; photoCount: number; tags: string[] };
@@ -229,7 +229,7 @@ export default function BusinessApp() {
   const applyHomeKeyword = (label: string) => {
     setActiveKeyword(label);
     const entry = homeKeywords.find(k => k.label === label);
-    if (!label || label === "인기" || !entry) {
+    if (!label || label === "인기" || label === "인기 검색어" || !entry) {
       setFreeKeyword(null);
       setCategoryCat("전체");
     } else if (entry.aliases.length === 0 && adminCategories.includes(label)) {

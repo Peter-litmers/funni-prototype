@@ -36,7 +36,7 @@ export type HomeKeyword = {
 };
 
 const DEFAULT_HOME_KEYWORDS: HomeKeyword[] = [
-  { label: "인기", aliases: [] },
+  { label: "인기 검색어", aliases: [] },
   { label: "증명사진", aliases: ["증명사진", "이력서", "취업 프로필"] },
   { label: "성수 프로필", aliases: ["성수 프로필", "성수 바디프로필"] },
   { label: "주말 웨딩", aliases: ["주말 웨딩", "웨딩 스냅", "본식 웨딩"] },
