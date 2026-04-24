@@ -1,5 +1,5 @@
 import {
-  Camera, User, Users, Heart, Baby, Briefcase, Dog, Cat, Dumbbell,
+  Camera, User, UserCircle, Users, Heart, Baby, Briefcase, Dog, Cat, Dumbbell,
   Gift, Smile, Star, Flower2, Leaf, Sparkles, ImageIcon, Sun, Coffee,
   Cake, PawPrint, Tag,
   type LucideIcon,
@@ -7,6 +7,7 @@ import {
 
 export const ICON_OPTIONS: { key: string; label: string; Icon: LucideIcon }[] = [
   { key: "camera", label: "카메라", Icon: Camera },
+  { key: "usercircle", label: "프로필", Icon: UserCircle },
   { key: "user", label: "사람", Icon: User },
   { key: "users", label: "여러명", Icon: Users },
   { key: "heart", label: "하트", Icon: Heart },
@@ -33,7 +34,7 @@ export const ICON_MAP: Record<string, LucideIcon> = Object.fromEntries(
 );
 
 export const DEFAULT_CAT_ICON_KEY: Record<string, string> = {
-  "프로필": "camera",
+  "프로필": "usercircle",
   "바디프로필": "dumbbell",
   "웨딩": "sparkles",
   "가족": "cake",
