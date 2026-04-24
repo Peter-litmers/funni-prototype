@@ -411,7 +411,7 @@ export default function BusinessApp() {
                     value={homeSearchInput}
                     onChange={e => setHomeSearchInput(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter") runHomeSearch(); }}
-                    placeholder=""
+                    placeholder="스튜디오·지역·키워드 검색"
                     className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
                   />
                   {homeSearchInput && (
@@ -668,17 +668,11 @@ export default function BusinessApp() {
                 })}
               </div>
 
-              {/* 필터 바: 지역 + 정렬 */}
-              <div className="mt-3 px-4 flex items-center gap-2">
-                <div className="flex-1 min-w-0 flex items-center gap-1.5 bg-gray-50 rounded-full px-3 py-2 border border-gray-100">
-                  <MapPin size={13} strokeWidth={1.5} className="text-gray-400 shrink-0" />
-                  <input type="text" value={selectedRegion === "전체" ? "" : selectedRegion} onChange={e => setSelectedRegion(e.target.value || "전체")}
-                    placeholder="지역 검색" className="flex-1 min-w-0 bg-transparent text-xs outline-none placeholder:text-gray-400" />
-                  {selectedRegion !== "전체" && (
-                    <button onClick={() => setSelectedRegion("전체")} className="text-gray-400 text-xs shrink-0">✕</button>
-                  )}
-                </div>
-
+              {/* 결과 요약 + 정렬(우측) — 한 줄 */}
+              <div className="mt-3 px-4 flex items-center justify-between gap-3">
+                <p className="text-xs text-gray-500 min-w-0 truncate">
+                  {freeKeyword ? `검색 결과 ${catSorted.length}곳` : `'${categoryCat}' 스튜디오 ${catSorted.length}곳`}
+                </p>
                 {(() => {
                   const sortItems = [
                     { key: "payments" as Sort, label: "예약순" },
@@ -716,13 +710,6 @@ export default function BusinessApp() {
                     </div>
                   );
                 })()}
-              </div>
-
-              {/* 결과 요약 */}
-              <div className="mt-3 px-4">
-                <p className="text-xs text-gray-500">
-                  {freeKeyword ? `검색 결과 ${catSorted.length}곳` : `'${categoryCat}' 스튜디오 ${catSorted.length}곳`}
-                </p>
               </div>
 
               {/* AD 배너 */}
