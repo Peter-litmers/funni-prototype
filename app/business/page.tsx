@@ -1850,7 +1850,7 @@ export default function BusinessApp() {
         {screen !== "login" && <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">
           {[
             { key: "home" as Tab, Icon: Home, label: "홈", s: "home" as Screen },
-            { key: "category" as Tab, Icon: LayoutGrid, label: "카테고리", s: "category" as Screen },
+            { key: "category" as Tab, Icon: Camera, label: "스튜디오", s: "category" as Screen },
             { key: "my" as Tab, Icon: User, label: "MY", s: "mypage" as Screen },
           ].map(t => (
             <button key={t.key} onClick={() => { setTab(t.key); setScreen(t.s); }}
