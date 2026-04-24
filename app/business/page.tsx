@@ -225,6 +225,7 @@ export default function BusinessApp() {
   }, [screen, selectedStudio]);
 
   // 홈 검색창 입력 → 카테고리 탭으로 전환하며 자유 키워드 매칭
+  // homeSearchInput은 유지해서 카테고리 탭 검색창에 그대로 노출
   const runHomeSearch = () => {
     const q = homeSearchInput.trim();
     if (!q) return;
@@ -232,25 +233,30 @@ export default function BusinessApp() {
     setFreeKeyword(entry);
     setActiveKeyword(q);
     setCategoryCat("전체");
-    historyStack.current.push({ s: screen, t: tab });
-    setScreen("category");
-    setTab("category");
-    setHomeSearchInput("");
+    if (screen !== "category") {
+      historyStack.current.push({ s: screen, t: tab });
+      setScreen("category");
+      setTab("category");
+    }
   };
 
   // 홈 추천 검색어 칩 클릭 → 카테고리 탭으로 전환하며 필터 적용
+  // 선택한 라벨을 검색창에도 동기화
   const applyHomeKeyword = (label: string) => {
     setActiveKeyword(label);
     const entry = homeKeywords.find(k => k.label === label);
     if (!label || label === "인기" || label === "인기 검색어" || !entry) {
       setFreeKeyword(null);
       setCategoryCat("전체");
+      setHomeSearchInput("");
     } else if (entry.aliases.length === 0 && adminCategories.includes(label)) {
       setFreeKeyword(null);
       setCategoryCat(label);
+      setHomeSearchInput("");
     } else {
       setFreeKeyword(entry);
       setCategoryCat("전체");
+      setHomeSearchInput(label);
     }
     historyStack.current.push({ s: screen, t: tab });
     setScreen("category");
@@ -624,7 +630,7 @@ export default function BusinessApp() {
           {/* ===== CATEGORY (IA-011) ===== */}
           {screen === "category" && (
             <div>
-              {/* 검색창 */}
+              {/* 검색창 — 홈에서 검색한 값이 그대로 노출됨 */}
               <div className="px-4 pt-3">
                 <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-2.5 focus-within:border-primary transition-colors">
                   <Search size={16} strokeWidth={1.8} className="text-gray-400 shrink-0" />
@@ -636,10 +642,10 @@ export default function BusinessApp() {
                     placeholder="스튜디오·지역·키워드 검색"
                     className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
                   />
-                  {homeSearchInput && (
-                    <button onClick={() => setHomeSearchInput("")} aria-label="검색어 지우기" className="shrink-0 text-gray-400 hover:text-gray-600">✕</button>
+                  {(homeSearchInput || freeKeyword) && (
+                    <button onClick={() => { setHomeSearchInput(""); setFreeKeyword(null); }} aria-label="검색 해제" className="shrink-0 text-gray-400 hover:text-gray-600">✕</button>
                   )}
-                  {homeSearchInput.trim() && (
+                  {homeSearchInput.trim() && homeSearchInput !== freeKeyword?.label && (
                     <button onClick={runHomeSearch} className="shrink-0 rounded-full bg-primary text-white text-xs font-medium px-3 py-1">검색</button>
                   )}
                 </div>
@@ -712,19 +718,11 @@ export default function BusinessApp() {
                 })()}
               </div>
 
-              {/* 결과 요약 + 자유검색 칩 */}
+              {/* 결과 요약 */}
               <div className="mt-3 px-4">
-                {freeKeyword ? (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold px-3 py-1 shrink-0">
-                      🔎 {freeKeyword.label}
-                      <button onClick={() => setFreeKeyword(null)} className="text-primary/60 hover:text-primary ml-0.5" aria-label="검색어 삭제">✕</button>
-                    </span>
-                    <p className="text-xs text-gray-500">검색 결과 {catSorted.length}곳</p>
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-500">&lsquo;{categoryCat}&rsquo; 스튜디오 {catSorted.length}곳</p>
-                )}
+                <p className="text-xs text-gray-500">
+                  {freeKeyword ? `검색 결과 ${catSorted.length}곳` : `'${categoryCat}' 스튜디오 ${catSorted.length}곳`}
+                </p>
               </div>
 
               {/* AD 배너 */}
