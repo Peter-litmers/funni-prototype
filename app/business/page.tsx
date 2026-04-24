@@ -6,7 +6,7 @@ import {
   Camera, Home, LayoutGrid, User, Bell, Phone, Calendar, MapPin, Search, SlidersHorizontal,
   DollarSign, BarChart3, Building2, ImageIcon, X, Star, Check, ChevronDown,
 } from "lucide-react";
-import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness, useHomeKeywords, matchesKeyword, useCategoryIcons, useNoShowReports, countNoShowsFor, type HomeKeyword } from "../lib/admin-store";
+import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness, useHomeKeywords, matchesKeyword, useCategoryIcons, useNoShowReports, countNoShowsFor, useAds, type HomeKeyword } from "../lib/admin-store";
 import { resolveCatIcon } from "../lib/category-icons";
 
 function BrandMark() {
@@ -45,19 +45,19 @@ const HOME_AD_PAGES = [
 ];
 
 
-const STUDIOS = [
-  { id: 1, name: "루미에르 스튜디오", cat: "프로필", desc: "프로필촬영, 임직원 프로필, 이력서사진", area: "서울 강남구", price: "50,000", rating: 4.8, reviews: 124, phone: "02-1234-5678", travelAvailable: true, paymentCount: 302, distanceKm: 1.2 },
-  { id: 2, name: "선셋 포토랩", cat: "바디프로필", desc: "바디프로필, 커플촬영, 운동기록", area: "서울 성수동", price: "80,000", rating: 4.9, reviews: 89, phone: "02-2345-6789", travelAvailable: false, paymentCount: 287, distanceKm: 3.8 },
-  { id: 3, name: "블룸 웨딩 스튜디오", cat: "웨딩", desc: "웨딩스냅, 본식촬영, 야외웨딩", area: "서울 잠실", price: "200,000", rating: 4.7, reviews: 56, phone: "02-3456-7890", travelAvailable: true, paymentCount: 190, distanceKm: 6.1 },
-  { id: 4, name: "패밀리 모먼츠", cat: "가족", desc: "가족사진, 3대 가족 스냅, 주말 촬영", area: "경기 일산", price: "130,000", rating: 4.5, reviews: 31, phone: "031-9234-5678", travelAvailable: false, paymentCount: 57, distanceKm: 23.1 },
-  { id: 5, name: "펫모먼츠 스튜디오", cat: "반려동물", desc: "반려동물 촬영, 반려 가족 스냅, 맞춤 소품 제공", area: "서울 망원동", price: "90,000", rating: 4.7, reviews: 44, phone: "02-4567-8901", travelAvailable: true, paymentCount: 154, distanceKm: 8.4 },
-  { id: 6, name: "브랜드컷 스튜디오", cat: "비즈니스", desc: "브랜드 프로필, 팀 촬영, 대표 인터뷰컷", area: "서울 합정", price: "60,000", rating: 4.7, reviews: 45, phone: "02-5678-9012", travelAvailable: false, paymentCount: 118, distanceKm: 7.9 },
-  { id: 7, name: "베이비데이 스튜디오", cat: "아기", desc: "아기 촬영, 성장 스냅, 컨셉 프로필", area: "서울 신촌", price: "70,000", rating: 4.6, reviews: 28, phone: "02-6789-0123", travelAvailable: false, paymentCount: 84, distanceKm: 5.1 },
-  { id: 8, name: "아이덴티티 프로필", cat: "프로필", desc: "취업 프로필, 개인 브랜딩 촬영, 이력서 사진", area: "서울 종로구", price: "30,000", rating: 4.4, reviews: 52, phone: "02-7890-1234", travelAvailable: false, paymentCount: 111, distanceKm: 4.4 },
-  { id: 9, name: "커플모먼트 스튜디오", cat: "커플", desc: "커플촬영, 기념일 스냅, 데이트 사진", area: "서울 연남동", price: "110,000", rating: 4.8, reviews: 39, phone: "02-8901-2345", travelAvailable: true, paymentCount: 92, distanceKm: 9.1 },
-  { id: 10, name: "프라이빗 웨딩하우스", cat: "웨딩", desc: "셀프웨딩, 프라이빗 촬영, 웨딩 스냅", area: "서울 청담동", price: "260,000", rating: 4.9, reviews: 21, phone: "02-9012-3456", travelAvailable: true, paymentCount: 61, distanceKm: 2.8 },
-  { id: 11, name: "비즈니스 데이랩", cat: "비즈니스", desc: "사내 프로필, 팀 스냅, 워크숍 단체 촬영", area: "서울 서초구", price: "95,000", rating: 4.7, reviews: 18, phone: "02-9123-4567", travelAvailable: true, paymentCount: 49, distanceKm: 7.3 },
-  { id: 12, name: "바디에디션 랩", cat: "바디프로필", desc: "바디 프로필, 운동기록 촬영, 피트니스 브랜딩", area: "서울 성신여대", price: "150,000", rating: 4.8, reviews: 26, phone: "02-9345-6789", travelAvailable: false, paymentCount: 73, distanceKm: 11.6 },
+const STUDIOS: { id: number; name: string; cat: string; tags: string[]; desc: string; area: string; price: string; rating: number; reviews: number; phone: string; travelAvailable: boolean; paymentCount: number; distanceKm: number }[] = [
+  { id: 1, name: "루미에르 스튜디오", cat: "프로필", tags: ["증명사진", "취업프로필", "이력서"], desc: "프로필촬영, 임직원 프로필, 이력서사진", area: "서울 강남구", price: "50,000", rating: 4.8, reviews: 124, phone: "02-1234-5678", travelAvailable: true, paymentCount: 302, distanceKm: 1.2 },
+  { id: 2, name: "선셋 포토랩", cat: "바디프로필", tags: ["일반바디", "피트니스", "커플바디"], desc: "바디프로필, 커플촬영, 운동기록", area: "서울 성수동", price: "80,000", rating: 4.9, reviews: 89, phone: "02-2345-6789", travelAvailable: false, paymentCount: 287, distanceKm: 3.8 },
+  { id: 3, name: "블룸 웨딩 스튜디오", cat: "웨딩", tags: ["본식스냅", "야외웨딩", "리마인드"], desc: "웨딩스냅, 본식촬영, 야외웨딩", area: "서울 잠실", price: "200,000", rating: 4.7, reviews: 56, phone: "02-3456-7890", travelAvailable: true, paymentCount: 190, distanceKm: 6.1 },
+  { id: 4, name: "패밀리 모먼츠", cat: "가족", tags: ["3대가족", "가족나들이", "돌잔치"], desc: "가족사진, 3대 가족 스냅, 주말 촬영", area: "경기 일산", price: "130,000", rating: 4.5, reviews: 31, phone: "031-9234-5678", travelAvailable: false, paymentCount: 57, distanceKm: 23.1 },
+  { id: 5, name: "펫모먼츠 스튜디오", cat: "반려동물", tags: ["강아지", "고양이", "반려가족"], desc: "반려동물 촬영, 반려 가족 스냅, 맞춤 소품 제공", area: "서울 망원동", price: "90,000", rating: 4.7, reviews: 44, phone: "02-4567-8901", travelAvailable: true, paymentCount: 154, distanceKm: 8.4 },
+  { id: 6, name: "브랜드컷 스튜디오", cat: "비즈니스", tags: ["단체촬영", "음식", "제품"], desc: "브랜드 프로필, 팀 촬영, 대표 인터뷰컷", area: "서울 합정", price: "60,000", rating: 4.7, reviews: 45, phone: "02-5678-9012", travelAvailable: false, paymentCount: 118, distanceKm: 7.9 },
+  { id: 7, name: "베이비데이 스튜디오", cat: "아기", tags: ["신생아", "100일", "돌"], desc: "아기 촬영, 성장 스냅, 컨셉 프로필", area: "서울 신촌", price: "70,000", rating: 4.6, reviews: 28, phone: "02-6789-0123", travelAvailable: false, paymentCount: 84, distanceKm: 5.1 },
+  { id: 8, name: "아이덴티티 프로필", cat: "프로필", tags: ["취업프로필", "증명사진", "SNS프로필"], desc: "취업 프로필, 개인 브랜딩 촬영, 이력서 사진", area: "서울 종로구", price: "30,000", rating: 4.4, reviews: 52, phone: "02-7890-1234", travelAvailable: false, paymentCount: 111, distanceKm: 4.4 },
+  { id: 9, name: "커플모먼트 스튜디오", cat: "커플", tags: ["기념일", "데이트스냅", "프리웨딩"], desc: "커플촬영, 기념일 스냅, 데이트 사진", area: "서울 연남동", price: "110,000", rating: 4.8, reviews: 39, phone: "02-8901-2345", travelAvailable: true, paymentCount: 92, distanceKm: 9.1 },
+  { id: 10, name: "프라이빗 웨딩하우스", cat: "웨딩", tags: ["셀프웨딩", "프리웨딩", "리마인드"], desc: "셀프웨딩, 프라이빗 촬영, 웨딩 스냅", area: "서울 청담동", price: "260,000", rating: 4.9, reviews: 21, phone: "02-9012-3456", travelAvailable: true, paymentCount: 61, distanceKm: 2.8 },
+  { id: 11, name: "비즈니스 데이랩", cat: "비즈니스", tags: ["사내프로필", "단체촬영", "제품"], desc: "사내 프로필, 팀 스냅, 워크숍 단체 촬영", area: "서울 서초구", price: "95,000", rating: 4.7, reviews: 18, phone: "02-9123-4567", travelAvailable: true, paymentCount: 49, distanceKm: 7.3 },
+  { id: 12, name: "바디에디션 랩", cat: "바디프로필", tags: ["피트니스", "선수", "개인바디"], desc: "바디 프로필, 운동기록 촬영, 피트니스 브랜딩", area: "서울 성신여대", price: "150,000", rating: 4.8, reviews: 26, phone: "02-9345-6789", travelAvailable: false, paymentCount: 73, distanceKm: 11.6 },
 ];
 
 const ALL_BOOKINGS: { id: number; month: number; date: number; name: string; cat: string; time: string; price: number; status: string; isManual?: boolean; cancelReason?: string }[] = [
@@ -97,6 +97,7 @@ export default function BusinessApp() {
   const [bizFees] = useBusinessFees();
   const [categoryIcons] = useCategoryIcons();
   const [noShowReports, addNoShowReport] = useNoShowReports();
+  const [ads] = useAds();
   const getCatIcon = (name: string) => resolveCatIcon(name, categoryIcons);
   const CATEGORIES = [{ name: "전체", Icon: LayoutGrid }, ...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }))];
   const HOME_CATEGORY_GRID = adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }));
@@ -108,11 +109,9 @@ export default function BusinessApp() {
   const [sortOpen, setSortOpen] = useState(false);
   const [adIdx, setAdIdx] = useState(0);
   const [selectedRegion, setSelectedRegion] = useState("전체");
-  const [selectedPriceRange, setSelectedPriceRange] = useState("all");
-  const [customPriceMin, setCustomPriceMin] = useState("");
-  const [customPriceMax, setCustomPriceMax] = useState("");
   const [activeKeyword, setActiveKeyword] = useState("인기 검색어");
   const [freeKeyword, setFreeKeyword] = useState<HomeKeyword | null>(null);
+  const [homeSearchInput, setHomeSearchInput] = useState("");
   // 한 업체 계정에 스튜디오 여러 개 가능, 각 스튜디오 = 단일 카테고리
   type MyStudio = { id: string; name: string; category: string; address: string; intro: string; photoCount: number; tags: string[] };
   const [myStudios, setMyStudios] = useState<MyStudio[]>([
@@ -225,6 +224,20 @@ export default function BusinessApp() {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
   }, [screen, selectedStudio]);
 
+  // 홈 검색창 입력 → 카테고리 탭으로 전환하며 자유 키워드 매칭
+  const runHomeSearch = () => {
+    const q = homeSearchInput.trim();
+    if (!q) return;
+    const entry: HomeKeyword = { label: q, aliases: [q] };
+    setFreeKeyword(entry);
+    setActiveKeyword(q);
+    setCategoryCat("전체");
+    historyStack.current.push({ s: screen, t: tab });
+    setScreen("category");
+    setTab("category");
+    setHomeSearchInput("");
+  };
+
   // 홈 추천 검색어 칩 클릭 → 카테고리 탭으로 전환하며 필터 적용
   const applyHomeKeyword = (label: string) => {
     setActiveKeyword(label);
@@ -246,35 +259,35 @@ export default function BusinessApp() {
 
   const parseStudioPrice = (price: string) => Number(price.replace(/,/g, ""));
 
-  // 홈 맞춤 결과: 추천 검색어 칩과 독립. 지역·가격 필터만 적용.
-  // (칩 클릭은 카테고리 탭 라우팅 전용 → applyHomeKeyword)
-  const homeFiltered = STUDIOS
+  // 추천 스튜디오 = 어드민에서 '노출중'으로 편성한 광고 기준 (순서 유지).
+  // 매칭 스튜디오 없거나 광고 0건이면 paymentCount 상위 4곳으로 fallback.
+  const promotedStudios = (() => {
+    const adStudios = ads
+      .filter(a => a.status === "노출중")
+      .map(a => STUDIOS.find(s => s.name === a.studio))
+      .filter((s): s is typeof STUDIOS[number] => !!s);
+    if (adStudios.length > 0) return adStudios.slice(0, 4);
+    return [...STUDIOS].sort((a, b) => b.paymentCount - a.paymentCount).slice(0, 4);
+  })();
+  const hotStudios = [...STUDIOS].sort((a, b) => {
+    if (b.paymentCount !== a.paymentCount) return b.paymentCount - a.paymentCount;
+    return b.rating - a.rating;
+  }).slice(0, 5);
+
+  // 카테고리 탭: freeKeyword 우선 → 없으면 categoryCat + 지역 + 정렬
+  const catFiltered = STUDIOS
+    .filter(s => {
+      if (freeKeyword) {
+        const haystack = `${s.name} ${s.desc} ${s.area} ${s.cat} ${s.tags.join(" ")}`;
+        return matchesKeyword(haystack, freeKeyword);
+      }
+      return categoryCat === "전체" || s.cat === categoryCat;
+    })
     .filter(s => {
       if (selectedRegion === "전체" || !selectedRegion.trim()) return true;
       return s.area.toLowerCase().includes(selectedRegion.trim().toLowerCase());
-    })
-    .filter(s => {
-      const cmin = customPriceMin ? parseInt(customPriceMin) : null;
-      const cmax = customPriceMax ? parseInt(customPriceMax) : null;
-      const price = parseStudioPrice(s.price);
-      if (cmin !== null || cmax !== null) {
-        if (cmin !== null && price < cmin) return false;
-        if (cmax !== null && price > cmax) return false;
-        return true;
-      }
-      const ranges = [
-        { key: "all", min: 0, max: Infinity },
-        { key: "low", min: 0, max: 50000 },
-        { key: "mid", min: 50001, max: 100000 },
-        { key: "high", min: 100001, max: 200000 },
-        { key: "premium", min: 200001, max: Infinity },
-      ];
-      const range = ranges.find(r => r.key === selectedPriceRange);
-      if (!range) return true;
-      return price >= range.min && price <= range.max;
     });
-
-  const homeSorted = [...homeFiltered].sort((a, b) => {
+  const catSorted = [...catFiltered].sort((a, b) => {
     if (sort === "rating") {
       if (b.rating !== a.rating) return b.rating - a.rating;
       return b.paymentCount - a.paymentCount;
@@ -286,27 +299,6 @@ export default function BusinessApp() {
     if (b.paymentCount !== a.paymentCount) return b.paymentCount - a.paymentCount;
     return b.rating - a.rating;
   });
-
-  const finalHomeStudios = homeSorted;
-
-  const promotedStudios = [...STUDIOS].sort((a, b) => b.paymentCount - a.paymentCount).slice(0, 4);
-  const hotStudios = [...STUDIOS].sort((a, b) => {
-    if (b.paymentCount !== a.paymentCount) return b.paymentCount - a.paymentCount;
-    return b.rating - a.rating;
-  }).slice(0, 5);
-
-  const catFiltered = STUDIOS
-    .filter(s => {
-      if (freeKeyword) {
-        const haystack = `${s.name} ${s.desc} ${s.area} ${s.cat}`;
-        return matchesKeyword(haystack, freeKeyword);
-      }
-      return categoryCat === "전체" || s.cat === categoryCat;
-    })
-    .filter(s => {
-      if (selectedRegion === "전체" || !selectedRegion.trim()) return true;
-      return s.area.toLowerCase().includes(selectedRegion.trim().toLowerCase());
-    });
 
   // 편집 중인 스튜디오 조회 (없으면 빈 값 = 신규)
   const editingStudio = editingStudioId ? myStudios.find(s => s.id === editingStudioId) ?? null : null;
@@ -406,37 +398,56 @@ export default function BusinessApp() {
           {screen === "home" && (
             <div className="pb-6">
               <div className="px-4 pt-2">
-                <div>
-                  <p className="text-[11px] text-gray-400">포토팟 큐레이션</p>
-                  <h2 className="mt-1 text-xl font-bold leading-tight text-gray-900">오늘의 촬영에 맞는 스튜디오를 찾아보세요</h2>
-                </div>
-
-                <div className="mt-4 flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-3">
-                  <Search size={16} strokeWidth={1.8} className="text-gray-400" />
+                <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-3 focus-within:border-primary transition-colors">
+                  <Search size={16} strokeWidth={1.8} className="text-gray-400 shrink-0" />
                   <input
                     type="text"
-                    value={selectedRegion === "전체" ? "" : selectedRegion}
-                    onChange={e => setSelectedRegion(e.target.value || "전체")}
-                    placeholder="어떤 스튜디오를 찾고 계신가요?"
+                    value={homeSearchInput}
+                    onChange={e => setHomeSearchInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter") runHomeSearch(); }}
+                    placeholder=""
                     className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
                   />
+                  {homeSearchInput && (
+                    <button
+                      onClick={() => setHomeSearchInput("")}
+                      aria-label="검색어 지우기"
+                      className="shrink-0 text-gray-400 hover:text-gray-600"
+                    >✕</button>
+                  )}
+                  {homeSearchInput.trim() && (
+                    <button
+                      onClick={runHomeSearch}
+                      className="shrink-0 rounded-full bg-primary text-white text-xs font-medium px-3 py-1"
+                    >검색</button>
+                  )}
                 </div>
 
                 {homeKeywords.length > 0 && (
-                  <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto pb-1">
-                    {homeKeywords.map(k => (
-                      <button
-                        key={k.label}
-                        onClick={() => applyHomeKeyword(k.label)}
-                        className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
-                          activeKeyword === k.label
-                            ? "border-primary bg-primary/5 text-primary"
-                            : "border-gray-200 bg-white text-gray-500"
-                        }`}
-                      >
-                        {k.label}
-                      </button>
-                    ))}
+                  <div className="no-scrollbar mt-3 flex items-center gap-2 overflow-x-auto pb-1">
+                    {homeKeywords.map(k => {
+                      if (k.label === "인기" || k.label === "인기 검색어") {
+                        return (
+                          <span
+                            key={k.label}
+                            className="shrink-0 whitespace-nowrap text-[13px] font-medium text-primary pr-1"
+                            style={{ letterSpacing: "-0.01em" }}
+                          >
+                            {k.label}
+                          </span>
+                        );
+                      }
+                      return (
+                        <button
+                          key={k.label}
+                          onClick={() => applyHomeKeyword(k.label)}
+                          className="shrink-0 whitespace-nowrap text-xs text-gray-600 hover:text-primary underline underline-offset-4 decoration-gray-300 hover:decoration-primary decoration-1 transition-colors"
+                          style={{ letterSpacing: "-0.01em" }}
+                        >
+                          {k.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -508,49 +519,6 @@ export default function BusinessApp() {
               <div className="mt-6">
                 <div className="mb-3 flex items-center justify-between px-4">
                   <div>
-                    <p className="text-[11px] text-gray-400">에디터 셀렉션</p>
-                    <h3 className="text-[15px] font-bold text-gray-900">지금 추천하는 스튜디오</h3>
-                  </div>
-                  <button
-                    onClick={() => { setCategoryCat("전체"); setScreen("category"); setTab("category"); }}
-                    className="text-xs font-medium text-gray-400 hover:text-primary">전체보기 →</button>
-                </div>
-                <div className="no-scrollbar flex gap-3 overflow-x-auto px-4 pb-1">
-                  {promotedStudios.map((studio, index) => (
-                    <button
-                      key={studio.id}
-                      onClick={() => openDetail(studio)}
-                      className="flex w-40 shrink-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white text-left shadow-sm"
-                    >
-                      <div className="relative flex h-28 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400">
-                        <ImageIcon size={28} strokeWidth={1.5} />
-                        <span className="absolute left-2 top-2 rounded-full bg-white/85 px-2 py-0.5 text-[9px] font-semibold text-gray-500">
-                          AD #{index + 1}
-                        </span>
-                      </div>
-                      <div className="flex flex-1 flex-col p-3">
-                        <p className="truncate text-sm font-semibold text-gray-900">{studio.name}</p>
-                        <div className="mt-1 flex items-center gap-1.5 min-w-0">
-                          <p className="truncate text-[11px] text-gray-400 min-w-0">{studio.area}</p>
-                          {studio.travelAvailable && (
-                            <span className="shrink-0 rounded-full border border-primary/30 bg-primary/5 px-1.5 py-0.5 text-[9px] font-medium text-primary">
-                              출장 가능
-                            </span>
-                          )}
-                        </div>
-                        <div className="mt-auto flex items-center justify-between pt-2 text-[11px]">
-                          <span className="font-bold text-gray-900">₩{parseStudioPrice(studio.price).toLocaleString()}</span>
-                          <span className="text-yellow-500">★ {studio.rating}</span>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <div className="mb-3 flex items-center justify-between px-4">
-                  <div>
                     <p className="text-[11px] text-gray-400">예약·평점 TOP</p>
                     <h3 className="text-[15px] font-bold text-gray-900">지금 많이 찾는 스튜디오</h3>
                   </div>
@@ -583,6 +551,13 @@ export default function BusinessApp() {
                             </span>
                           )}
                         </div>
+                        {studio.tags.length > 0 && (
+                          <div className="mt-1 flex gap-1 flex-wrap">
+                            {studio.tags.slice(0, 3).map(t => (
+                              <span key={t} className="text-[10px] text-primary bg-primary/5 px-1.5 py-0.5 rounded-full">#{t}</span>
+                            ))}
+                          </div>
+                        )}
                         <div className="mt-auto flex items-center justify-between pt-2 text-[11px] text-gray-500">
                           <span>예약 {studio.paymentCount}건</span>
                           <span className="text-yellow-500">★ {studio.rating}</span>
@@ -593,114 +568,56 @@ export default function BusinessApp() {
                 </div>
               </div>
 
-              <div className="mt-6 px-4">
-                {(() => {
-                  const sortItems = [
-                    { key: "payments" as Sort, label: "예약순" },
-                    { key: "rating" as Sort, label: "평점순" },
-                    { key: "distance" as Sort, label: "거리순" },
-                  ];
-                  const currentLabel = sortItems.find(i => i.key === sort)?.label ?? "예약순";
-                  return (
-                    <div className="relative">
-                      <button
-                        onClick={() => setSortOpen(v => !v)}
-                        className="flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2.5">
-                        <div className="flex items-center gap-2">
-                          <SlidersHorizontal size={16} strokeWidth={1.8} className="text-gray-500" />
-                          <span className="text-[15px] font-bold text-gray-900">필터</span>
-                          <span className="text-[11px] text-gray-400">· {currentLabel}</span>
+              <div className="mt-6">
+                <div className="mb-3 flex items-center justify-between px-4">
+                  <div>
+                    <p className="text-[11px] text-gray-400">에디터 셀렉션</p>
+                    <h3 className="text-[15px] font-bold text-gray-900">지금 추천하는 스튜디오</h3>
+                  </div>
+                  <button
+                    onClick={() => { setCategoryCat("전체"); setScreen("category"); setTab("category"); }}
+                    className="text-xs font-medium text-gray-400 hover:text-primary">전체보기 →</button>
+                </div>
+                <div className="no-scrollbar flex gap-3 overflow-x-auto px-4 pb-1">
+                  {promotedStudios.map((studio, index) => (
+                    <button
+                      key={studio.id}
+                      onClick={() => openDetail(studio)}
+                      className="flex w-40 shrink-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white text-left shadow-sm"
+                    >
+                      <div className="relative flex h-28 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400">
+                        <ImageIcon size={28} strokeWidth={1.5} />
+                        <span className="absolute left-2 top-2 rounded-full bg-white/85 px-2 py-0.5 text-[9px] font-semibold text-gray-500">
+                          AD #{index + 1}
+                        </span>
+                      </div>
+                      <div className="flex flex-1 flex-col p-3">
+                        <p className="truncate text-sm font-semibold text-gray-900">{studio.name}</p>
+                        <div className="mt-1 flex items-center gap-1.5 min-w-0">
+                          <p className="truncate text-[11px] text-gray-400 min-w-0">{studio.area}</p>
+                          {studio.travelAvailable && (
+                            <span className="shrink-0 rounded-full border border-primary/30 bg-primary/5 px-1.5 py-0.5 text-[9px] font-medium text-primary">
+                              출장 가능
+                            </span>
+                          )}
                         </div>
-                        <ChevronDown size={16} strokeWidth={2} className={`text-gray-500 transition-transform ${sortOpen ? "rotate-180" : ""}`} />
-                      </button>
-                      {sortOpen && (
-                        <>
-                          <div className="fixed inset-0 z-20" onClick={() => setSortOpen(false)} />
-                          <div className="absolute left-0 right-0 top-full z-30 mt-1.5 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
-                            {sortItems.map(item => (
-                              <button
-                                key={item.key}
-                                onClick={() => { setSort(item.key); setSortOpen(false); }}
-                                className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition-colors ${
-                                  sort === item.key ? "bg-primary/5 text-primary font-semibold" : "text-gray-700 hover:bg-gray-50"
-                                }`}>
-                                {item.label}
-                                {sort === item.key && <Check size={16} strokeWidth={2.5} className="text-primary" />}
-                              </button>
+                        {studio.tags.length > 0 && (
+                          <div className="mt-1 flex gap-1 flex-wrap">
+                            {studio.tags.slice(0, 3).map(t => (
+                              <span key={t} className="text-[10px] text-primary bg-primary/5 px-1.5 py-0.5 rounded-full">#{t}</span>
                             ))}
                           </div>
-                        </>
-                      )}
-                    </div>
-                  );
-                })()}
-              </div>
-
-              <div className="mt-4 px-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-[15px] font-bold text-gray-900">맞춤 결과</h3>
-                  <span className="text-xs text-gray-400">{finalHomeStudios.length}곳</span>
-                </div>
-                <div className="mt-3 flex gap-1.5 overflow-x-auto items-center" style={{ scrollbarWidth: "none" }}>
-                  {[
-                    { key: "all", label: "전체" },
-                    { key: "low", label: "5만원 이하" },
-                    { key: "mid", label: "5~10만원" },
-                    { key: "high", label: "10~20만원" },
-                    { key: "premium", label: "20만원 이상" },
-                  ].map(p => (
-                    <button key={p.key} onClick={() => { setSelectedPriceRange(p.key); setCustomPriceMin(""); setCustomPriceMax(""); }}
-                      className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] border transition-all shrink-0 ${selectedPriceRange === p.key && !customPriceMin && !customPriceMax ? "border-primary bg-primary/5 text-primary font-medium" : "border-gray-100 text-gray-400 bg-gray-50"}`}>💰 {p.label}</button>
-                  ))}
-                  <div className={`flex items-center gap-0.5 text-[10px] shrink-0 rounded-full border transition-all ${customPriceMin || customPriceMax ? "border-primary bg-primary/5 text-primary" : "border-gray-100 bg-gray-50 text-gray-400"} px-2 py-0.5`}>
-                    <input type="number" placeholder="최소" value={customPriceMin} onChange={e => setCustomPriceMin(e.target.value)}
-                      className="w-10 bg-transparent outline-none text-right" />
-                    <span>원</span>
-                    <span className="mx-0.5">~</span>
-                    <input type="number" placeholder="최대" value={customPriceMax} onChange={e => setCustomPriceMax(e.target.value)}
-                      className="w-10 bg-transparent outline-none text-right" />
-                    <span>원</span>
-                    {(customPriceMin || customPriceMax) && (
-                      <button onClick={() => { setCustomPriceMin(""); setCustomPriceMax(""); }} className="ml-0.5">✕</button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-4">
-                {finalHomeStudios.length === 0 ? (
-                  <div className="text-center py-12"><p className="text-gray-400 text-sm">조건에 맞는 스튜디오가 없습니다</p></div>
-                ) : finalHomeStudios.map(s => (
-                  <div key={s.id} onClick={() => openDetail(s)}
-                    className="w-full flex gap-3 py-4 border-b border-gray-50 cursor-pointer">
-                    <div className="w-[88px] h-[88px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={28} strokeWidth={1.5} /></div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm text-gray-900">{s.name}</p>
-                      <p className="text-xs text-gray-400 mt-0.5 truncate">{s.desc}</p>
-                      <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
-                        <p className="text-xs text-gray-400 truncate min-w-0">{s.area}</p>
-                        {s.travelAvailable && (
-                          <span className="shrink-0 rounded-full border border-primary/30 bg-primary/5 px-1.5 py-0.5 text-[9px] font-medium text-primary">
-                            출장 가능
-                          </span>
                         )}
+                        <div className="mt-auto flex items-center justify-between pt-2 text-[11px]">
+                          <span className="font-bold text-gray-900">₩{parseStudioPrice(studio.price).toLocaleString()}</span>
+                          <span className="text-yellow-500">★ {studio.rating}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1 mt-1.5">
-                        <span className="text-sm font-bold text-gray-900">₩{parseStudioPrice(s.price).toLocaleString()}</span>
-                        <span className="text-xs text-gray-400">/ 시간 · VAT 포함</span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-yellow-500">★ {s.rating}</span>
-                        <span className="text-xs text-gray-400">({s.reviews})</span>
-                        <span className="text-xs text-gray-300">|</span>
-                        <span className="text-xs text-gray-400">예약 {s.paymentCount}건</span>
-                        <span className="text-xs text-gray-300">|</span>
-                        <span className="text-xs text-gray-400">{s.distanceKm.toFixed(1)}km</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                    </button>
+                  ))}
+                </div>
               </div>
+
             </div>
           )}
 
@@ -720,6 +637,7 @@ export default function BusinessApp() {
                 ))}
               </div>
 
+              {/* 지역 검색 */}
               <div className="mb-3">
                 <div className="flex items-center gap-1.5 bg-gray-50 rounded-full px-3 py-2 border border-gray-100">
                   <MapPin size={13} strokeWidth={1.5} className="text-gray-400" />
@@ -731,18 +649,60 @@ export default function BusinessApp() {
                 </div>
               </div>
 
-              {freeKeyword ? (
-                <div className="mb-3 flex items-center gap-2 flex-wrap">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold px-3 py-1">
-                    🔎 {freeKeyword.label}
-                    <button onClick={() => setFreeKeyword(null)} className="text-primary/60 hover:text-primary ml-0.5" aria-label="검색어 삭제">✕</button>
-                  </span>
-                  <p className="text-sm font-bold">검색 결과 {catFiltered.length}곳</p>
-                </div>
-              ) : (
-                <p className="text-sm font-bold mb-3">&lsquo;{categoryCat}&rsquo; 스튜디오 {catFiltered.length}곳</p>
-              )}
+              <div className="mb-3 flex items-center justify-between gap-3">
+                {freeKeyword ? (
+                  <div className="flex items-center gap-2 flex-wrap min-w-0">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold px-3 py-1 shrink-0">
+                      🔎 {freeKeyword.label}
+                      <button onClick={() => setFreeKeyword(null)} className="text-primary/60 hover:text-primary ml-0.5" aria-label="검색어 삭제">✕</button>
+                    </span>
+                    <p className="text-sm font-bold whitespace-nowrap">검색 결과 {catSorted.length}곳</p>
+                  </div>
+                ) : (
+                  <p className="text-sm font-bold whitespace-nowrap min-w-0 truncate">&lsquo;{categoryCat}&rsquo; 스튜디오 {catSorted.length}곳</p>
+                )}
 
+                {/* 정렬 드롭다운 — 오른쪽 끝 */}
+                {(() => {
+                  const sortItems = [
+                    { key: "payments" as Sort, label: "예약순" },
+                    { key: "rating" as Sort, label: "평점순" },
+                    { key: "distance" as Sort, label: "거리순" },
+                  ];
+                  const currentLabel = sortItems.find(i => i.key === sort)?.label ?? "예약순";
+                  return (
+                    <div className="relative shrink-0">
+                      <button
+                        onClick={() => setSortOpen(v => !v)}
+                        className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5">
+                        <SlidersHorizontal size={13} strokeWidth={1.8} className="text-gray-500" />
+                        <span className="text-xs font-medium text-gray-700 whitespace-nowrap">{currentLabel}</span>
+                        <ChevronDown size={13} strokeWidth={2} className={`text-gray-500 transition-transform ${sortOpen ? "rotate-180" : ""}`} />
+                      </button>
+                      {sortOpen && (
+                        <>
+                          <div className="fixed inset-0 z-20" onClick={() => setSortOpen(false)} />
+                          <div className="absolute right-0 top-full z-30 mt-1.5 min-w-[120px] rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
+                            {sortItems.map(item => (
+                              <button
+                                key={item.key}
+                                onClick={() => { setSort(item.key); setSortOpen(false); }}
+                                className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-sm transition-colors ${
+                                  sort === item.key ? "bg-primary/5 text-primary font-semibold" : "text-gray-700 hover:bg-gray-50"
+                                }`}>
+                                {item.label}
+                                {sort === item.key && <Check size={14} strokeWidth={2.5} className="text-primary" />}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* 스튜디오 리스트 상단 광고 배너 (REQ-113) */}
               <div className="mb-3 overflow-hidden rounded-xl">
                 <div className="bg-gradient-to-r from-rose-100 to-pink-200 rounded-xl p-4 flex items-center gap-3 relative">
                   <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
@@ -754,22 +714,29 @@ export default function BusinessApp() {
                 </div>
               </div>
 
-              {catFiltered.map(s => (
+              {catSorted.map(s => (
                 <div key={s.id} onClick={() => openDetail(s)}
                   className="flex gap-3 py-3 border-b border-gray-50 cursor-pointer">
                   <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={22} strokeWidth={1.5} /></div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium">{s.name}</p>
                     <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
-                      <p className="text-xs text-gray-400 truncate min-w-0">{s.cat} · {s.area}</p>
+                      <p className="text-xs text-gray-400 shrink-0">{s.cat} · {s.area}</p>
                       {s.travelAvailable && (
                         <span className="shrink-0 rounded-full border border-primary/30 bg-primary/5 px-1.5 py-0.5 text-[9px] font-medium text-primary">
                           출장 가능
                         </span>
                       )}
                     </div>
+                    {s.tags.length > 0 && (
+                      <div className="mt-1 flex gap-1 flex-wrap">
+                        {s.tags.slice(0, 3).map(t => (
+                          <span key={t} className="text-[10px] text-primary bg-primary/5 px-1.5 py-0.5 rounded-full">#{t}</span>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-sm font-bold">₩{s.price}</span>
+                      <span className="text-sm font-bold">₩{parseStudioPrice(s.price).toLocaleString()}</span>
                       <span className="text-xs text-yellow-500">★ {s.rating}</span>
                     </div>
                   </div>
