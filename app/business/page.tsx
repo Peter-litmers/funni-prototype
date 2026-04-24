@@ -12,8 +12,8 @@ import { resolveCatIcon } from "../lib/category-icons";
 function BrandMark() {
   return (
     <div className="flex items-center gap-2">
-      <Image src="/photopop-logo.png" alt="포토팟 로고" width={40} height={40} className="h-10 w-10 object-contain" />
-      <p className="text-lg font-bold tracking-tight text-gray-900">포토팟</p>
+      <Image src="/photopop-logo.png" alt="포토팟 로고" width={48} height={48} className="h-12 w-12 object-contain" />
+      <p className="text-xl font-bold tracking-tight text-gray-900 leading-none">포토팟</p>
     </div>
   );
 }
@@ -381,24 +381,30 @@ export default function BusinessApp() {
       <div className="relative w-full max-w-[390px] overflow-hidden rounded-[28px] bg-white shadow-xl" style={{ height: 780 }}>
 
         {/* Header */}
-        {screen !== "login" && (
-          <div className="relative z-10 bg-white pt-5 pl-2 pr-4 pb-2 border-b border-gray-50">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                {screen !== "home" && <button onClick={goBack} className="text-gray-500 text-lg flex items-center justify-center -mr-1">‹</button>}
+        {screen !== "login" && (() => {
+          const tabScreens: Screen[] = ["home", "category", "mypage"];
+          const showBack = !tabScreens.includes(screen);
+          return (
+            <div className="relative z-10 bg-white pt-5 pl-4 pr-4 pb-2 border-b border-gray-50">
+              <div className="flex items-center justify-between">
                 <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center">
                   <BrandMark />
                 </button>
+                <div className="flex items-center gap-1">
+                  {showBack && (
+                    <button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 text-lg leading-none p-1">‹</button>
+                  )}
+                  <button onClick={() => { navigate("notifications"); setHasNotif(false); }} className="relative text-gray-500 p-1">
+                    <Bell size={20} strokeWidth={1.5} />
+                    {hasNotif && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
+                  </button>
+                </div>
               </div>
-              <button onClick={() => { navigate("notifications"); setHasNotif(false); }} className="relative text-gray-500 p-1">
-                <Bell size={20} strokeWidth={1.5} />
-                {hasNotif && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
-              </button>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
-        <div ref={scrollRef} className="overflow-y-auto bg-white" style={{ height: screen === "login" ? "780px" : "calc(780px - 61px - 56px)" }}>
+        <div ref={scrollRef} className="overflow-y-auto bg-white" style={{ height: screen === "login" ? "780px" : "calc(780px - 69px - 56px)" }}>
 
           {/* ===== HOME (IA-010: 소비자와 동일한 스튜디오 탐색) ===== */}
           {screen === "home" && (

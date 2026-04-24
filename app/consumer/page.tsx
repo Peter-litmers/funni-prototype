@@ -12,8 +12,8 @@ import { resolveCatIcon } from "../lib/category-icons";
 function BrandMark() {
   return (
     <div className="flex items-center gap-2">
-      <Image src="/photopop-logo.png" alt="포토팟 로고" width={40} height={40} className="h-10 w-10 object-contain" />
-      <p className="text-lg font-bold tracking-tight text-gray-900">포토팟</p>
+      <Image src="/photopop-logo.png" alt="포토팟 로고" width={48} height={48} className="h-12 w-12 object-contain" />
+      <p className="text-xl font-bold tracking-tight text-gray-900 leading-none">포토팟</p>
     </div>
   );
 }
@@ -916,24 +916,30 @@ export default function ConsumerApp() {
       <div className="relative w-full max-w-[390px] overflow-hidden rounded-[28px] bg-white shadow-xl" style={{ height: 780 }}>
 
         {/* Header */}
-        {showHeader && (
-          <div className="relative z-10 bg-white pt-5 pl-4 pr-4 pb-2">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                {screen !== "home" && <button onClick={goBack} className="text-gray-500 text-lg flex items-center justify-center -mr-1">‹</button>}
+        {showHeader && (() => {
+          const tabScreens: Screen[] = ["home", "category", "mypage"];
+          const showBack = !tabScreens.includes(screen);
+          return (
+            <div className="relative z-10 bg-white pt-5 pl-4 pr-4 pb-2">
+              <div className="flex items-center justify-between mb-2">
                 <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center">
                   <BrandMark />
                 </button>
+                <div className="flex items-center gap-1">
+                  {showBack && (
+                    <button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 text-lg leading-none p-1">‹</button>
+                  )}
+                  <button onClick={() => navigate("notifications")} className="text-gray-500 relative p-1">
+                    <Bell size={20} strokeWidth={1.5} />
+                    {(CONSUMER_NOTIFICATIONS.some(n => !n.read) || noShowReports.some(r => r.consumerName === userName)) && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
+                  </button>
+                </div>
               </div>
-              <button onClick={() => navigate("notifications")} className="text-gray-500 relative p-1">
-                <Bell size={20} strokeWidth={1.5} />
-                {(CONSUMER_NOTIFICATIONS.some(n => !n.read) || noShowReports.some(r => r.consumerName === userName)) && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
-              </button>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
-        <div ref={scrollRef} className="overflow-y-auto bg-white" style={{ height: showHeader ? "calc(780px - 64px - 56px)" : "calc(780px - 56px)" }}>
+        <div ref={scrollRef} className="overflow-y-auto bg-white" style={{ height: showHeader ? "calc(780px - 72px - 56px)" : "calc(780px - 56px)" }}>
 
           {/* ===== HOME (IA-010) ===== */}
           {screen === "home" && (
