@@ -11,9 +11,9 @@ import { resolveCatIcon } from "../lib/category-icons";
 
 function BrandMark() {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center">
       <Image src="/photopop-logo.png" alt="포토팟 로고" width={48} height={48} className="h-12 w-12 object-contain" />
-      <p className="text-xl font-bold tracking-tight text-gray-900 leading-none">포토팟</p>
+      <p className="text-xl font-bold tracking-tight text-gray-900 leading-none -ml-1">포토팟</p>
     </div>
   );
 }
