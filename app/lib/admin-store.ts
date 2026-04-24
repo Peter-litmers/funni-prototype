@@ -41,7 +41,7 @@ const DEFAULT_HOME_KEYWORDS: HomeKeyword[] = [
   { label: "성수 프로필", aliases: ["성수 프로필", "성수 바디프로필"] },
   { label: "주말 웨딩", aliases: ["주말 웨딩", "웨딩 스냅", "본식 웨딩"] },
   { label: "가족 스냅", aliases: ["가족 스냅", "3대 가족", "가족사진"] },
-  { label: "반려 가족", aliases: ["반려동물", "반려 가족", "펫"] },
+  { label: "커플 스냅", aliases: ["커플 스냅", "커플 촬영", "기념일"] },
   { label: "바디프로필", aliases: [] },
 ];
 
