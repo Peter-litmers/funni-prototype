@@ -11,9 +11,9 @@ import { resolveCatIcon } from "../lib/category-icons";
 
 function BrandMark() {
   return (
-    <div className="flex items-center gap-2">
-      <Image src="/photopop-logo.png" alt="포토팟 로고" width={40} height={40} className="h-10 w-10 object-contain" />
-      <p className="text-lg font-bold tracking-tight text-gray-900">포토팟</p>
+    <div className="flex items-center">
+      <Image src="/photopop-logo.png" alt="포토팟 로고" width={48} height={48} className="h-12 w-12 object-contain" />
+      <p className="text-xl font-bold tracking-tight text-gray-900 leading-none -ml-1">포토팟</p>
     </div>
   );
 }
@@ -762,6 +762,7 @@ export default function ConsumerApp() {
   };
 
   // 홈 검색창 입력 → 카테고리 탭으로 전환하며 자유 키워드 매칭
+  // homeSearchInput은 유지해서 카테고리 탭 검색창에 그대로 노출
   const runHomeSearch = () => {
     const q = homeSearchInput.trim();
     if (!q) return;
@@ -769,25 +770,30 @@ export default function ConsumerApp() {
     setFreeKeyword(entry);
     setActiveKeyword(q);
     setCategoryCat("전체");
-    historyStack.current.push({ s: screen, t: tab });
-    setScreen("category");
-    setTab("category");
-    setHomeSearchInput("");
+    if (screen !== "category") {
+      historyStack.current.push({ s: screen, t: tab });
+      setScreen("category");
+      setTab("category");
+    }
   };
 
   // 홈 상단 추천 검색어 칩 클릭 → 카테고리 탭으로 전환하며 필터 적용
+  // 선택한 라벨을 검색창에도 동기화
   const applyHomeKeyword = (label: string) => {
     setActiveKeyword(label);
     const entry = homeKeywords.find(k => k.label === label);
     if (!label || label === "인기" || label === "인기 검색어" || !entry) {
       setFreeKeyword(null);
       setCategoryCat("전체");
+      setHomeSearchInput("");
     } else if (entry.aliases.length === 0 && adminCategories.includes(label)) {
       setFreeKeyword(null);
       setCategoryCat(label);
+      setHomeSearchInput("");
     } else {
       setFreeKeyword(entry);
       setCategoryCat("전체");
+      setHomeSearchInput(label);
     }
     historyStack.current.push({ s: screen, t: tab });
     setScreen("category");
@@ -910,24 +916,30 @@ export default function ConsumerApp() {
       <div className="relative w-full max-w-[390px] overflow-hidden rounded-[28px] bg-white shadow-xl" style={{ height: 780 }}>
 
         {/* Header */}
-        {showHeader && (
-          <div className="relative z-10 bg-white pt-5 pl-4 pr-4 pb-2">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                {screen !== "home" && <button onClick={goBack} className="text-gray-500 text-lg flex items-center justify-center -mr-1">‹</button>}
+        {showHeader && (() => {
+          const tabScreens: Screen[] = ["home", "category", "mypage"];
+          const showBack = !tabScreens.includes(screen);
+          return (
+            <div className="relative z-10 bg-white pt-5 pl-4 pr-4 pb-2">
+              <div className="flex items-center justify-between mb-2">
                 <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center">
                   <BrandMark />
                 </button>
+                <div className="flex items-center gap-1">
+                  {showBack && (
+                    <button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 text-lg leading-none p-1">‹</button>
+                  )}
+                  <button onClick={() => navigate("notifications")} className="text-gray-500 relative p-1">
+                    <Bell size={20} strokeWidth={1.5} />
+                    {(CONSUMER_NOTIFICATIONS.some(n => !n.read) || noShowReports.some(r => r.consumerName === userName)) && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
+                  </button>
+                </div>
               </div>
-              <button onClick={() => navigate("notifications")} className="text-gray-500 relative p-1">
-                <Bell size={20} strokeWidth={1.5} />
-                {(CONSUMER_NOTIFICATIONS.some(n => !n.read) || noShowReports.some(r => r.consumerName === userName)) && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
-              </button>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
-        <div ref={scrollRef} className="overflow-y-auto bg-white" style={{ height: showHeader ? "calc(780px - 64px - 56px)" : "calc(780px - 56px)" }}>
+        <div ref={scrollRef} className="overflow-y-auto bg-white" style={{ height: showHeader ? "calc(780px - 72px - 56px)" : "calc(780px - 56px)" }}>
 
           {/* ===== HOME (IA-010) ===== */}
           {screen === "home" && (
@@ -940,7 +952,7 @@ export default function ConsumerApp() {
                     value={homeSearchInput}
                     onChange={e => setHomeSearchInput(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter") runHomeSearch(); }}
-                    placeholder=""
+                    placeholder="스튜디오·지역·키워드 검색"
                     className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
                   />
                   {homeSearchInput && (
@@ -1158,46 +1170,50 @@ export default function ConsumerApp() {
 
           {/* ===== CATEGORY (IA-011) ===== */}
           {screen === "category" && (
-            <div className="p-4">
-              <h2 className="text-base font-bold mb-4">카테고리</h2>
-              <div className="grid grid-cols-4 gap-2 mb-4">
-                {CATEGORIES.map(c => (
-                  <button key={c.name} onClick={() => { setFreeKeyword(null); setCategoryCat(c.name); }}
-                    className="flex flex-col items-center gap-1.5 py-2">
-                    <div className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all ${!freeKeyword && categoryCat === c.name ? "border-primary bg-primary/5 text-primary" : "border-gray-200 bg-white text-gray-600"}`}>
-                      <c.Icon size={20} strokeWidth={1.5} />
-                    </div>
-                    <span className={`text-[10px] ${!freeKeyword && categoryCat === c.name ? "text-primary font-semibold" : "text-gray-600"}`}>{c.name}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* 지역 검색 */}
-              <div className="mb-3">
-                <div className="flex items-center gap-1.5 bg-gray-50 rounded-full px-3 py-2 border border-gray-100">
-                  <MapPin size={13} strokeWidth={1.5} className="text-gray-400" />
-                  <input type="text" value={selectedRegion === "전체" ? "" : selectedRegion} onChange={e => setSelectedRegion(e.target.value || "전체")}
-                    placeholder="지역 검색 (예: 잠실, 강남)" className="flex-1 bg-transparent text-xs outline-none placeholder:text-gray-400" />
-                  {selectedRegion !== "전체" && (
-                    <button onClick={() => setSelectedRegion("전체")} className="text-gray-400 text-xs">✕</button>
+            <div>
+              {/* 검색창 — 홈에서 검색한 값이 그대로 노출됨 */}
+              <div className="px-4 pt-3">
+                <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-2.5 focus-within:border-primary transition-colors">
+                  <Search size={16} strokeWidth={1.8} className="text-gray-400 shrink-0" />
+                  <input
+                    type="text"
+                    value={homeSearchInput}
+                    onChange={e => setHomeSearchInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter") runHomeSearch(); }}
+                    placeholder="스튜디오·지역·키워드 검색"
+                    className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+                  />
+                  {(homeSearchInput || freeKeyword) && (
+                    <button onClick={() => { setHomeSearchInput(""); setFreeKeyword(null); }} aria-label="검색 해제" className="shrink-0 text-gray-400 hover:text-gray-600">✕</button>
+                  )}
+                  {homeSearchInput.trim() && homeSearchInput !== freeKeyword?.label && (
+                    <button onClick={runHomeSearch} className="shrink-0 rounded-full bg-primary text-white text-xs font-medium px-3 py-1">검색</button>
                   )}
                 </div>
               </div>
 
-              <div className="mb-3 flex items-center justify-between gap-3">
-                {freeKeyword ? (
-                  <div className="flex items-center gap-2 flex-wrap min-w-0">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold px-3 py-1 shrink-0">
-                      🔎 {freeKeyword.label}
-                      <button onClick={() => setFreeKeyword(null)} className="text-primary/60 hover:text-primary ml-0.5" aria-label="검색어 삭제">✕</button>
-                    </span>
-                    <p className="text-sm font-bold whitespace-nowrap">검색 결과 {catSorted.length}곳</p>
-                  </div>
-                ) : (
-                  <p className="text-sm font-bold whitespace-nowrap min-w-0 truncate">&lsquo;{categoryCat}&rsquo; 스튜디오 {catSorted.length}곳</p>
-                )}
+              {/* 카테고리 칩 — 가로 스크롤 */}
+              <div className="mt-3 no-scrollbar flex gap-2 overflow-x-auto px-4 pb-1">
+                {CATEGORIES.map(c => {
+                  const active = !freeKeyword && categoryCat === c.name;
+                  return (
+                    <button
+                      key={c.name}
+                      onClick={() => { setFreeKeyword(null); setCategoryCat(c.name); }}
+                      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs transition-all shrink-0 ${active ? "border-primary bg-primary/5 text-primary font-semibold" : "border-gray-200 bg-white text-gray-600"}`}
+                    >
+                      <c.Icon size={14} strokeWidth={1.7} />
+                      <span>{c.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
 
-                {/* 정렬 드롭다운 — 오른쪽 끝 */}
+              {/* 결과 요약 + 정렬(우측) — 한 줄 */}
+              <div className="mt-3 px-4 flex items-center justify-between gap-3">
+                <p className="text-xs text-gray-500 min-w-0 truncate">
+                  {freeKeyword ? `검색 결과 ${catSorted.length}곳` : `'${categoryCat}' 스튜디오 ${catSorted.length}곳`}
+                </p>
                 {(() => {
                   const sortItems = [
                     { key: "payments" as Sort, label: "예약순" },
@@ -1237,8 +1253,8 @@ export default function ConsumerApp() {
                 })()}
               </div>
 
-              {/* 스튜디오 리스트 상단 광고 배너 (REQ-113) */}
-              <div className="mb-3 overflow-hidden rounded-xl">
+              {/* AD 배너 */}
+              <div className="mx-4 mt-3 overflow-hidden rounded-xl">
                 <div className="bg-gradient-to-r from-rose-100 to-pink-200 rounded-xl p-4 flex items-center gap-3 relative">
                   <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
                   <div className="w-14 h-14 bg-white/60 rounded-lg flex items-center justify-center shrink-0 text-gray-400"><ImageIcon size={22} strokeWidth={1.5} /></div>
@@ -1249,34 +1265,37 @@ export default function ConsumerApp() {
                 </div>
               </div>
 
-              {catSorted.map(s => (
-                <div key={s.id} onClick={() => openDetail(s, categoryCat)}
-                  className="flex gap-3 py-3 border-b border-gray-50 cursor-pointer">
-                  <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={22} strokeWidth={1.5} /></div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{s.name}</p>
-                    <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
-                      <p className="text-xs text-gray-400 shrink-0">{s.cat} · {s.area}</p>
-                      {s.travelAvailable && (
-                        <span className="shrink-0 rounded-full border border-primary/30 bg-primary/5 px-1.5 py-0.5 text-[9px] font-medium text-primary">
-                          출장 가능
-                        </span>
-                      )}
-                    </div>
-                    {s.tags.length > 0 && (
-                      <div className="mt-1 flex gap-1 flex-wrap">
-                        {s.tags.slice(0, 3).map(t => (
-                          <span key={t} className="text-[10px] text-primary bg-primary/5 px-1.5 py-0.5 rounded-full">#{t}</span>
-                        ))}
+              {/* 리스트 */}
+              <div className="px-4 pb-4">
+                {catSorted.map(s => (
+                  <div key={s.id} onClick={() => openDetail(s, categoryCat)}
+                    className="flex gap-3 py-3 border-b border-gray-50 cursor-pointer">
+                    <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 shrink-0"><ImageIcon size={22} strokeWidth={1.5} /></div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium">{s.name}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+                        <p className="text-xs text-gray-400 shrink-0">{s.cat} · {s.area}</p>
+                        {s.travelAvailable && (
+                          <span className="shrink-0 rounded-full border border-primary/30 bg-primary/5 px-1.5 py-0.5 text-[9px] font-medium text-primary">
+                            출장 가능
+                          </span>
+                        )}
                       </div>
-                    )}
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-sm font-bold">₩{s.price.toLocaleString()}</span>
-                      <span className="text-xs text-yellow-500">★ {s.rating}</span>
+                      {s.tags.length > 0 && (
+                        <div className="mt-1 flex gap-1 flex-wrap">
+                          {s.tags.slice(0, 3).map(t => (
+                            <span key={t} className="text-[10px] text-primary bg-primary/5 px-1.5 py-0.5 rounded-full">#{t}</span>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-sm font-bold">₩{s.price.toLocaleString()}</span>
+                        <span className="text-xs text-yellow-500">★ {s.rating}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
 
@@ -2069,7 +2088,7 @@ export default function ConsumerApp() {
           <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">
             {[
               { key: "home" as Tab, Icon: Home, label: "홈", s: "home" as Screen },
-              { key: "category" as Tab, Icon: LayoutGrid, label: "카테고리", s: "category" as Screen },
+              { key: "category" as Tab, Icon: Camera, label: "스튜디오", s: "category" as Screen },
               { key: "mypage" as Tab, Icon: User, label: "MY", s: "mypage" as Screen },
             ].map(t => (
               <button key={t.key} onClick={() => { setTab(t.key); setScreen(t.s); }}
