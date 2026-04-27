@@ -95,6 +95,8 @@ export default function AdminWeb() {
   const [bannerModal, setBannerModal] = useState<BannerEntry | null>(null);
   const [bannerModalMode, setBannerModalMode] = useState<"create" | "edit">("edit");
   const [bookingDetail, setBookingDetail] = useState<null | { id: string; consumer: string; studio: string; date: string; amount: string; status: string }>(null);
+  const [settlementFilter, setSettlementFilter] = useState<"미정산" | "정산 완료">("미정산");
+  const [settledRowIds, setSettledRowIds] = useState<Record<string, number>>({}); // rowId → 정산 처리 시각
   const [bookingSearch, setBookingSearch] = useState("");
   const [bookingStatusFilter, setBookingStatusFilter] = useState<string>("전체");
   const [memberSearch, setMemberSearch] = useState("");
@@ -684,132 +686,129 @@ export default function AdminWeb() {
               </div>
             </div>
 
-            {/* 정산 요청 접수함 (업체가 MY → 정산 내역에서 요청한 건) */}
-            <div className="bg-white rounded-xl shadow-sm mb-6">
-              <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold text-sm">정산 요청 접수함</h3>
-                  <p className="text-[10px] text-gray-500 mt-0.5">업체가 MY → 정산 내역에서 &lsquo;정산 요청&rsquo;을 누르면 자동 누적됩니다.</p>
-                </div>
-                <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
-                  대기 {settlementRequests.filter(r => r.status === "대기").length}건
-                </span>
-              </div>
-              {settlementRequests.length === 0 ? (
-                <p className="p-5 text-center text-xs text-gray-400">접수된 정산 요청이 없습니다.</p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="p-3 text-left font-medium text-gray-500 text-xs">업체 (아이디-스튜디오)</th>
-                        <th className="p-3 text-left font-medium text-gray-500 text-xs">기간</th>
-                        <th className="p-3 text-left font-medium text-gray-500 text-xs">요청 금액</th>
-                        <th className="p-3 text-left font-medium text-gray-500 text-xs">요청 시각</th>
-                        <th className="p-3 text-left font-medium text-gray-500 text-xs">상태</th>
-                        <th className="p-3 text-left font-medium text-gray-500 text-xs">처리</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[...settlementRequests].sort((a, b) => b.requestedAt - a.requestedAt).map(r => (
-                        <tr key={r.id} className="border-t border-gray-50">
-                          <td className="p-3">
-                            <p className="font-medium text-xs">
-                              <span className="text-gray-400 font-mono">{r.account}</span>
-                              <span className="text-gray-300 mx-1">-</span>
-                              <span>{r.studioName}</span>
-                            </p>
-                          </td>
-                          <td className="p-3 text-xs text-gray-600">{r.period}</td>
-                          <td className="p-3 text-xs font-bold text-amber-600">₩{r.amount.toLocaleString()}</td>
-                          <td className="p-3 text-[10px] text-gray-400">{new Date(r.requestedAt).toLocaleString("ko-KR")}</td>
-                          <td className="p-3">
-                            <span className={`text-xs font-medium ${
-                              r.status === "정산 완료" ? "text-green-700" : r.status === "반려" ? "text-red-500" : "text-amber-600"
-                            }`}>{r.status}</span>
-                          </td>
-                          <td className="p-3">
-                            {r.status === "대기" ? (
-                              <div className="flex gap-1">
-                                <button onClick={() => setSettlementRequestStatus(r.id, "정산 완료")}
-                                  className="text-[10px] text-green-700 px-2 py-1 bg-green-50 rounded hover:bg-green-100">정산 완료</button>
-                                <button onClick={() => setSettlementRequestStatus(r.id, "반려")}
-                                  className="text-[10px] text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">반려</button>
-                              </div>
-                            ) : (
-                              <span className="text-[10px] text-gray-400">{r.processedAt ? new Date(r.processedAt).toLocaleString("ko-KR") : "—"}</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+            {/* Settlement Table — 통합 (정산 안한 것 / 정산 완료 필터) */}
+            {(() => {
+              const SETTLEMENT_ROWS = [
+                { account: "lumiere_biz", studio: "루미에르 스튜디오", category: "프로필", count: 8, base: 580000, options: 100000 },
+                { account: "lumiere_biz", studio: "루미에르 비즈컷", category: "비즈니스", count: 4, base: 210000, options: 30000 },
+                { account: "bloom_wedding", studio: "블룸 웨딩홀", category: "웨딩", count: 3, base: 450000, options: 70000 },
+                { account: "brandcut", studio: "브랜드컷 스튜디오", category: "비즈니스", count: 12, base: 340000, options: 0 },
+              ];
+              const PERIOD = "2026년 4월";
+              const rowId = (s: typeof SETTLEMENT_ROWS[number]) => `${s.account}__${s.studio}`;
+              const isSettled = (id: string) => id in settledRowIds;
+              const visibleRows = SETTLEMENT_ROWS.filter(s => settlementFilter === "정산 완료" ? isSettled(rowId(s)) : !isSettled(rowId(s)));
+              const pendingCount = SETTLEMENT_ROWS.filter(s => !isSettled(rowId(s))).length;
+              const completedCount = SETTLEMENT_ROWS.filter(s => isSettled(rowId(s))).length;
 
-            {/* Settlement Table */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold">미정산 목록</h3>
-                <div className="flex gap-2">
-                  <button className="text-xs bg-gray-100 px-3 py-2 rounded-lg">전체 선택</button>
-                  <button className="text-xs bg-primary text-white px-4 py-2 rounded-lg font-medium">
-                    선택 정산 실행
-                  </button>
-                </div>
-              </div>
-              <p className="text-xs text-gray-400 mb-4">관리자가 버튼을 눌러 수동으로 정산합니다 (확정)</p>
+              return (
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold">정산 관리</h3>
+                    <p className="text-[11px] text-gray-400">관리자가 업체에 직접 이체 후 &lsquo;정산 완료 처리&rsquo; 클릭</p>
+                  </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="p-3 text-left"><input type="checkbox" /></th>
-                      <th className="p-3 text-left font-medium text-gray-500">업체 (아이디-스튜디오)</th>
-                      <th className="p-3 text-left font-medium text-gray-500">카테고리</th>
-                      <th className="p-3 text-left font-medium text-gray-500">예약건수</th>
-                      <th className="p-3 text-left font-medium text-gray-500">총액 (촬영+옵션)</th>
-                      <th className="p-3 text-left font-medium text-gray-500">수수료율</th>
-                      <th className="p-3 text-left font-medium text-gray-500">정산액</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      { account: "lumiere_biz", studio: "루미에르 스튜디오", category: "프로필", count: 8, base: 580000, options: 100000 },
-                      { account: "lumiere_biz", studio: "루미에르 비즈컷", category: "비즈니스", count: 4, base: 210000, options: 30000 },
-                      { account: "bloom_wedding", studio: "블룸 웨딩홀", category: "웨딩", count: 3, base: 450000, options: 70000 },
-                      { account: "brandcut", studio: "브랜드컷 스튜디오", category: "비즈니스", count: 12, base: 340000, options: 0 },
-                    ].map((s, i) => {
-                      const total = s.base + s.options;
-                      const { rate, isOverride } = getFeeForBusiness(s.studio, feeRate, bizFees);
-                      const net = Math.round(total * (1 - rate / 100));
-                      return (
-                        <tr key={i} className="border-t border-gray-50">
-                          <td className="p-3"><input type="checkbox" /></td>
-                          <td className="p-3">
-                            <p className="font-medium">
-                              <span className="text-gray-400 font-mono text-xs">{s.account}</span>
-                              <span className="text-gray-300 mx-1">-</span>
-                              <span>{s.studio}</span>
-                            </p>
-                            {isOverride && <span className="text-[9px] text-primary bg-primary/10 px-1.5 py-0.5 rounded">개별 {rate}%</span>}
-                          </td>
-                          <td className="p-3"><span className="text-[11px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{s.category}</span></td>
-                          <td className="p-3">{s.count}건</td>
-                          <td className="p-3">
-                            <p>₩{total.toLocaleString()}</p>
-                            <p className="text-[9px] text-gray-400">촬영 ₩{s.base.toLocaleString()} + 옵션 ₩{s.options.toLocaleString()}</p>
-                          </td>
-                          <td className="p-3 text-primary font-medium">{rate}%</td>
-                          <td className="p-3 font-bold">₩{net.toLocaleString()}</td>
+                  {/* 필터 토글 */}
+                  <div className="flex gap-1 mb-4">
+                    <button onClick={() => setSettlementFilter("미정산")}
+                      className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        settlementFilter === "미정산" ? "bg-primary text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                      }`}>
+                      정산 안한 것 ({pendingCount})
+                    </button>
+                    <button onClick={() => setSettlementFilter("정산 완료")}
+                      className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        settlementFilter === "정산 완료" ? "bg-primary text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                      }`}>
+                      정산 완료 ({completedCount})
+                    </button>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs">업체 (아이디-스튜디오)</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs">카테고리</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs">기간</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs">예약건수</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs">총액 (촬영+옵션)</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs">수수료율</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs">정산액</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs">업체 요청</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs">처리</th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                      </thead>
+                      <tbody>
+                        {visibleRows.length === 0 ? (
+                          <tr><td colSpan={9} className="p-6 text-center text-xs text-gray-400">
+                            {settlementFilter === "미정산" ? "정산할 건이 없습니다." : "정산 완료된 건이 없습니다."}
+                          </td></tr>
+                        ) : visibleRows.map((s) => {
+                          const id = rowId(s);
+                          const total = s.base + s.options;
+                          const { rate, isOverride } = getFeeForBusiness(s.studio, feeRate, bizFees);
+                          const net = Math.round(total * (1 - rate / 100));
+                          const matchedRequest = settlementRequests.find(r => r.account === s.account && r.period === PERIOD);
+                          const settledAt = settledRowIds[id];
+                          return (
+                            <tr key={id} className="border-t border-gray-50">
+                              <td className="p-3">
+                                <p className="font-medium">
+                                  <span className="text-gray-400 font-mono text-xs">{s.account}</span>
+                                  <span className="text-gray-300 mx-1">-</span>
+                                  <span>{s.studio}</span>
+                                </p>
+                                {isOverride && <span className="text-[9px] text-primary bg-primary/10 px-1.5 py-0.5 rounded">개별 {rate}%</span>}
+                              </td>
+                              <td className="p-3"><span className="text-[11px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{s.category}</span></td>
+                              <td className="p-3 text-xs text-gray-600">{PERIOD}</td>
+                              <td className="p-3">{s.count}건</td>
+                              <td className="p-3">
+                                <p>₩{total.toLocaleString()}</p>
+                                <p className="text-[9px] text-gray-400">촬영 ₩{s.base.toLocaleString()} + 옵션 ₩{s.options.toLocaleString()}</p>
+                              </td>
+                              <td className="p-3 text-primary font-medium">{rate}%</td>
+                              <td className="p-3 font-bold">₩{net.toLocaleString()}</td>
+                              <td className="p-3">
+                                {matchedRequest ? (
+                                  <div>
+                                    <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">🔔 요청됨</span>
+                                    <p className="text-[10px] text-gray-400 mt-1">{new Date(matchedRequest.requestedAt).toLocaleString("ko-KR")}</p>
+                                  </div>
+                                ) : (
+                                  <span className="text-[10px] text-gray-300">—</span>
+                                )}
+                              </td>
+                              <td className="p-3">
+                                {settledAt ? (
+                                  <div>
+                                    <span className="text-[10px] text-green-700 font-medium">정산 완료</span>
+                                    <p className="text-[10px] text-gray-400 mt-1">{new Date(settledAt).toLocaleString("ko-KR")}</p>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={() => {
+                                      const now = Date.now();
+                                      setSettledRowIds(prev => ({ ...prev, [id]: now }));
+                                      if (matchedRequest && matchedRequest.status === "대기") {
+                                        setSettlementRequestStatus(matchedRequest.id, "정산 완료");
+                                      }
+                                    }}
+                                    className="text-[10px] text-green-700 px-2.5 py-1.5 bg-green-50 rounded hover:bg-green-100 font-medium">
+                                    정산 완료 처리
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 
