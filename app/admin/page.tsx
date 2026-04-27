@@ -943,7 +943,58 @@ export default function AdminWeb() {
                     );
                   })}
                   {(() => {
-                    const orphanAds = ads.map((a, globalIdx) => ({ a, globalIdx })).filter(x => !categories.includes(x.a.cat));
+                    const allAds = ads.map((a, globalIdx) => ({ a, globalIdx })).filter(x => x.a.cat === "전체");
+                    if (allAds.length === 0) return null;
+                    const liveCount = allAds.filter(x => x.a.status === "노출중").length;
+                    let liveSlotN = 0;
+                    return (
+                      <div className="p-3 bg-amber-50/30">
+                        <div className="flex items-center gap-2 mb-2 px-1">
+                          <span className="text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">전체</span>
+                          <span className="text-[10px] text-gray-500">노출 슬롯 {Math.min(liveCount, 1)}/1 — 스튜디오 → 전체 페이지 노출</span>
+                        </div>
+                        <table className="w-full text-sm">
+                          <tbody>
+                            {allAds.map(({ a, globalIdx }, idxInCat) => {
+                              const period = a.periodStart && a.periodEnd
+                                ? `${a.periodStart.slice(5).replace("-", ".")}~${a.periodEnd.slice(5).replace("-", ".")}`
+                                : "기간 미설정";
+                              const isLive = a.status === "노출중";
+                              if (isLive) liveSlotN += 1;
+                              const slotLabel = isLive
+                                ? (liveSlotN <= 1 ? `슬롯 #${liveSlotN}` : `대기 (슬롯 초과)`)
+                                : "—";
+                              const isFirst = idxInCat === 0;
+                              const isLast = idxInCat === allAds.length - 1;
+                              return (
+                                <tr key={a.id} className={`border-t border-gray-50 ${isLive && liveSlotN <= 1 ? "bg-amber-100/40" : ""}`}>
+                                  <td className="p-3 w-24"><span className={`font-mono text-[10px] ${isLive && liveSlotN <= 1 ? "text-amber-700 font-semibold" : "text-gray-400"}`}>{slotLabel}</span></td>
+                                  <td className="p-3 w-16">
+                                    <div className="flex flex-col gap-0.5">
+                                      <button onClick={() => moveAd(globalIdx, -1)} disabled={isFirst} className="text-[10px] text-gray-400 disabled:opacity-30">▲</button>
+                                      <button onClick={() => moveAd(globalIdx, 1)} disabled={isLast} className="text-[10px] text-gray-400 disabled:opacity-30">▼</button>
+                                    </div>
+                                  </td>
+                                  <td className="p-3 font-medium">{a.studio}</td>
+                                  <td className="p-3 text-gray-500 text-xs hidden md:table-cell">{period}</td>
+                                  <td className="p-3"><button onClick={() => toggleAdStatus(a.id)} className={`text-xs px-2 py-1 rounded-full ${isLive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{a.status}</button></td>
+                                  <td className="p-3">
+                                    <div className="flex gap-1">
+                                      <button onClick={() => { setAdModalMode("edit"); setAdModal({ ...a }); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">수정</button>
+                                      <button onClick={() => { if (confirm(`'${a.studio}' 광고를 삭제할까요?`)) removeAd(a.id); }} className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">삭제</button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })()}
+                  {(() => {
+                    const knownCats = new Set([...categories, "전체"]);
+                    const orphanAds = ads.map((a, globalIdx) => ({ a, globalIdx })).filter(x => !knownCats.has(x.a.cat));
                     if (orphanAds.length === 0) return null;
                     return (
                       <div className="p-3">
@@ -973,6 +1024,21 @@ export default function AdminWeb() {
                       </div>
                     );
                   })()}
+                  {(() => {
+                    const knownCats = new Set([...categories, "전체"]);
+                    const hasAny = ads.some(a => knownCats.has(a.cat));
+                    if (hasAny) return null;
+                    return null;
+                  })()}
+                  {ads.filter(a => a.cat === "전체").length === 0 && (
+                    <div className="p-3 bg-amber-50/30">
+                      <div className="flex items-center gap-2 mb-2 px-1">
+                        <span className="text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">전체</span>
+                        <span className="text-[10px] text-gray-500">노출 슬롯 0/1 — 스튜디오 → 전체 페이지 노출</span>
+                      </div>
+                      <p className="text-[11px] text-gray-400 text-center py-3">&lsquo;전체&rsquo; 페이지 광고가 없습니다. + 광고 업체 추가 → 카테고리에서 &lsquo;전체&rsquo; 선택.</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -2079,7 +2145,9 @@ export default function AdminWeb() {
                   onChange={e => setAdModal({ ...adModal, cat: e.target.value })}
                   className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200 outline-none focus:border-primary">
                   {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                  <option value="전체">전체 (스튜디오 → 전체 페이지 노출)</option>
                 </select>
+                <p className="text-[10px] text-gray-400 mt-1">※ &lsquo;전체&rsquo; 선택 시 스튜디오 탭 &lsquo;전체&rsquo; 페이지 추천 슬롯에 노출됩니다.</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>

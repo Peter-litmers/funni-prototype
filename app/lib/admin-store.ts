@@ -228,6 +228,7 @@ const DEFAULT_ADS: AdEntry[] = [
   { id: "ad-6", studio: "프라이빗 웨딩하우스", cat: "웨딩", periodStart: "2026-04-12", periodEnd: "2026-05-12", status: "노출중" },
   { id: "ad-7", studio: "브랜드컷 스튜디오", cat: "비즈니스", periodStart: "2026-04-08", periodEnd: "2026-05-08", status: "노출중" },
   { id: "ad-8", studio: "비즈니스 데이랩", cat: "비즈니스", periodStart: "2026-04-11", periodEnd: "2026-05-11", status: "노출중" },
+  { id: "ad-9", studio: "루미에르 스튜디오", cat: "전체", periodStart: "2026-04-01", periodEnd: "2026-04-30", status: "노출중" },
 ];
 
 function sanitizeAds(input: unknown): AdEntry[] {

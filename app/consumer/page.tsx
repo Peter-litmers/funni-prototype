@@ -1261,17 +1261,32 @@ export default function ConsumerApp() {
                 })()}
               </div>
 
-              {/* AD 배너 */}
-              <div className="mx-4 mt-3 overflow-hidden rounded-xl">
-                <div className="bg-gradient-to-r from-rose-100 to-pink-200 rounded-xl p-4 flex items-center gap-3 relative">
-                  <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
-                  <div className="w-14 h-14 bg-white/60 rounded-lg flex items-center justify-center shrink-0 text-gray-400"><ImageIcon size={22} strokeWidth={1.5} /></div>
-                  <div>
-                    <p className="text-xs font-bold text-gray-900">카테고리별 추천 배너</p>
-                    <p className="text-[10px] text-gray-600 mt-0.5">관리자가 등록한 광고 배너 영역</p>
-                  </div>
-                </div>
-              </div>
+              {/* 추천 슬롯 1개 — 어드민 광고 '노출중' + cat 일치 (전체 페이지는 cat="전체") */}
+              {!freeKeyword && (() => {
+                const targetAd = ads
+                  .filter(a => a.status === "노출중" && a.cat === categoryCat)
+                  .map(a => ({ ad: a, studio: STUDIOS.find(s => s.name === a.studio) }))
+                  .find(x => !!x.studio);
+                if (!targetAd?.studio) return null;
+                const s = targetAd.studio;
+                return (
+                  <button
+                    onClick={() => openDetail(s, categoryCat)}
+                    className="mx-4 mt-3 overflow-hidden rounded-xl bg-gradient-to-r from-rose-100 to-pink-200 p-4 flex items-center gap-3 relative w-[calc(100%-2rem)] text-left"
+                  >
+                    <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
+                    <span className="absolute top-2 right-2 bg-white/85 text-gray-700 text-[9px] px-2 py-0.5 rounded-full font-semibold">{categoryCat}</span>
+                    <div className="w-14 h-14 bg-white/60 rounded-lg flex items-center justify-center shrink-0 text-gray-400"><ImageIcon size={22} strokeWidth={1.5} /></div>
+                    <div className="flex-1 min-w-0 mt-2">
+                      <p className="text-sm font-bold text-gray-900 truncate">{s.name}</p>
+                      <div className="flex items-center gap-1.5 text-[10px] text-gray-600 mt-0.5">
+                        <span className="truncate">{s.area}</span>
+                        <span className="text-yellow-500">★ {s.rating}</span>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })()}
 
               {/* 리스트 */}
               <div className="px-4 pb-4">
