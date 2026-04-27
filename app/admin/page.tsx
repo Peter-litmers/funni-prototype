@@ -957,11 +957,11 @@ export default function AdminWeb() {
                       let liveSlotN = 0;
                       return (
                         <Fragment key="전체-section">
-                          <tr className="bg-amber-50 border-t-2 border-amber-100">
+                          <tr className="bg-gray-50 border-t-2 border-gray-100">
                             <td colSpan={6} className="px-3 py-2">
                               <div className="flex items-center gap-2">
-                                <span className="text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">전체</span>
-                                <span className="text-[10px] text-gray-500">노출 슬롯 {Math.min(liveCount, 1)}/1 — 스튜디오 → 전체 페이지 노출</span>
+                                <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">전체</span>
+                                <span className="text-[10px] text-gray-500">노출 슬롯 {Math.min(liveCount, 2)}/2 — 스튜디오 → 전체 페이지 노출</span>
                               </div>
                             </td>
                           </tr>
@@ -976,13 +976,13 @@ export default function AdminWeb() {
                             const isLive = a.status === "노출중";
                             if (isLive) liveSlotN += 1;
                             const slotLabel = isLive
-                              ? (liveSlotN <= 1 ? `슬롯 #${liveSlotN}` : `대기 (슬롯 초과)`)
+                              ? (liveSlotN <= 2 ? `슬롯 #${liveSlotN}` : `대기 (슬롯 초과)`)
                               : "—";
                             const isFirst = idxInCat === 0;
                             const isLast = idxInCat === allAds.length - 1;
                             return (
-                              <tr key={a.id} className={`border-t border-gray-50 ${isLive && liveSlotN <= 1 ? "bg-amber-100/40" : ""}`}>
-                                <td className="px-3 py-2.5 align-middle"><span className={`font-mono text-[10px] ${isLive && liveSlotN <= 1 ? "text-amber-700 font-semibold" : "text-gray-400"}`}>{slotLabel}</span></td>
+                              <tr key={a.id} className={`border-t border-gray-50 ${isLive && liveSlotN <= 2 ? "bg-primary/5" : ""}`}>
+                                <td className="px-3 py-2.5 align-middle"><span className={`font-mono text-[10px] ${isLive && liveSlotN <= 2 ? "text-primary font-semibold" : "text-gray-400"}`}>{slotLabel}</span></td>
                                 <td className="px-2 py-2.5 align-middle">
                                   <div className="flex flex-col gap-0.5">
                                     <button onClick={() => moveAd(globalIdx, -1)} disabled={isFirst} className="text-[10px] text-gray-400 disabled:opacity-30">▲</button>
