@@ -551,7 +551,19 @@ function sanitizeSettlementRequests(input: unknown): SettlementRequest[] {
   return out;
 }
 
-const DEFAULT_SETTLEMENT_REQUESTS: SettlementRequest[] = [];
+// 프로토타입 시연용 — 첫 로드 시 어드민 정산 탭에 샘플 요청 1건 노출
+const DEFAULT_SETTLEMENT_REQUESTS: SettlementRequest[] = [
+  {
+    id: "sr-sample-1",
+    account: "bloom_wedding",
+    studioName: "블룸 웨딩홀",
+    period: "2026년 4월",
+    amount: 1240000,
+    requestedAt: Date.now() - 1000 * 60 * 60 * 5, // 5시간 전
+    status: "대기",
+    note: "4월 누적 정산 요청 — 본식 + 리허설 패키지 13건",
+  },
+];
 
 export function useSettlementRequests(): [
   SettlementRequest[],
