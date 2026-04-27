@@ -13,7 +13,7 @@ function BrandMark() {
   return (
     <div className="flex items-center">
       <Image src="/photopop-logo.png" alt="포토팟 로고" width={48} height={48} className="h-12 w-12 object-contain" />
-      <p className="text-xl font-bold tracking-tight text-gray-900 leading-none -ml-1">포토팟</p>
+      <p className="text-3xl font-bold tracking-tight text-gray-900 leading-[48px] -ml-1">포토팟</p>
     </div>
   );
 }
@@ -469,7 +469,7 @@ export default function BusinessApp() {
                         <button
                           key={k.label}
                           onClick={() => applyHomeKeyword(k.label)}
-                          className="shrink-0 whitespace-nowrap text-xs text-gray-600 hover:text-primary underline underline-offset-4 decoration-gray-300 hover:decoration-primary decoration-1 transition-colors"
+                          className="shrink-0 whitespace-nowrap rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-700 hover:border-primary hover:bg-primary/5 hover:text-primary transition-colors"
                           style={{ letterSpacing: "-0.01em" }}
                         >
                           {k.label}
@@ -548,7 +548,7 @@ export default function BusinessApp() {
                 <div className="mb-3 flex items-center justify-between px-4">
                   <div>
                     <p className="text-[11px] text-gray-400">예약·평점 TOP</p>
-                    <h3 className="text-[15px] font-bold text-gray-900">지금 많이 찾는 스튜디오</h3>
+                    <h3 className="text-[15px] font-bold text-gray-900">요즘 많이 찾는 스튜디오</h3>
                   </div>
                   <button
                     onClick={() => { setCategoryCat("전체"); setScreen("category"); setTab("category"); }}
@@ -600,7 +600,7 @@ export default function BusinessApp() {
                 <div className="mb-3 flex items-center justify-between px-4">
                   <div>
                     <p className="text-[11px] text-gray-400">에디터 셀렉션</p>
-                    <h3 className="text-[15px] font-bold text-gray-900">지금 추천하는 스튜디오</h3>
+                    <h3 className="text-[15px] font-bold text-gray-900">요즘 추천하는 스튜디오</h3>
                   </div>
                   <button
                     onClick={() => { setCategoryCat("전체"); setScreen("category"); setTab("category"); }}
