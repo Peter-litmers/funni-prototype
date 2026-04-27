@@ -606,7 +606,7 @@ export default function AdminWeb() {
                     <th className="text-left p-4 font-medium text-gray-500">카테고리</th>
                     <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">지역</th>
                     <th className="text-left p-4 font-medium text-gray-500">상태</th>
-                    <th className="text-left p-4 font-medium text-gray-500">액션</th>
+                    <th className="text-left p-4 font-medium text-gray-500">정보</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -641,16 +641,17 @@ export default function AdminWeb() {
                           <div className="flex gap-1 flex-wrap">
                             <button className="text-xs bg-primary text-white px-3 py-1 rounded-lg">승인</button>
                             <button className="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-lg">거절</button>
-                            <button onClick={() => { setBizDetail(bForModal); setBizDetailView("info"); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">상세</button>
+                            <button onClick={() => { setBizDetail(bForModal); setBizDetailView("info"); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">상세보기</button>
+                            <button className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded">정지</button>
                           </div>
                         ) : b.status === "정지" ? (
                           <div className="flex gap-1">
-                            <button onClick={() => { setBizDetail(bForModal); setBizDetailView("info"); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">상세</button>
+                            <button onClick={() => { setBizDetail(bForModal); setBizDetailView("info"); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">상세보기</button>
                             <button className="text-xs text-green-600 px-2 py-1 bg-green-50 rounded">해제</button>
                           </div>
                         ) : (
                           <div className="flex gap-1">
-                            <button onClick={() => { setBizDetail(bForModal); setBizDetailView("info"); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">상세</button>
+                            <button onClick={() => { setBizDetail(bForModal); setBizDetailView("info"); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">상세보기</button>
                             <button className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded">정지</button>
                           </div>
                         )}
