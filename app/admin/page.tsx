@@ -641,18 +641,17 @@ export default function AdminWeb() {
                           <div className="flex gap-1 flex-wrap">
                             <button className="text-xs bg-primary text-white px-3 py-1 rounded-lg">승인</button>
                             <button className="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-lg">거절</button>
-                            <button onClick={() => { setBizDetail(bForModal); setBizDetailView("portfolio"); }} className="text-xs text-primary px-2 py-1"><ImageIcon size={12} strokeWidth={1.5} className="inline" /> 사진({b.photos})</button>
+                            <button onClick={() => { setBizDetail(bForModal); setBizDetailView("info"); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">상세</button>
                           </div>
                         ) : b.status === "정지" ? (
                           <div className="flex gap-1">
+                            <button onClick={() => { setBizDetail(bForModal); setBizDetailView("info"); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">상세</button>
                             <button className="text-xs text-green-600 px-2 py-1 bg-green-50 rounded">해제</button>
-                            <button onClick={() => { setBizDetail(bForModal); setBizDetailView("calendar"); }} className="text-xs text-gray-400 px-2 py-1"><Calendar size={12} strokeWidth={1.5} className="inline" /> 달력</button>
                           </div>
                         ) : (
                           <div className="flex gap-1">
                             <button onClick={() => { setBizDetail(bForModal); setBizDetailView("info"); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">상세</button>
                             <button className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded">정지</button>
-                            <button onClick={() => { setBizDetail(bForModal); setBizDetailView("calendar"); }} className="text-xs text-gray-400 px-2 py-1"><Calendar size={12} strokeWidth={1.5} className="inline" /> 달력</button>
                           </div>
                         )}
                       </td>
