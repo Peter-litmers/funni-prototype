@@ -734,17 +734,46 @@ export default function BusinessApp() {
                 })()}
               </div>
 
-              {/* AD 배너 */}
-              <div className="mx-4 mt-3 overflow-hidden rounded-xl">
-                <div className="bg-gradient-to-r from-rose-100 to-pink-200 rounded-xl p-4 flex items-center gap-3 relative">
-                  <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
-                  <div className="w-14 h-14 bg-white/60 rounded-lg flex items-center justify-center shrink-0 text-gray-400"><ImageIcon size={22} strokeWidth={1.5} /></div>
-                  <div>
-                    <p className="text-xs font-bold text-gray-900">카테고리별 추천 배너</p>
-                    <p className="text-[10px] text-gray-600 mt-0.5">관리자가 등록한 광고 배너 영역</p>
+              {/* 카테고리별 추천 슬롯 (2칸) — 어드민 광고 '노출중' 중 cat 일치, 어드민 정렬 순 */}
+              {!freeKeyword && categoryCat !== "전체" && (() => {
+                const categoryAds = ads
+                  .filter(a => a.status === "노출중" && a.cat === categoryCat)
+                  .map(a => STUDIOS.find(s => s.name === a.studio))
+                  .filter((s): s is typeof STUDIOS[number] => !!s)
+                  .slice(0, 2);
+                if (categoryAds.length === 0) return null;
+                return (
+                  <div className="mx-4 mt-3">
+                    <div className="mb-2 flex items-center gap-1.5">
+                      <span className="rounded-full bg-primary/10 text-primary text-[9px] font-semibold px-1.5 py-0.5">AD</span>
+                      <p className="text-[11px] font-semibold text-gray-700">{categoryCat} 추천 스튜디오</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {categoryAds.map((s, i) => (
+                        <button
+                          key={s.id}
+                          onClick={() => openDetail(s)}
+                          className="flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white text-left shadow-sm"
+                        >
+                          <div className="relative flex h-20 items-center justify-center bg-gradient-to-br from-rose-100 to-pink-200 text-gray-400">
+                            <ImageIcon size={22} strokeWidth={1.5} />
+                            <span className="absolute left-1.5 top-1.5 rounded-full bg-white/85 px-1.5 py-0.5 text-[8px] font-semibold text-gray-600">
+                              #{i + 1}
+                            </span>
+                          </div>
+                          <div className="flex flex-col p-2">
+                            <p className="truncate text-xs font-semibold text-gray-900">{s.name}</p>
+                            <div className="mt-0.5 flex items-center gap-1 text-[10px] text-gray-500">
+                              <span className="truncate">{s.area}</span>
+                              <span className="shrink-0 text-yellow-500">★ {s.rating}</span>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </div>
+                );
+              })()}
 
               {/* 리스트 */}
               <div className="px-4 pb-4">
