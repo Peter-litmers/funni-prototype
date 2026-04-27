@@ -221,9 +221,13 @@ export type AdEntry = {
 
 const DEFAULT_ADS: AdEntry[] = [
   { id: "ad-1", studio: "루미에르 스튜디오", cat: "프로필", periodStart: "2026-04-01", periodEnd: "2026-04-30", status: "노출중" },
-  { id: "ad-2", studio: "선셋 포토랩", cat: "바디프로필", periodStart: "2026-04-15", periodEnd: "2026-05-15", status: "노출중" },
-  { id: "ad-3", studio: "블룸 웨딩 스튜디오", cat: "웨딩", periodStart: "2026-04-10", periodEnd: "2026-05-10", status: "노출중" },
-  { id: "ad-4", studio: "브랜드컷 스튜디오", cat: "비즈니스", periodStart: "2026-05-01", periodEnd: "2026-05-31", status: "대기" },
+  { id: "ad-2", studio: "아이덴티티 프로필", cat: "프로필", periodStart: "2026-04-05", periodEnd: "2026-05-05", status: "노출중" },
+  { id: "ad-3", studio: "선셋 포토랩", cat: "바디프로필", periodStart: "2026-04-15", periodEnd: "2026-05-15", status: "노출중" },
+  { id: "ad-4", studio: "바디에디션 랩", cat: "바디프로필", periodStart: "2026-04-10", periodEnd: "2026-05-10", status: "노출중" },
+  { id: "ad-5", studio: "블룸 웨딩 스튜디오", cat: "웨딩", periodStart: "2026-04-10", periodEnd: "2026-05-10", status: "노출중" },
+  { id: "ad-6", studio: "프라이빗 웨딩하우스", cat: "웨딩", periodStart: "2026-04-12", periodEnd: "2026-05-12", status: "노출중" },
+  { id: "ad-7", studio: "브랜드컷 스튜디오", cat: "비즈니스", periodStart: "2026-04-08", periodEnd: "2026-05-08", status: "노출중" },
+  { id: "ad-8", studio: "비즈니스 데이랩", cat: "비즈니스", periodStart: "2026-04-11", periodEnd: "2026-05-11", status: "노출중" },
 ];
 
 function sanitizeAds(input: unknown): AdEntry[] {

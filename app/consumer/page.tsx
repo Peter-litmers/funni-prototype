@@ -811,14 +811,19 @@ export default function ConsumerApp() {
     }
   };
 
-  // 추천 스튜디오 = 어드민에서 '노출중'으로 편성한 광고 기준 (순서 유지).
-  // 매칭 스튜디오 없거나 광고 0건이면 paymentCount 상위 4곳으로 fallback.
+  // 추천 스튜디오 = 카테고리당 노출중 광고 상위 2개씩 (어드민 정렬 순), 카테고리 순서대로 펼침.
+  // 광고 0건이면 paymentCount 상위 4곳으로 fallback.
   const promotedStudios = (() => {
-    const adStudios = ads
-      .filter(a => a.status === "노출중")
-      .map(a => STUDIOS.find(s => s.name === a.studio))
-      .filter((s): s is typeof STUDIOS[number] => !!s);
-    if (adStudios.length > 0) return adStudios.slice(0, 4);
+    const result: typeof STUDIOS[number][] = [];
+    for (const catName of adminCategories) {
+      const catTwo = ads
+        .filter(a => a.status === "노출중" && a.cat === catName)
+        .map(a => STUDIOS.find(s => s.name === a.studio))
+        .filter((s): s is typeof STUDIOS[number] => !!s)
+        .slice(0, 2);
+      result.push(...catTwo);
+    }
+    if (result.length > 0) return result;
     return [...STUDIOS].sort((a, b) => b.paymentCount - a.paymentCount).slice(0, 4);
   })();
   const hotStudios = [...STUDIOS].sort((a, b) => {
@@ -1135,7 +1140,10 @@ export default function ConsumerApp() {
                       <div className="relative flex h-28 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400">
                         <ImageIcon size={28} strokeWidth={1.5} />
                         <span className="absolute left-2 top-2 rounded-full bg-white/85 px-2 py-0.5 text-[9px] font-semibold text-gray-500">
-                          AD #{index + 1}
+                          AD
+                        </span>
+                        <span className="absolute right-2 top-2 rounded-full bg-primary/90 text-white px-2 py-0.5 text-[9px] font-semibold">
+                          {studio.cat}
                         </span>
                       </div>
                       <div className="flex flex-1 flex-col p-3">
@@ -1253,46 +1261,17 @@ export default function ConsumerApp() {
                 })()}
               </div>
 
-              {/* 카테고리별 추천 슬롯 (2칸) — 어드민 광고 '노출중' 중 cat 일치, 어드민 정렬 순 */}
-              {!freeKeyword && categoryCat !== "전체" && (() => {
-                const categoryAds = ads
-                  .filter(a => a.status === "노출중" && a.cat === categoryCat)
-                  .map(a => STUDIOS.find(s => s.name === a.studio))
-                  .filter((s): s is typeof STUDIOS[number] => !!s)
-                  .slice(0, 2);
-                if (categoryAds.length === 0) return null;
-                return (
-                  <div className="mx-4 mt-3">
-                    <div className="mb-2 flex items-center gap-1.5">
-                      <span className="rounded-full bg-primary/10 text-primary text-[9px] font-semibold px-1.5 py-0.5">AD</span>
-                      <p className="text-[11px] font-semibold text-gray-700">{categoryCat} 추천 스튜디오</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      {categoryAds.map((s, i) => (
-                        <button
-                          key={s.id}
-                          onClick={() => openDetail(s, categoryCat)}
-                          className="flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white text-left shadow-sm"
-                        >
-                          <div className="relative flex h-20 items-center justify-center bg-gradient-to-br from-rose-100 to-pink-200 text-gray-400">
-                            <ImageIcon size={22} strokeWidth={1.5} />
-                            <span className="absolute left-1.5 top-1.5 rounded-full bg-white/85 px-1.5 py-0.5 text-[8px] font-semibold text-gray-600">
-                              #{i + 1}
-                            </span>
-                          </div>
-                          <div className="flex flex-col p-2">
-                            <p className="truncate text-xs font-semibold text-gray-900">{s.name}</p>
-                            <div className="mt-0.5 flex items-center gap-1 text-[10px] text-gray-500">
-                              <span className="truncate">{s.area}</span>
-                              <span className="shrink-0 text-yellow-500">★ {s.rating}</span>
-                            </div>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
+              {/* AD 배너 */}
+              <div className="mx-4 mt-3 overflow-hidden rounded-xl">
+                <div className="bg-gradient-to-r from-rose-100 to-pink-200 rounded-xl p-4 flex items-center gap-3 relative">
+                  <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
+                  <div className="w-14 h-14 bg-white/60 rounded-lg flex items-center justify-center shrink-0 text-gray-400"><ImageIcon size={22} strokeWidth={1.5} /></div>
+                  <div>
+                    <p className="text-xs font-bold text-gray-900">카테고리별 추천 배너</p>
+                    <p className="text-[10px] text-gray-600 mt-0.5">관리자가 등록한 광고 배너 영역</p>
                   </div>
-                );
-              })()}
+                </div>
+              </div>
 
               {/* 리스트 */}
               <div className="px-4 pb-4">
@@ -1894,7 +1873,10 @@ export default function ConsumerApp() {
                       <div className="relative flex h-20 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400">
                         <ImageIcon size={20} strokeWidth={1.5} />
                         <span className="absolute left-1 top-1 rounded-full bg-white/85 px-1.5 py-0.5 text-[8px] font-semibold text-gray-500">
-                          AD #{index + 1}
+                          AD
+                        </span>
+                        <span className="absolute right-1 top-1 rounded-full bg-primary/90 text-white px-1.5 py-0.5 text-[8px] font-semibold">
+                          {studio.cat}
                         </span>
                       </div>
                       <div className="flex flex-1 flex-col p-2">

@@ -174,8 +174,13 @@ export default function AdminWeb() {
   };
   const removeAd = (id: string) => setAds(ads.filter(a => a.id !== id));
   const moveAd = (idx: number, dir: -1 | 1) => {
+    const cat = ads[idx]?.cat;
+    if (!cat) return;
     const next = [...ads];
-    const target = idx + dir;
+    let target = idx + dir;
+    while (target >= 0 && target < next.length && next[target].cat !== cat) {
+      target += dir;
+    }
     if (target < 0 || target >= next.length) return;
     [next[idx], next[target]] = [next[target], next[idx]];
     setAds(next);
@@ -832,9 +837,9 @@ export default function AdminWeb() {
 
             <div className="policy-area p-4 mb-6">
               <PolicyBadge label="광고 정책 반영" />
-              <p className="text-[10px] text-gray-500 mt-1">• 광고 배너: 정사각형 3개 × 3페이지 = 총 9구좌</p>
+              <p className="text-[10px] text-gray-500 mt-1">• 추천 슬롯: 카테고리당 최대 2개 (총 카테고리수 × 2)</p>
               <p className="text-[10px] text-gray-500">• 노출 기간: 월간(기본), 시작일/종료일 상세 설정 가능</p>
-              <p className="text-[10px] text-gray-500">• 배너 순서: 로테이션 (9구좌가 순환 노출)</p>
+              <p className="text-[10px] text-gray-500">• 노출 순서: 카테고리 내 ▲▼로 어드민 직접 조정</p>
             </div>
 
             {/* 광고 노출 기간 단위 설정 */}
@@ -865,61 +870,111 @@ export default function AdminWeb() {
               <p className="text-[10px] text-gray-400 mt-2">※ 개별 광고 등록 시 세부 시작일/종료일 지정 가능. 본 설정은 기본값.</p>
             </div>
 
-            {/* 현재 노출 중인 광고 스튜디오 (REQ-112 상단 노출) */}
+            {/* 현재 노출 중인 광고 스튜디오 — 카테고리별 노출 슬롯 2개씩 */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
               <div className="p-4 border-b border-gray-100">
-                <h3 className="font-bold text-sm">현재 노출 중인 스튜디오 (프리미엄 영역)</h3>
-                <p className="text-[10px] text-gray-400 mt-0.5">메인 홈 상단 · 카테고리 페이지 상단에 &lsquo;광고&rsquo; 라벨로 노출</p>
+                <h3 className="font-bold text-sm">카테고리별 추천 슬롯 (소비자 홈 노출)</h3>
+                <p className="text-[10px] text-gray-400 mt-0.5">카테고리당 <b>노출중</b> 광고 상위 2개가 소비자 홈 &lsquo;요즘 추천하는 스튜디오&rsquo;에 노출됩니다. ▲▼로 카테고리 내 순서 조정.</p>
               </div>
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="text-left p-4 font-medium text-gray-500">순서</th>
-                    <th className="text-left p-4 font-medium text-gray-500">스튜디오</th>
-                    <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">카테고리</th>
-                    <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">기간</th>
-                    <th className="text-left p-4 font-medium text-gray-500">상태</th>
-                    <th className="text-left p-4 font-medium text-gray-500">액션</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ads.length === 0 && (
-                    <tr><td colSpan={6} className="p-6 text-center text-xs text-gray-400">등록된 광고가 없습니다. &lsquo;+ 광고 업체 추가&rsquo;로 편성하세요.</td></tr>
-                  )}
-                  {ads.map((a, i) => {
-                    const period = a.periodStart && a.periodEnd
-                      ? `${a.periodStart.slice(5).replace("-", ".")}~${a.periodEnd.slice(5).replace("-", ".")}`
-                      : "기간 미설정";
+              {ads.length === 0 ? (
+                <p className="p-6 text-center text-xs text-gray-400">등록된 광고가 없습니다. &lsquo;+ 광고 업체 추가&rsquo;로 편성하세요.</p>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {categories.map(catName => {
+                    const catAds = ads.map((a, globalIdx) => ({ a, globalIdx })).filter(x => x.a.cat === catName);
+                    const liveCount = catAds.filter(x => x.a.status === "노출중").length;
+                    if (catAds.length === 0) return null;
+                    let liveSlotN = 0;
                     return (
-                    <tr key={a.id} className="border-t border-gray-50">
-                      <td className="p-4">
-                        <div className="flex items-center gap-1">
-                          <span className="font-mono text-xs text-gray-400">#{i + 1}</span>
-                          <button onClick={() => moveAd(i, -1)} disabled={i === 0} className="text-[10px] text-gray-400 disabled:opacity-30">▲</button>
-                          <button onClick={() => moveAd(i, 1)} disabled={i === ads.length - 1} className="text-[10px] text-gray-400 disabled:opacity-30">▼</button>
+                      <div key={catName} className="p-3">
+                        <div className="flex items-center justify-between mb-2 px-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-gray-700 bg-primary/10 text-primary px-2 py-0.5 rounded-full">{catName}</span>
+                            <span className="text-[10px] text-gray-500">노출 슬롯 {Math.min(liveCount, 2)}/2</span>
+                          </div>
                         </div>
-                      </td>
-                      <td className="p-4 font-medium">{a.studio}</td>
-                      <td className="p-4 text-gray-500 hidden md:table-cell"><span className="bg-gray-100 text-xs px-2 py-0.5 rounded">{a.cat}</span></td>
-                      <td className="p-4 text-gray-500 text-xs hidden md:table-cell">{period}</td>
-                      <td className="p-4">
-                        <button onClick={() => toggleAdStatus(a.id)}
-                          className={`text-xs px-2 py-1 rounded-full ${a.status === "노출중" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
-                          title="클릭해서 상태 전환">{a.status}</button>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex gap-1">
-                          <button onClick={() => { setAdModalMode("edit"); setAdModal({ ...a }); }}
-                            className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">수정</button>
-                          <button onClick={() => { if (confirm(`'${a.studio}' 광고를 삭제할까요?`)) removeAd(a.id); }}
-                            className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">삭제</button>
-                        </div>
-                      </td>
-                    </tr>
+                        <table className="w-full text-sm">
+                          <tbody>
+                            {catAds.map(({ a, globalIdx }, idxInCat) => {
+                              const period = a.periodStart && a.periodEnd
+                                ? `${a.periodStart.slice(5).replace("-", ".")}~${a.periodEnd.slice(5).replace("-", ".")}`
+                                : "기간 미설정";
+                              const isLive = a.status === "노출중";
+                              if (isLive) liveSlotN += 1;
+                              const slotLabel = isLive
+                                ? (liveSlotN <= 2 ? `슬롯 #${liveSlotN}` : `대기 (슬롯 초과)`)
+                                : "—";
+                              const isFirst = idxInCat === 0;
+                              const isLast = idxInCat === catAds.length - 1;
+                              return (
+                                <tr key={a.id} className={`border-t border-gray-50 ${isLive && liveSlotN <= 2 ? "bg-primary/5" : ""}`}>
+                                  <td className="p-3 w-24">
+                                    <div className="flex items-center gap-1">
+                                      <span className={`font-mono text-[10px] ${isLive && liveSlotN <= 2 ? "text-primary font-semibold" : "text-gray-400"}`}>{slotLabel}</span>
+                                    </div>
+                                  </td>
+                                  <td className="p-3 w-16">
+                                    <div className="flex flex-col gap-0.5">
+                                      <button onClick={() => moveAd(globalIdx, -1)} disabled={isFirst} className="text-[10px] text-gray-400 disabled:opacity-30">▲</button>
+                                      <button onClick={() => moveAd(globalIdx, 1)} disabled={isLast} className="text-[10px] text-gray-400 disabled:opacity-30">▼</button>
+                                    </div>
+                                  </td>
+                                  <td className="p-3 font-medium">{a.studio}</td>
+                                  <td className="p-3 text-gray-500 text-xs hidden md:table-cell">{period}</td>
+                                  <td className="p-3">
+                                    <button onClick={() => toggleAdStatus(a.id)}
+                                      className={`text-xs px-2 py-1 rounded-full ${isLive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
+                                      title="클릭해서 상태 전환">{a.status}</button>
+                                  </td>
+                                  <td className="p-3">
+                                    <div className="flex gap-1">
+                                      <button onClick={() => { setAdModalMode("edit"); setAdModal({ ...a }); }}
+                                        className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">수정</button>
+                                      <button onClick={() => { if (confirm(`'${a.studio}' 광고를 삭제할까요?`)) removeAd(a.id); }}
+                                        className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">삭제</button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
                     );
                   })}
-                </tbody>
-              </table>
+                  {(() => {
+                    const orphanAds = ads.map((a, globalIdx) => ({ a, globalIdx })).filter(x => !categories.includes(x.a.cat));
+                    if (orphanAds.length === 0) return null;
+                    return (
+                      <div className="p-3">
+                        <div className="flex items-center gap-2 mb-2 px-1">
+                          <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">분류 없음</span>
+                          <span className="text-[10px] text-gray-400">카테고리 미지정 광고</span>
+                        </div>
+                        <table className="w-full text-sm">
+                          <tbody>
+                            {orphanAds.map(({ a, globalIdx }) => (
+                              <tr key={a.id} className="border-t border-gray-50">
+                                <td className="p-3 w-24"><span className="text-[10px] text-gray-400">—</span></td>
+                                <td className="p-3 w-16">—</td>
+                                <td className="p-3 font-medium">{a.studio}</td>
+                                <td className="p-3 text-gray-500 text-xs hidden md:table-cell">{a.cat || "(미지정)"}</td>
+                                <td className="p-3"><button onClick={() => toggleAdStatus(a.id)} className={`text-xs px-2 py-1 rounded-full ${a.status === "노출중" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{a.status}</button></td>
+                                <td className="p-3">
+                                  <div className="flex gap-1">
+                                    <button onClick={() => { setAdModalMode("edit"); setAdModal({ ...a }); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">수정</button>
+                                    <button onClick={() => { if (confirm(`'${a.studio}' 광고를 삭제할까요?`)) removeAd(a.id); }} className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">삭제</button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
             </div>
 
             {/* 미리보기 — 현재 노출중 광고 기반 */}
@@ -2049,7 +2104,7 @@ export default function AdminWeb() {
                   ))}
                 </div>
               </div>
-              <p className="text-[10px] text-gray-400">※ 저장 시 소비자 홈 &lsquo;지금 추천하는 스튜디오&rsquo; 섹션의 프리미엄 영역에 &lsquo;노출중&rsquo; 광고만 즉시 반영됩니다.</p>
+              <p className="text-[10px] text-gray-400">※ 저장 시 소비자 홈 &lsquo;요즘 추천하는 스튜디오&rsquo; 섹션에 &lsquo;노출중&rsquo; 광고가 카테고리당 상위 2개씩 즉시 반영됩니다.</p>
             </div>
             <div className="p-4 border-t border-gray-100 flex justify-end gap-2">
               <button onClick={() => setAdModal(null)} className="text-xs text-gray-500 bg-gray-100 px-4 py-2 rounded-lg">취소</button>
