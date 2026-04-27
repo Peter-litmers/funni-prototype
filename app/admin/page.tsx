@@ -186,7 +186,7 @@ export default function AdminWeb() {
     setAds(next);
   };
   const toggleAdStatus = (id: string) => {
-    setAds(ads.map(a => (a.id === id ? { ...a, status: a.status === "노출중" ? "대기" : "노출중" } : a)));
+    setAds(ads.map(a => (a.id === id ? { ...a, status: a.status === "진행중" ? "대기" : "진행중" } : a)));
   };
 
   const upsertBanner = (b: BannerEntry) => {
@@ -873,8 +873,8 @@ export default function AdminWeb() {
             {/* 현재 노출 중인 광고 스튜디오 — 카테고리별 노출 슬롯 2개씩 */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
               <div className="p-4 border-b border-gray-100">
-                <h3 className="font-bold text-sm">카테고리별 추천 슬롯 (소비자 홈 노출)</h3>
-                <p className="text-[10px] text-gray-400 mt-0.5">카테고리당 <b>노출중</b> 광고 상위 2개가 소비자 홈 &lsquo;요즘 추천하는 스튜디오&rsquo;에 노출됩니다. ▲▼로 카테고리 내 순서 조정.</p>
+                <h3 className="font-bold text-sm">카테고리별 추천 슬롯</h3>
+                <p className="text-[10px] text-gray-400 mt-0.5">카테고리당 <b>진행중</b> 광고 상위 2개가 소비자 홈 &lsquo;요즘 추천하는 스튜디오&rsquo;에 노출됩니다. ▲▼로 카테고리 내 순서 조정.</p>
               </div>
               {ads.length === 0 ? (
                 <p className="p-6 text-center text-xs text-gray-400">등록된 광고가 없습니다. &lsquo;+ 광고 업체 추가&rsquo;로 편성하세요.</p>
@@ -892,7 +892,7 @@ export default function AdminWeb() {
                     {categories.map((catName, catIdx) => {
                       const catAds = ads.map((a, globalIdx) => ({ a, globalIdx })).filter(x => x.a.cat === catName);
                       if (catAds.length === 0) return null;
-                      const liveCount = catAds.filter(x => x.a.status === "노출중").length;
+                      const liveCount = catAds.filter(x => x.a.status === "진행중").length;
                       let liveSlotN = 0;
                       return (
                         <Fragment key={catName}>
@@ -912,7 +912,7 @@ export default function AdminWeb() {
                             const period = a.periodStart && a.periodEnd
                               ? `${a.periodStart.slice(5).replace("-", ".")}~${a.periodEnd.slice(5).replace("-", ".")}`
                               : "기간 미설정";
-                            const isLive = a.status === "노출중";
+                            const isLive = a.status === "진행중";
                             if (isLive) liveSlotN += 1;
                             const slotLabel = isLive
                               ? (liveSlotN <= 2 ? `슬롯 #${liveSlotN}` : `대기 (슬롯 초과)`)
@@ -953,7 +953,7 @@ export default function AdminWeb() {
                     })}
                     {(() => {
                       const allAds = ads.map((a, globalIdx) => ({ a, globalIdx })).filter(x => x.a.cat === "전체");
-                      const liveCount = allAds.filter(x => x.a.status === "노출중").length;
+                      const liveCount = allAds.filter(x => x.a.status === "진행중").length;
                       let liveSlotN = 0;
                       return (
                         <Fragment key="전체-section">
@@ -973,7 +973,7 @@ export default function AdminWeb() {
                             const period = a.periodStart && a.periodEnd
                               ? `${a.periodStart.slice(5).replace("-", ".")}~${a.periodEnd.slice(5).replace("-", ".")}`
                               : "기간 미설정";
-                            const isLive = a.status === "노출중";
+                            const isLive = a.status === "진행중";
                             if (isLive) liveSlotN += 1;
                             const slotLabel = isLive
                               ? (liveSlotN <= 2 ? `슬롯 #${liveSlotN}` : `대기 (슬롯 초과)`)
@@ -1024,7 +1024,7 @@ export default function AdminWeb() {
                               <td className="px-2 py-2.5 align-middle">—</td>
                               <td className="px-3 py-2.5 font-medium align-middle truncate">{a.studio}</td>
                               <td className="px-3 py-2.5 text-gray-500 text-xs align-middle">{a.cat || "(미지정)"}</td>
-                              <td className="px-3 py-2.5 align-middle"><button onClick={() => toggleAdStatus(a.id)} className={`text-xs px-2 py-1 rounded-full ${a.status === "노출중" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{a.status}</button></td>
+                              <td className="px-3 py-2.5 align-middle"><button onClick={() => toggleAdStatus(a.id)} className={`text-xs px-2 py-1 rounded-full ${a.status === "진행중" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{a.status}</button></td>
                               <td className="px-3 py-2.5 align-middle">
                                 <div className="flex gap-1">
                                   <button onClick={() => { setAdModalMode("edit"); setAdModal({ ...a }); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">수정</button>
@@ -1041,17 +1041,17 @@ export default function AdminWeb() {
               )}
             </div>
 
-            {/* 미리보기 — 현재 노출중 광고 기반 */}
+            {/* 미리보기 — 현재 진행중 광고 기반 */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-sm">유저 앱 프리미엄 영역 미리보기</h3>
                 <span className="text-[10px] text-gray-400">소비자 홈 &lsquo;지금 추천하는 스튜디오&rsquo;에 실시간 반영</span>
               </div>
-              {ads.filter(a => a.status === "노출중").length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-6">&lsquo;노출중&rsquo; 상태 광고가 없습니다. 위 테이블에서 상태를 전환하세요.</p>
+              {ads.filter(a => a.status === "진행중").length === 0 ? (
+                <p className="text-xs text-gray-400 text-center py-6">&lsquo;진행중&rsquo; 상태 광고가 없습니다. 위 테이블에서 상태를 전환하세요.</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {ads.filter(a => a.status === "노출중").map((a, i) => (
+                  {ads.filter(a => a.status === "진행중").map((a, i) => (
                     <div key={a.id} className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-4 relative">
                       <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD #{i + 1}</span>
                       <div className="flex items-center gap-3 mt-6">
@@ -1435,8 +1435,8 @@ export default function AdminWeb() {
                       <td className="p-4 text-gray-500 hidden md:table-cell text-xs">{period}</td>
                       <td className="p-4">
                         <button
-                          onClick={() => upsertBanner({ ...b, status: b.status === "노출중" ? "대기" : "노출중" })}
-                          className={`text-xs px-2 py-1 rounded-full ${b.status === "노출중" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
+                          onClick={() => upsertBanner({ ...b, status: b.status === "진행중" ? "대기" : "진행중" })}
+                          className={`text-xs px-2 py-1 rounded-full ${b.status === "진행중" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
                           title="클릭해서 상태 전환"
                         >{b.status}</button>
                       </td>
@@ -2164,13 +2164,13 @@ export default function AdminWeb() {
               <div>
                 <label className="text-xs text-gray-500 block mb-1">상태</label>
                 <div className="flex gap-2">
-                  {(["노출중", "대기", "종료"] as const).map(s => (
+                  {(["진행중", "대기", "종료"] as const).map(s => (
                     <button key={s} onClick={() => setAdModal({ ...adModal, status: s })}
                       className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium ${adModal.status === s ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{s}</button>
                   ))}
                 </div>
               </div>
-              <p className="text-[10px] text-gray-400">※ 저장 시 소비자 홈 &lsquo;요즘 추천하는 스튜디오&rsquo; 섹션에 &lsquo;노출중&rsquo; 광고가 카테고리당 상위 2개씩 즉시 반영됩니다.</p>
+              <p className="text-[10px] text-gray-400">※ 저장 시 소비자 홈 &lsquo;요즘 추천하는 스튜디오&rsquo; 섹션에 &lsquo;진행중&rsquo; 광고가 카테고리당 상위 2개씩 즉시 반영됩니다.</p>
             </div>
             <div className="p-4 border-t border-gray-100 flex justify-end gap-2">
               <button onClick={() => setAdModal(null)} className="text-xs text-gray-500 bg-gray-100 px-4 py-2 rounded-lg">취소</button>
@@ -2225,7 +2225,7 @@ export default function AdminWeb() {
               <div>
                 <label className="text-xs text-gray-500 block mb-1">상태</label>
                 <div className="flex gap-2">
-                  {(["노출중", "대기", "종료"] as const).map(s => (
+                  {(["진행중", "대기", "종료"] as const).map(s => (
                     <button key={s} onClick={() => setBannerModal({ ...bannerModal, status: s })}
                       className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium ${bannerModal.status === s ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{s}</button>
                   ))}

@@ -811,13 +811,13 @@ export default function ConsumerApp() {
     }
   };
 
-  // 추천 스튜디오 = 카테고리당 노출중 광고 상위 2개씩 (어드민 정렬 순), 카테고리 순서대로 펼침.
+  // 추천 스튜디오 = 카테고리당 진행중 광고 상위 2개씩 (어드민 정렬 순), 카테고리 순서대로 펼침.
   // 광고 0건이면 paymentCount 상위 4곳으로 fallback.
   const promotedStudios = (() => {
     const result: typeof STUDIOS[number][] = [];
     for (const catName of adminCategories) {
       const catTwo = ads
-        .filter(a => a.status === "노출중" && a.cat === catName)
+        .filter(a => a.status === "진행중" && a.cat === catName)
         .map(a => STUDIOS.find(s => s.name === a.studio))
         .filter((s): s is typeof STUDIOS[number] => !!s)
         .slice(0, 2);
@@ -1261,10 +1261,10 @@ export default function ConsumerApp() {
                 })()}
               </div>
 
-              {/* 추천 슬롯 2개 (위·아래 스택) — 어드민 광고 '노출중' + cat 일치 (전체 페이지는 cat="전체") */}
+              {/* 추천 슬롯 2개 (위·아래 스택) — 어드민 광고 '진행중' + cat 일치 (전체 페이지는 cat="전체") */}
               {!freeKeyword && (() => {
                 const targetAds = ads
-                  .filter(a => a.status === "노출중" && a.cat === categoryCat)
+                  .filter(a => a.status === "진행중" && a.cat === categoryCat)
                   .map(a => ({ ad: a, studio: STUDIOS.find(s => s.name === a.studio) }))
                   .filter(x => !!x.studio)
                   .slice(0, 2);
@@ -1875,12 +1875,12 @@ export default function ConsumerApp() {
                 </div>
               </div>
 
-              {/* 추천 스튜디오 — 어드민 광고 노출중 기준 (MY용 컴팩트) */}
+              {/* 추천 스튜디오 — 어드민 광고 진행중 기준 (MY용 컴팩트) */}
               <div className="mb-5 -mx-4">
                 <div className="mb-2.5 flex items-center justify-between px-4">
                   <div>
-                    <p className="text-[10px] text-gray-400">요즘 추천하는 스튜디오</p>
-                    <h3 className="text-sm font-bold text-gray-900">오늘은 이런 곳 어때요?</h3>
+                    <p className="text-[10px] text-gray-400">에디터 셀렉션</p>
+                    <h3 className="text-sm font-bold text-gray-900">요즘 추천하는 스튜디오</h3>
                   </div>
                   <button onClick={() => { setCategoryCat("전체"); setScreen("category"); setTab("category"); }}
                     className="text-[11px] font-medium text-gray-400 hover:text-primary">전체보기</button>

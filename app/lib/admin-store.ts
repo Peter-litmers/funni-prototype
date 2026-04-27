@@ -216,19 +216,19 @@ export type AdEntry = {
   cat: string;
   periodStart: string; // YYYY-MM-DD
   periodEnd: string;
-  status: "노출중" | "대기" | "종료";
+  status: "진행중" | "대기" | "종료";
 };
 
 const DEFAULT_ADS: AdEntry[] = [
-  { id: "ad-1", studio: "루미에르 스튜디오", cat: "프로필", periodStart: "2026-04-01", periodEnd: "2026-04-30", status: "노출중" },
-  { id: "ad-2", studio: "아이덴티티 프로필", cat: "프로필", periodStart: "2026-04-05", periodEnd: "2026-05-05", status: "노출중" },
-  { id: "ad-3", studio: "선셋 포토랩", cat: "바디프로필", periodStart: "2026-04-15", periodEnd: "2026-05-15", status: "노출중" },
-  { id: "ad-4", studio: "바디에디션 랩", cat: "바디프로필", periodStart: "2026-04-10", periodEnd: "2026-05-10", status: "노출중" },
-  { id: "ad-5", studio: "블룸 웨딩 스튜디오", cat: "웨딩", periodStart: "2026-04-10", periodEnd: "2026-05-10", status: "노출중" },
-  { id: "ad-6", studio: "프라이빗 웨딩하우스", cat: "웨딩", periodStart: "2026-04-12", periodEnd: "2026-05-12", status: "노출중" },
-  { id: "ad-7", studio: "브랜드컷 스튜디오", cat: "비즈니스", periodStart: "2026-04-08", periodEnd: "2026-05-08", status: "노출중" },
-  { id: "ad-8", studio: "비즈니스 데이랩", cat: "비즈니스", periodStart: "2026-04-11", periodEnd: "2026-05-11", status: "노출중" },
-  { id: "ad-9", studio: "루미에르 스튜디오", cat: "전체", periodStart: "2026-04-01", periodEnd: "2026-04-30", status: "노출중" },
+  { id: "ad-1", studio: "루미에르 스튜디오", cat: "프로필", periodStart: "2026-04-01", periodEnd: "2026-04-30", status: "진행중" },
+  { id: "ad-2", studio: "아이덴티티 프로필", cat: "프로필", periodStart: "2026-04-05", periodEnd: "2026-05-05", status: "진행중" },
+  { id: "ad-3", studio: "선셋 포토랩", cat: "바디프로필", periodStart: "2026-04-15", periodEnd: "2026-05-15", status: "진행중" },
+  { id: "ad-4", studio: "바디에디션 랩", cat: "바디프로필", periodStart: "2026-04-10", periodEnd: "2026-05-10", status: "진행중" },
+  { id: "ad-5", studio: "블룸 웨딩 스튜디오", cat: "웨딩", periodStart: "2026-04-10", periodEnd: "2026-05-10", status: "진행중" },
+  { id: "ad-6", studio: "프라이빗 웨딩하우스", cat: "웨딩", periodStart: "2026-04-12", periodEnd: "2026-05-12", status: "진행중" },
+  { id: "ad-7", studio: "브랜드컷 스튜디오", cat: "비즈니스", periodStart: "2026-04-08", periodEnd: "2026-05-08", status: "진행중" },
+  { id: "ad-8", studio: "비즈니스 데이랩", cat: "비즈니스", periodStart: "2026-04-11", periodEnd: "2026-05-11", status: "진행중" },
+  { id: "ad-9", studio: "루미에르 스튜디오", cat: "전체", periodStart: "2026-04-01", periodEnd: "2026-04-30", status: "진행중" },
 ];
 
 function sanitizeAds(input: unknown): AdEntry[] {
@@ -246,7 +246,7 @@ function sanitizeAds(input: unknown): AdEntry[] {
       cat: typeof obj.cat === "string" ? obj.cat : "",
       periodStart: typeof obj.periodStart === "string" ? obj.periodStart : "",
       periodEnd: typeof obj.periodEnd === "string" ? obj.periodEnd : "",
-      status: obj.status === "노출중" || obj.status === "대기" || obj.status === "종료" ? obj.status : "대기",
+      status: obj.status === "진행중" || obj.status === "노출중" ? "진행중" : (obj.status === "대기" || obj.status === "종료" ? obj.status : "대기"),
     });
   }
   return out;
@@ -268,12 +268,12 @@ export type BannerEntry = {
   position: string;
   periodStart: string;
   periodEnd: string;
-  status: "노출중" | "대기" | "종료";
+  status: "진행중" | "대기" | "종료";
 };
 
 const DEFAULT_BANNERS: BannerEntry[] = [
-  { id: "bn-1", title: "프로필 촬영 특가", position: "메인 상단", periodStart: "2026-04-01", periodEnd: "2026-04-30", status: "노출중" },
-  { id: "bn-2", title: "반려동물 촬영전", position: "카테고리", periodStart: "2026-04-15", periodEnd: "2026-05-15", status: "노출중" },
+  { id: "bn-1", title: "프로필 촬영 특가", position: "메인 상단", periodStart: "2026-04-01", periodEnd: "2026-04-30", status: "진행중" },
+  { id: "bn-2", title: "반려동물 촬영전", position: "카테고리", periodStart: "2026-04-15", periodEnd: "2026-05-15", status: "진행중" },
   { id: "bn-3", title: "웨딩 촬영 패키지", position: "메인 중간", periodStart: "2026-05-01", periodEnd: "2026-05-31", status: "대기" },
 ];
 
@@ -292,7 +292,7 @@ function sanitizeBanners(input: unknown): BannerEntry[] {
       position: typeof obj.position === "string" ? obj.position : "메인 상단",
       periodStart: typeof obj.periodStart === "string" ? obj.periodStart : "",
       periodEnd: typeof obj.periodEnd === "string" ? obj.periodEnd : "",
-      status: obj.status === "노출중" || obj.status === "대기" || obj.status === "종료" ? obj.status : "대기",
+      status: obj.status === "진행중" || obj.status === "노출중" ? "진행중" : (obj.status === "대기" || obj.status === "종료" ? obj.status : "대기"),
     });
   }
   return out;
