@@ -62,6 +62,7 @@ const K_REFUND_MATRIX = "photopot.refundMatrix";
 const K_CATEGORY_ICONS = "photopot.categoryIcons";
 const K_NOSHOW_REPORTS = "photopot.noShowReports";
 const K_SETTLEMENT_REQUESTS = "photopot.settlementRequests";
+const K_FEATURED_PACKAGES = "photopot.featuredPackages";
 
 const CHANGE_EVENT = "photopot-admin-store-change";
 
@@ -259,6 +260,38 @@ export function useAds(): [AdEntry[], (next: AdEntry[]) => void] {
     (raw) => (raw === undefined ? DEFAULT_ADS : sanitizeAds(raw)),
   );
   return [value, (next) => writeStored(K_ADS, sanitizeAds(next))];
+}
+
+// ===== 광고 노출용 패키지 (업체가 카드 노출 시 사용할 패키지 idx 선택) =====
+export const PACKAGE_LABELS = ["1컨셉", "2컨셉", "3컨셉"] as const;
+export const PACKAGE_MULTIPLIERS = [0.9, 1.4, 1.9] as const;
+
+export function getDisplayPrice(basePrice: number, featuredIdx?: number): number {
+  if (featuredIdx === undefined || featuredIdx < 0 || featuredIdx >= PACKAGE_MULTIPLIERS.length) {
+    return basePrice;
+  }
+  return Math.round(basePrice * PACKAGE_MULTIPLIERS[featuredIdx]);
+}
+
+function sanitizeFeaturedPackages(input: unknown): Record<string, number> {
+  if (!input || typeof input !== "object") return {};
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+    if (typeof v === "number" && v >= 0 && v < PACKAGE_MULTIPLIERS.length) out[k] = v;
+  }
+  return out;
+}
+
+export function useFeaturedPackages(): [Record<string, number>, (studioName: string, idx: number) => void] {
+  const value = useStored<Record<string, number>>(
+    K_FEATURED_PACKAGES,
+    {},
+    (raw) => (raw === undefined ? {} : sanitizeFeaturedPackages(raw)),
+  );
+  const setOne = (studioName: string, idx: number) => {
+    writeStored(K_FEATURED_PACKAGES, sanitizeFeaturedPackages({ ...value, [studioName]: idx }));
+  };
+  return [value, setOne];
 }
 
 // ===== 배너 =====
