@@ -273,8 +273,19 @@ export function getDisplayPrice(basePrice: number, featuredIdx?: number): number
   return Math.round(basePrice * PACKAGE_MULTIPLIERS[featuredIdx]);
 }
 
+const DEFAULT_FEATURED_PACKAGES: Record<string, number> = {
+  "루미에르 스튜디오": 1,        // 2컨셉
+  "아이덴티티 프로필": 0,        // 1컨셉
+  "선셋 포토랩": 1,              // 2컨셉
+  "바디에디션 랩": 2,            // 3컨셉
+  "블룸 웨딩 스튜디오": 1,       // 2컨셉
+  "프라이빗 웨딩하우스": 2,      // 3컨셉
+  "브랜드컷 스튜디오": 0,        // 1컨셉
+  "비즈니스 데이랩": 1,          // 2컨셉
+};
+
 function sanitizeFeaturedPackages(input: unknown): Record<string, number> {
-  if (!input || typeof input !== "object") return {};
+  if (!input || typeof input !== "object") return { ...DEFAULT_FEATURED_PACKAGES };
   const out: Record<string, number> = {};
   for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
     if (typeof v === "number" && v >= 0 && v < PACKAGE_MULTIPLIERS.length) out[k] = v;
@@ -285,8 +296,8 @@ function sanitizeFeaturedPackages(input: unknown): Record<string, number> {
 export function useFeaturedPackages(): [Record<string, number>, (studioName: string, idx: number) => void] {
   const value = useStored<Record<string, number>>(
     K_FEATURED_PACKAGES,
-    {},
-    (raw) => (raw === undefined ? {} : sanitizeFeaturedPackages(raw)),
+    DEFAULT_FEATURED_PACKAGES,
+    (raw) => (raw === undefined ? { ...DEFAULT_FEATURED_PACKAGES } : sanitizeFeaturedPackages(raw)),
   );
   const setOne = (studioName: string, idx: number) => {
     writeStored(K_FEATURED_PACKAGES, sanitizeFeaturedPackages({ ...value, [studioName]: idx }));
