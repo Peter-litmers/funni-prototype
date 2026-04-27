@@ -633,8 +633,8 @@ export default function AdminWeb() {
                       <td className="p-4"><span className="text-[11px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{b.category}</span></td>
                       <td className="p-4 text-gray-500 hidden md:table-cell">{b.area}</td>
                       <td className="p-4">
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          b.status === "운영중" ? "bg-green-100 text-green-700" : b.status === "정지" ? "bg-red-100 text-red-500" : "bg-yellow-100 text-yellow-700"
+                        <span className={`text-sm font-medium ${
+                          b.status === "운영중" ? "text-green-700" : b.status === "정지" ? "text-red-500" : "text-yellow-700"
                         }`}>{b.status}</span>
                       </td>
                       <td className="p-4">
