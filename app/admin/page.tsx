@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import Link from "next/link";
 import { Users, Building2, Calendar, DollarSign, ImageIcon, X } from "lucide-react";
 import PolicyForm from "../components/PolicyForm";
@@ -879,167 +879,165 @@ export default function AdminWeb() {
               {ads.length === 0 ? (
                 <p className="p-6 text-center text-xs text-gray-400">등록된 광고가 없습니다. &lsquo;+ 광고 업체 추가&rsquo;로 편성하세요.</p>
               ) : (
-                <div className="divide-y divide-gray-100">
-                  {categories.map(catName => {
-                    const catAds = ads.map((a, globalIdx) => ({ a, globalIdx })).filter(x => x.a.cat === catName);
-                    const liveCount = catAds.filter(x => x.a.status === "노출중").length;
-                    if (catAds.length === 0) return null;
-                    let liveSlotN = 0;
-                    return (
-                      <div key={catName} className="p-3">
-                        <div className="flex items-center justify-between mb-2 px-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-gray-700 bg-primary/10 text-primary px-2 py-0.5 rounded-full">{catName}</span>
-                            <span className="text-[10px] text-gray-500">노출 슬롯 {Math.min(liveCount, 2)}/2</span>
-                          </div>
-                        </div>
-                        <table className="w-full text-sm">
-                          <tbody>
-                            {catAds.map(({ a, globalIdx }, idxInCat) => {
-                              const period = a.periodStart && a.periodEnd
-                                ? `${a.periodStart.slice(5).replace("-", ".")}~${a.periodEnd.slice(5).replace("-", ".")}`
-                                : "기간 미설정";
-                              const isLive = a.status === "노출중";
-                              if (isLive) liveSlotN += 1;
-                              const slotLabel = isLive
-                                ? (liveSlotN <= 2 ? `슬롯 #${liveSlotN}` : `대기 (슬롯 초과)`)
-                                : "—";
-                              const isFirst = idxInCat === 0;
-                              const isLast = idxInCat === catAds.length - 1;
-                              return (
-                                <tr key={a.id} className={`border-t border-gray-50 ${isLive && liveSlotN <= 2 ? "bg-primary/5" : ""}`}>
-                                  <td className="p-3 w-24">
-                                    <div className="flex items-center gap-1">
-                                      <span className={`font-mono text-[10px] ${isLive && liveSlotN <= 2 ? "text-primary font-semibold" : "text-gray-400"}`}>{slotLabel}</span>
-                                    </div>
-                                  </td>
-                                  <td className="p-3 w-16">
-                                    <div className="flex flex-col gap-0.5">
-                                      <button onClick={() => moveAd(globalIdx, -1)} disabled={isFirst} className="text-[10px] text-gray-400 disabled:opacity-30">▲</button>
-                                      <button onClick={() => moveAd(globalIdx, 1)} disabled={isLast} className="text-[10px] text-gray-400 disabled:opacity-30">▼</button>
-                                    </div>
-                                  </td>
-                                  <td className="p-3 font-medium">{a.studio}</td>
-                                  <td className="p-3 text-gray-500 text-xs hidden md:table-cell">{period}</td>
-                                  <td className="p-3">
-                                    <button onClick={() => toggleAdStatus(a.id)}
-                                      className={`text-xs px-2 py-1 rounded-full ${isLive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
-                                      title="클릭해서 상태 전환">{a.status}</button>
-                                  </td>
-                                  <td className="p-3">
-                                    <div className="flex gap-1">
-                                      <button onClick={() => { setAdModalMode("edit"); setAdModal({ ...a }); }}
-                                        className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">수정</button>
-                                      <button onClick={() => { if (confirm(`'${a.studio}' 광고를 삭제할까요?`)) removeAd(a.id); }}
-                                        className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">삭제</button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    );
-                  })}
-                  {(() => {
-                    const allAds = ads.map((a, globalIdx) => ({ a, globalIdx })).filter(x => x.a.cat === "전체");
-                    if (allAds.length === 0) return null;
-                    const liveCount = allAds.filter(x => x.a.status === "노출중").length;
-                    let liveSlotN = 0;
-                    return (
-                      <div className="p-3 bg-amber-50/30">
-                        <div className="flex items-center gap-2 mb-2 px-1">
-                          <span className="text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">전체</span>
-                          <span className="text-[10px] text-gray-500">노출 슬롯 {Math.min(liveCount, 1)}/1 — 스튜디오 → 전체 페이지 노출</span>
-                        </div>
-                        <table className="w-full text-sm">
-                          <tbody>
-                            {allAds.map(({ a, globalIdx }, idxInCat) => {
-                              const period = a.periodStart && a.periodEnd
-                                ? `${a.periodStart.slice(5).replace("-", ".")}~${a.periodEnd.slice(5).replace("-", ".")}`
-                                : "기간 미설정";
-                              const isLive = a.status === "노출중";
-                              if (isLive) liveSlotN += 1;
-                              const slotLabel = isLive
-                                ? (liveSlotN <= 1 ? `슬롯 #${liveSlotN}` : `대기 (슬롯 초과)`)
-                                : "—";
-                              const isFirst = idxInCat === 0;
-                              const isLast = idxInCat === allAds.length - 1;
-                              return (
-                                <tr key={a.id} className={`border-t border-gray-50 ${isLive && liveSlotN <= 1 ? "bg-amber-100/40" : ""}`}>
-                                  <td className="p-3 w-24"><span className={`font-mono text-[10px] ${isLive && liveSlotN <= 1 ? "text-amber-700 font-semibold" : "text-gray-400"}`}>{slotLabel}</span></td>
-                                  <td className="p-3 w-16">
-                                    <div className="flex flex-col gap-0.5">
-                                      <button onClick={() => moveAd(globalIdx, -1)} disabled={isFirst} className="text-[10px] text-gray-400 disabled:opacity-30">▲</button>
-                                      <button onClick={() => moveAd(globalIdx, 1)} disabled={isLast} className="text-[10px] text-gray-400 disabled:opacity-30">▼</button>
-                                    </div>
-                                  </td>
-                                  <td className="p-3 font-medium">{a.studio}</td>
-                                  <td className="p-3 text-gray-500 text-xs hidden md:table-cell">{period}</td>
-                                  <td className="p-3"><button onClick={() => toggleAdStatus(a.id)} className={`text-xs px-2 py-1 rounded-full ${isLive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{a.status}</button></td>
-                                  <td className="p-3">
-                                    <div className="flex gap-1">
-                                      <button onClick={() => { setAdModalMode("edit"); setAdModal({ ...a }); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">수정</button>
-                                      <button onClick={() => { if (confirm(`'${a.studio}' 광고를 삭제할까요?`)) removeAd(a.id); }} className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">삭제</button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    );
-                  })()}
-                  {(() => {
-                    const knownCats = new Set([...categories, "전체"]);
-                    const orphanAds = ads.map((a, globalIdx) => ({ a, globalIdx })).filter(x => !knownCats.has(x.a.cat));
-                    if (orphanAds.length === 0) return null;
-                    return (
-                      <div className="p-3">
-                        <div className="flex items-center gap-2 mb-2 px-1">
-                          <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">분류 없음</span>
-                          <span className="text-[10px] text-gray-400">카테고리 미지정 광고</span>
-                        </div>
-                        <table className="w-full text-sm">
-                          <tbody>
-                            {orphanAds.map(({ a, globalIdx }) => (
-                              <tr key={a.id} className="border-t border-gray-50">
-                                <td className="p-3 w-24"><span className="text-[10px] text-gray-400">—</span></td>
-                                <td className="p-3 w-16">—</td>
-                                <td className="p-3 font-medium">{a.studio}</td>
-                                <td className="p-3 text-gray-500 text-xs hidden md:table-cell">{a.cat || "(미지정)"}</td>
-                                <td className="p-3"><button onClick={() => toggleAdStatus(a.id)} className={`text-xs px-2 py-1 rounded-full ${a.status === "노출중" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{a.status}</button></td>
-                                <td className="p-3">
+                <table className="w-full text-sm table-fixed">
+                  <colgroup>
+                    <col className="w-24" />
+                    <col className="w-14" />
+                    <col />
+                    <col className="w-32" />
+                    <col className="w-20" />
+                    <col className="w-28" />
+                  </colgroup>
+                  <tbody>
+                    {categories.map((catName, catIdx) => {
+                      const catAds = ads.map((a, globalIdx) => ({ a, globalIdx })).filter(x => x.a.cat === catName);
+                      if (catAds.length === 0) return null;
+                      const liveCount = catAds.filter(x => x.a.status === "노출중").length;
+                      let liveSlotN = 0;
+                      return (
+                        <Fragment key={catName}>
+                          <tr className="bg-gray-50 border-t-2 border-gray-100">
+                            <td colSpan={6} className="px-3 py-2">
+                              <div className="flex items-center gap-2">
+                                <div className="flex flex-col gap-0.5">
+                                  <button onClick={() => moveCategory(catIdx, -1)} disabled={catIdx === 0} className="text-[10px] text-gray-400 disabled:opacity-30">▲</button>
+                                  <button onClick={() => moveCategory(catIdx, 1)} disabled={catIdx === categories.length - 1} className="text-[10px] text-gray-400 disabled:opacity-30">▼</button>
+                                </div>
+                                <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{catName}</span>
+                                <span className="text-[10px] text-gray-500">노출 슬롯 {Math.min(liveCount, 2)}/2</span>
+                              </div>
+                            </td>
+                          </tr>
+                          {catAds.map(({ a, globalIdx }, idxInCat) => {
+                            const period = a.periodStart && a.periodEnd
+                              ? `${a.periodStart.slice(5).replace("-", ".")}~${a.periodEnd.slice(5).replace("-", ".")}`
+                              : "기간 미설정";
+                            const isLive = a.status === "노출중";
+                            if (isLive) liveSlotN += 1;
+                            const slotLabel = isLive
+                              ? (liveSlotN <= 2 ? `슬롯 #${liveSlotN}` : `대기 (슬롯 초과)`)
+                              : "—";
+                            const isFirst = idxInCat === 0;
+                            const isLast = idxInCat === catAds.length - 1;
+                            return (
+                              <tr key={a.id} className={`border-t border-gray-50 ${isLive && liveSlotN <= 2 ? "bg-primary/5" : ""}`}>
+                                <td className="px-3 py-2.5 align-middle">
+                                  <span className={`font-mono text-[10px] ${isLive && liveSlotN <= 2 ? "text-primary font-semibold" : "text-gray-400"}`}>{slotLabel}</span>
+                                </td>
+                                <td className="px-2 py-2.5 align-middle">
+                                  <div className="flex flex-col gap-0.5">
+                                    <button onClick={() => moveAd(globalIdx, -1)} disabled={isFirst} className="text-[10px] text-gray-400 disabled:opacity-30">▲</button>
+                                    <button onClick={() => moveAd(globalIdx, 1)} disabled={isLast} className="text-[10px] text-gray-400 disabled:opacity-30">▼</button>
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2.5 font-medium align-middle truncate">{a.studio}</td>
+                                <td className="px-3 py-2.5 text-gray-500 text-xs align-middle">{period}</td>
+                                <td className="px-3 py-2.5 align-middle">
+                                  <button onClick={() => toggleAdStatus(a.id)}
+                                    className={`text-xs px-2 py-1 rounded-full ${isLive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
+                                    title="클릭해서 상태 전환">{a.status}</button>
+                                </td>
+                                <td className="px-3 py-2.5 align-middle">
+                                  <div className="flex gap-1">
+                                    <button onClick={() => { setAdModalMode("edit"); setAdModal({ ...a }); }}
+                                      className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">수정</button>
+                                    <button onClick={() => { if (confirm(`'${a.studio}' 광고를 삭제할까요?`)) removeAd(a.id); }}
+                                      className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">삭제</button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </Fragment>
+                      );
+                    })}
+                    {(() => {
+                      const allAds = ads.map((a, globalIdx) => ({ a, globalIdx })).filter(x => x.a.cat === "전체");
+                      const liveCount = allAds.filter(x => x.a.status === "노출중").length;
+                      let liveSlotN = 0;
+                      return (
+                        <Fragment key="전체-section">
+                          <tr className="bg-amber-50 border-t-2 border-amber-100">
+                            <td colSpan={6} className="px-3 py-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">전체</span>
+                                <span className="text-[10px] text-gray-500">노출 슬롯 {Math.min(liveCount, 1)}/1 — 스튜디오 → 전체 페이지 노출</span>
+                              </div>
+                            </td>
+                          </tr>
+                          {allAds.length === 0 ? (
+                            <tr className="border-t border-gray-50">
+                              <td colSpan={6} className="px-3 py-3 text-[11px] text-gray-400 text-center">&lsquo;전체&rsquo; 페이지 광고가 없습니다. + 광고 업체 추가 → 카테고리에서 &lsquo;전체&rsquo; 선택.</td>
+                            </tr>
+                          ) : allAds.map(({ a, globalIdx }, idxInCat) => {
+                            const period = a.periodStart && a.periodEnd
+                              ? `${a.periodStart.slice(5).replace("-", ".")}~${a.periodEnd.slice(5).replace("-", ".")}`
+                              : "기간 미설정";
+                            const isLive = a.status === "노출중";
+                            if (isLive) liveSlotN += 1;
+                            const slotLabel = isLive
+                              ? (liveSlotN <= 1 ? `슬롯 #${liveSlotN}` : `대기 (슬롯 초과)`)
+                              : "—";
+                            const isFirst = idxInCat === 0;
+                            const isLast = idxInCat === allAds.length - 1;
+                            return (
+                              <tr key={a.id} className={`border-t border-gray-50 ${isLive && liveSlotN <= 1 ? "bg-amber-100/40" : ""}`}>
+                                <td className="px-3 py-2.5 align-middle"><span className={`font-mono text-[10px] ${isLive && liveSlotN <= 1 ? "text-amber-700 font-semibold" : "text-gray-400"}`}>{slotLabel}</span></td>
+                                <td className="px-2 py-2.5 align-middle">
+                                  <div className="flex flex-col gap-0.5">
+                                    <button onClick={() => moveAd(globalIdx, -1)} disabled={isFirst} className="text-[10px] text-gray-400 disabled:opacity-30">▲</button>
+                                    <button onClick={() => moveAd(globalIdx, 1)} disabled={isLast} className="text-[10px] text-gray-400 disabled:opacity-30">▼</button>
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2.5 font-medium align-middle truncate">{a.studio}</td>
+                                <td className="px-3 py-2.5 text-gray-500 text-xs align-middle">{period}</td>
+                                <td className="px-3 py-2.5 align-middle"><button onClick={() => toggleAdStatus(a.id)} className={`text-xs px-2 py-1 rounded-full ${isLive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{a.status}</button></td>
+                                <td className="px-3 py-2.5 align-middle">
                                   <div className="flex gap-1">
                                     <button onClick={() => { setAdModalMode("edit"); setAdModal({ ...a }); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">수정</button>
                                     <button onClick={() => { if (confirm(`'${a.studio}' 광고를 삭제할까요?`)) removeAd(a.id); }} className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">삭제</button>
                                   </div>
                                 </td>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    );
-                  })()}
-                  {(() => {
-                    const knownCats = new Set([...categories, "전체"]);
-                    const hasAny = ads.some(a => knownCats.has(a.cat));
-                    if (hasAny) return null;
-                    return null;
-                  })()}
-                  {ads.filter(a => a.cat === "전체").length === 0 && (
-                    <div className="p-3 bg-amber-50/30">
-                      <div className="flex items-center gap-2 mb-2 px-1">
-                        <span className="text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">전체</span>
-                        <span className="text-[10px] text-gray-500">노출 슬롯 0/1 — 스튜디오 → 전체 페이지 노출</span>
-                      </div>
-                      <p className="text-[11px] text-gray-400 text-center py-3">&lsquo;전체&rsquo; 페이지 광고가 없습니다. + 광고 업체 추가 → 카테고리에서 &lsquo;전체&rsquo; 선택.</p>
-                    </div>
-                  )}
-                </div>
+                            );
+                          })}
+                        </Fragment>
+                      );
+                    })()}
+                    {(() => {
+                      const knownCats = new Set([...categories, "전체"]);
+                      const orphanAds = ads.map((a, globalIdx) => ({ a, globalIdx })).filter(x => !knownCats.has(x.a.cat));
+                      if (orphanAds.length === 0) return null;
+                      return (
+                        <Fragment key="orphan-section">
+                          <tr className="bg-gray-100 border-t-2 border-gray-200">
+                            <td colSpan={6} className="px-3 py-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-semibold text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">분류 없음</span>
+                                <span className="text-[10px] text-gray-400">카테고리 미지정 광고</span>
+                              </div>
+                            </td>
+                          </tr>
+                          {orphanAds.map(({ a, globalIdx }) => (
+                            <tr key={a.id} className="border-t border-gray-50">
+                              <td className="px-3 py-2.5 align-middle"><span className="text-[10px] text-gray-400">—</span></td>
+                              <td className="px-2 py-2.5 align-middle">—</td>
+                              <td className="px-3 py-2.5 font-medium align-middle truncate">{a.studio}</td>
+                              <td className="px-3 py-2.5 text-gray-500 text-xs align-middle">{a.cat || "(미지정)"}</td>
+                              <td className="px-3 py-2.5 align-middle"><button onClick={() => toggleAdStatus(a.id)} className={`text-xs px-2 py-1 rounded-full ${a.status === "노출중" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{a.status}</button></td>
+                              <td className="px-3 py-2.5 align-middle">
+                                <div className="flex gap-1">
+                                  <button onClick={() => { setAdModalMode("edit"); setAdModal({ ...a }); }} className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">수정</button>
+                                  <button onClick={() => { if (confirm(`'${a.studio}' 광고를 삭제할까요?`)) removeAd(a.id); }} className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">삭제</button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </Fragment>
+                      );
+                    })()}
+                  </tbody>
+                </table>
               )}
             </div>
 

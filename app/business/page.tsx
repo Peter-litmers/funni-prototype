@@ -756,7 +756,6 @@ export default function BusinessApp() {
                     className="mx-4 mt-3 overflow-hidden rounded-xl bg-gradient-to-r from-rose-100 to-pink-200 p-4 flex items-center gap-3 relative w-[calc(100%-2rem)] text-left"
                   >
                     <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
-                    <span className="absolute top-2 right-2 bg-white/85 text-gray-700 text-[9px] px-2 py-0.5 rounded-full font-semibold">{categoryCat}</span>
                     <div className="w-14 h-14 bg-white/60 rounded-lg flex items-center justify-center shrink-0 text-gray-400"><ImageIcon size={22} strokeWidth={1.5} /></div>
                     <div className="flex-1 min-w-0 mt-2">
                       <p className="text-sm font-bold text-gray-900 truncate">{s.name}</p>
