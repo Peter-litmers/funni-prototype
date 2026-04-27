@@ -99,7 +99,7 @@ export default function BusinessApp() {
   const [noShowReports, addNoShowReport] = useNoShowReports();
   const [ads] = useAds();
   const getCatIcon = (name: string) => resolveCatIcon(name, categoryIcons);
-  const CATEGORIES = [{ name: "전체", Icon: LayoutGrid }, ...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }))];
+  const CATEGORIES = [...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) })), { name: "전체", Icon: LayoutGrid }];
   const HOME_CATEGORY_GRID = adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }));
   const [homeKeywords] = useHomeKeywords();
   const myFee = getFeeForBusiness("루미에르 스튜디오", feeRate, bizFees);

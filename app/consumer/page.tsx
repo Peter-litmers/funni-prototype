@@ -687,7 +687,7 @@ export default function ConsumerApp() {
   const [categoryIcons] = useCategoryIcons();
   const [noShowReports] = useNoShowReports();
   const getCatIcon = (name: string) => resolveCatIcon(name, categoryIcons);
-  const CATEGORIES = [{ name: "전체", Icon: LayoutGrid }, ...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }))];
+  const CATEGORIES = [...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) })), { name: "전체", Icon: LayoutGrid }];
   const HOME_CATEGORY_GRID = adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }));
   const [screen, setScreen] = useState<Screen>("home");
   const [selectedStudio, setSelectedStudio] = useState(STUDIOS[0]);
