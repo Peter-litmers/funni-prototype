@@ -1853,7 +1853,7 @@ export default function ConsumerApp() {
                     <h3 className="text-sm font-bold text-gray-900">오늘은 이런 곳 어때요?</h3>
                   </div>
                   <button onClick={() => { setCategoryCat("전체"); setScreen("category"); setTab("category"); }}
-                    className="text-[11px] font-medium text-gray-400 hover:text-primary">전체보기 →</button>
+                    className="text-[11px] font-medium text-gray-400 hover:text-primary">전체보기</button>
                 </div>
                 <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 pb-1">
                   {promotedStudios.map((studio, index) => (
