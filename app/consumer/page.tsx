@@ -687,7 +687,7 @@ export default function ConsumerApp() {
   const [categoryIcons] = useCategoryIcons();
   const [noShowReports] = useNoShowReports();
   const getCatIcon = (name: string) => resolveCatIcon(name, categoryIcons);
-  const CATEGORIES = [{ name: "전체", Icon: LayoutGrid }, ...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }))];
+  const CATEGORIES = [...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) })), { name: "전체", Icon: LayoutGrid }];
   const HOME_CATEGORY_GRID = adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }));
   const [screen, setScreen] = useState<Screen>("home");
   const [selectedStudio, setSelectedStudio] = useState(STUDIOS[0]);
@@ -999,9 +999,9 @@ export default function ConsumerApp() {
                 )}
               </div>
 
-              <div className="mx-4 mt-5 rounded-3xl bg-gray-50 p-3">
-                <p className="text-[11px] font-semibold text-gray-700">이번 주 추천 배너</p>
-                <div className="mt-3 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+              <div className="mt-5 px-4">
+                <h3 className="mb-3 text-[15px] font-bold text-gray-900">인기</h3>
+                <div className="overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
                   <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${adIdx * 100}%)` }}>
                     {HOME_AD_PAGES.map((page, pageIndex) => (
                       <div key={pageIndex} className="grid min-w-full grid-cols-3 gap-2">

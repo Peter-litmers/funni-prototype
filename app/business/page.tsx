@@ -6,7 +6,7 @@ import {
   Camera, Home, LayoutGrid, User, Bell, Phone, Calendar, MapPin, Search, SlidersHorizontal,
   DollarSign, BarChart3, Building2, ImageIcon, X, Star, Check, ChevronDown,
 } from "lucide-react";
-import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness, useHomeKeywords, matchesKeyword, useCategoryIcons, useNoShowReports, countNoShowsFor, useAds, type HomeKeyword } from "../lib/admin-store";
+import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness, useHomeKeywords, matchesKeyword, useCategoryIcons, useNoShowReports, countNoShowsFor, useAds, useSettlementRequests, type HomeKeyword } from "../lib/admin-store";
 import { resolveCatIcon } from "../lib/category-icons";
 
 function BrandMark() {
@@ -97,14 +97,30 @@ export default function BusinessApp() {
   const [bizFees] = useBusinessFees();
   const [categoryIcons] = useCategoryIcons();
   const [noShowReports, addNoShowReport] = useNoShowReports();
+  const [settlementRequests, addSettlementRequest] = useSettlementRequests();
   const [ads] = useAds();
   const getCatIcon = (name: string) => resolveCatIcon(name, categoryIcons);
-  const CATEGORIES = [{ name: "전체", Icon: LayoutGrid }, ...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }))];
+  const CATEGORIES = [...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) })), { name: "전체", Icon: LayoutGrid }];
   const HOME_CATEGORY_GRID = adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }));
   const [homeKeywords] = useHomeKeywords();
   const myFee = getFeeForBusiness("루미에르 스튜디오", feeRate, bizFees);
   const [screen, setScreen] = useState<Screen>("home");
   const [tab, setTab] = useState<Tab>("home");
+  const [previewToast, setPreviewToast] = useState(false);
+  const previewToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showPreviewToast = () => {
+    setPreviewToast(true);
+    if (previewToastTimer.current) clearTimeout(previewToastTimer.current);
+    previewToastTimer.current = setTimeout(() => setPreviewToast(false), 1800);
+  };
+  const blockPreviewClicks: React.MouseEventHandler<HTMLDivElement> = (e) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('button, [role="button"], a, input, textarea, select')) {
+      showPreviewToast();
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
   const [sort, setSort] = useState<Sort>("payments");
   const [sortOpen, setSortOpen] = useState(false);
   const [adIdx, setAdIdx] = useState(0);
@@ -408,7 +424,7 @@ export default function BusinessApp() {
 
           {/* ===== HOME (IA-010: 소비자와 동일한 스튜디오 탐색) ===== */}
           {screen === "home" && (
-            <div className="pb-6">
+            <div className="pb-6" onClickCapture={blockPreviewClicks}>
               <div className="px-4 pt-2">
                 <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-3 focus-within:border-primary transition-colors">
                   <Search size={16} strokeWidth={1.8} className="text-gray-400 shrink-0" />
@@ -464,9 +480,9 @@ export default function BusinessApp() {
                 )}
               </div>
 
-              <div className="mx-4 mt-5 rounded-3xl bg-gray-50 p-3">
-                <p className="text-[11px] font-semibold text-gray-700">이번 주 추천 배너</p>
-                <div className="mt-3 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+              <div className="mt-5 px-4">
+                <h3 className="mb-3 text-[15px] font-bold text-gray-900">인기</h3>
+                <div className="overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
                   <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${adIdx * 100}%)` }}>
                     {HOME_AD_PAGES.map((page, pageIndex) => (
                       <div key={pageIndex} className="grid min-w-full grid-cols-3 gap-2">
@@ -635,7 +651,7 @@ export default function BusinessApp() {
 
           {/* ===== CATEGORY (IA-011) ===== */}
           {screen === "category" && (
-            <div>
+            <div onClickCapture={blockPreviewClicks}>
               {/* 검색창 — 홈에서 검색한 값이 그대로 노출됨 */}
               <div className="px-4 pt-3">
                 <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-2.5 focus-within:border-primary transition-colors">
@@ -1499,6 +1515,21 @@ export default function BusinessApp() {
                   </div>
 
                   {selectedBooking.status === "확정" && (
+                    <div className="mb-4 rounded-2xl bg-primary/5 p-3 border border-primary/20">
+                      <p className="text-xs text-primary font-medium mb-1">📸 작업 완료 처리</p>
+                      <p className="text-[10px] text-gray-500 mb-2">고객에게 사진 전송이 끝나면 누르세요. 예약이 &lsquo;완료&rsquo; 상태로 전환되고, 소비자에게 사진 도착 + 리뷰 요청 알림이 자동 발송됩니다.</p>
+                      <button
+                        onClick={() => {
+                          setBookings(prev => prev.map(b => b.id === selectedBooking.id ? { ...b, status: "완료" } : b));
+                          alert("작업 완료 처리됐습니다.\n• 소비자(" + selectedBooking.name + ")에게 알림 발송 (사진 전송 + 리뷰 요청)\n• 어드민 활동 로그에 '작업 완료' 자동 기록");
+                        }}
+                        className="w-full bg-primary text-white py-2 rounded-xl text-sm font-medium">
+                        작업 완료 (사진 전송함)
+                      </button>
+                    </div>
+                  )}
+
+                  {selectedBooking.status === "확정" && (
                     <div className="mb-4 rounded-2xl bg-red-50 p-3 border border-red-100">
                       <p className="text-xs text-red-700 font-medium mb-1">부득이한 업체 사유로 취소</p>
                       <p className="text-[10px] text-gray-500 mb-2">고객 100% 환불 처리됩니다. 누적 5회 이상 시 이용정지 검토 대상이 됩니다.</p>
@@ -1610,6 +1641,32 @@ export default function BusinessApp() {
                   <div className="bg-white rounded-lg p-2"><span className="text-gray-400">환불 반영</span><br/><span className="text-gray-700 font-medium">결제 방식별 정책 확인 예정</span></div>
                 </div>
                 <p className="mt-3 text-[11px] text-gray-400">예약 시 받은 예약금도 정산 대상에 포함됩니다.</p>
+                {(() => {
+                  const periodLabel = settlementMonth === "전체" ? "2026년 4월" : `2026년 ${settlementMonth}`;
+                  const alreadyRequested = settlementRequests.some(r => r.account === "lumiere_biz" && r.period === periodLabel && r.status === "대기");
+                  if (alreadyRequested) {
+                    return (
+                      <div className="mt-4 w-full bg-amber-50 text-amber-700 py-3 rounded-xl text-sm font-medium border border-amber-200 text-center">
+                        ⏳ {periodLabel} 정산 요청 접수 완료 · 어드민 검토 대기
+                      </div>
+                    );
+                  }
+                  return (
+                    <button
+                      onClick={() => {
+                        addSettlementRequest({
+                          account: "lumiere_biz",
+                          studioName: "루미에르 스튜디오",
+                          period: periodLabel,
+                          amount: pendingAmount,
+                        });
+                        alert(`${periodLabel} 정산 요청이 접수되었습니다.\n• 요청 금액: ₩${pendingAmount.toLocaleString()}\n• 어드민 정산 탭에 즉시 반영\n• 영업일 기준 3~5일 내 지정 계좌로 입금됩니다`);
+                      }}
+                      className="mt-4 w-full bg-primary text-white py-3 rounded-xl text-sm font-bold">
+                      {periodLabel} 정산 요청
+                    </button>
+                  );
+                })()}
               </div>
 
               <h3 className="text-xs font-medium text-gray-500 mb-2">정산 기록</h3>
@@ -1849,6 +1906,13 @@ export default function BusinessApp() {
               }}
                 className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm mt-4">일정 추가</button>
             </div>
+          </div>
+        )}
+
+        {/* Preview Toast — 업체 미리보기 안내 */}
+        {previewToast && (
+          <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-20 z-50 bg-gray-900/90 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg whitespace-nowrap">
+            업체 계정은 미리보기만 가능합니다.
           </div>
         )}
 

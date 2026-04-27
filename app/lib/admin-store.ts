@@ -61,6 +61,7 @@ const K_BOOKING_ACTIONS = "photopot.bookingActions";
 const K_REFUND_MATRIX = "photopot.refundMatrix";
 const K_CATEGORY_ICONS = "photopot.categoryIcons";
 const K_NOSHOW_REPORTS = "photopot.noShowReports";
+const K_SETTLEMENT_REQUESTS = "photopot.settlementRequests";
 
 const CHANGE_EVENT = "photopot-admin-store-change";
 
@@ -512,6 +513,78 @@ export function useNoShowReports(): [
 
 export function countNoShowsFor(reports: NoShowReport[], consumerName: string): number {
   return reports.filter(r => r.consumerName === consumerName).length;
+}
+
+// ===== 정산 요청 =====
+export type SettlementRequest = {
+  id: string;
+  account: string; // 업체 아이디 (예: lumiere_biz)
+  studioName: string;
+  period: string; // 요청 대상 기간 (예: "2026년 4월")
+  amount: number; // 요청 금액 (KRW)
+  requestedAt: number;
+  status: "대기" | "정산 완료" | "반려";
+  processedAt?: number;
+  note?: string;
+};
+
+function sanitizeSettlementRequests(input: unknown): SettlementRequest[] {
+  if (!Array.isArray(input)) return [];
+  const out: SettlementRequest[] = [];
+  for (const it of input) {
+    if (!it || typeof it !== "object") continue;
+    const o = it as Record<string, unknown>;
+    if (typeof o.id !== "string" || typeof o.account !== "string") continue;
+    const status = o.status === "정산 완료" || o.status === "반려" ? o.status : "대기";
+    out.push({
+      id: o.id,
+      account: o.account,
+      studioName: typeof o.studioName === "string" ? o.studioName : "",
+      period: typeof o.period === "string" ? o.period : "",
+      amount: typeof o.amount === "number" ? o.amount : 0,
+      requestedAt: typeof o.requestedAt === "number" ? o.requestedAt : 0,
+      status,
+      processedAt: typeof o.processedAt === "number" ? o.processedAt : undefined,
+      note: typeof o.note === "string" ? o.note : undefined,
+    });
+  }
+  return out;
+}
+
+// 프로토타입 시연용 — 첫 로드 시 어드민 정산 탭에 샘플 요청 1건 노출
+const DEFAULT_SETTLEMENT_REQUESTS: SettlementRequest[] = [
+  {
+    id: "sr-sample-1",
+    account: "bloom_wedding",
+    studioName: "블룸 웨딩홀",
+    period: "2026년 4월",
+    amount: 1240000,
+    requestedAt: Date.now() - 1000 * 60 * 60 * 5, // 5시간 전
+    status: "대기",
+    note: "4월 누적 정산 요청 — 본식 + 리허설 패키지 13건",
+  },
+];
+
+export function useSettlementRequests(): [
+  SettlementRequest[],
+  (r: Omit<SettlementRequest, "id" | "requestedAt" | "status">) => void,
+  (id: string, status: SettlementRequest["status"]) => void,
+  (id: string) => void,
+] {
+  const value = useStored<SettlementRequest[]>(
+    K_SETTLEMENT_REQUESTS,
+    DEFAULT_SETTLEMENT_REQUESTS,
+    (raw) => (raw === undefined ? DEFAULT_SETTLEMENT_REQUESTS : sanitizeSettlementRequests(raw)),
+  );
+  const add = (r: Omit<SettlementRequest, "id" | "requestedAt" | "status">) => {
+    const next: SettlementRequest = { ...r, id: `sr-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, requestedAt: Date.now(), status: "대기" };
+    writeStored(K_SETTLEMENT_REQUESTS, [...value, next]);
+  };
+  const setStatus = (id: string, status: SettlementRequest["status"]) => {
+    writeStored(K_SETTLEMENT_REQUESTS, value.map(r => r.id === id ? { ...r, status, processedAt: Date.now() } : r));
+  };
+  const remove = (id: string) => writeStored(K_SETTLEMENT_REQUESTS, value.filter(r => r.id !== id));
+  return [value, add, setStatus, remove];
 }
 
 // ===== 카테고리별 환불율 매트릭스 =====
