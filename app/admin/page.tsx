@@ -714,7 +714,7 @@ export default function AdminWeb() {
                       className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
                         settlementFilter === "미정산" ? "bg-primary text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                       }`}>
-                      정산 안한 것 ({pendingCount})
+                      정산 전 ({pendingCount})
                     </button>
                     <button onClick={() => setSettlementFilter("정산 완료")}
                       className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
@@ -735,7 +735,7 @@ export default function AdminWeb() {
                           <th className="p-3 text-left font-medium text-gray-500 text-xs">총액 (촬영+옵션)</th>
                           <th className="p-3 text-left font-medium text-gray-500 text-xs">수수료율</th>
                           <th className="p-3 text-left font-medium text-gray-500 text-xs">정산액</th>
-                          <th className="p-3 text-left font-medium text-gray-500 text-xs">업체 요청</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs">요청 시각</th>
                           <th className="p-3 text-left font-medium text-gray-500 text-xs">처리</th>
                         </tr>
                       </thead>
@@ -747,7 +747,7 @@ export default function AdminWeb() {
                         ) : visibleRows.map((s) => {
                           const id = rowId(s);
                           const total = s.base + s.options;
-                          const { rate, isOverride } = getFeeForBusiness(s.studio, feeRate, bizFees);
+                          const { rate } = getFeeForBusiness(s.studio, feeRate, bizFees);
                           const net = Math.round(total * (1 - rate / 100));
                           const matchedRequest = settlementRequests.find(r => r.account === s.account && r.period === PERIOD);
                           const settledAt = settledRowIds[id];
@@ -759,7 +759,6 @@ export default function AdminWeb() {
                                   <span className="text-gray-300 mx-1">-</span>
                                   <span>{s.studio}</span>
                                 </p>
-                                {isOverride && <span className="text-[9px] text-primary bg-primary/10 px-1.5 py-0.5 rounded">개별 {rate}%</span>}
                               </td>
                               <td className="p-3"><span className="text-[11px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{s.category}</span></td>
                               <td className="p-3 text-xs text-gray-600">{PERIOD}</td>
@@ -772,10 +771,7 @@ export default function AdminWeb() {
                               <td className="p-3 font-bold">₩{net.toLocaleString()}</td>
                               <td className="p-3">
                                 {matchedRequest ? (
-                                  <div>
-                                    <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">🔔 요청됨</span>
-                                    <p className="text-[10px] text-gray-400 mt-1">{new Date(matchedRequest.requestedAt).toLocaleString("ko-KR")}</p>
-                                  </div>
+                                  <p className="text-[11px] text-gray-600">{new Date(matchedRequest.requestedAt).toLocaleString("ko-KR")}</p>
                                 ) : (
                                   <span className="text-[10px] text-gray-300">—</span>
                                 )}
