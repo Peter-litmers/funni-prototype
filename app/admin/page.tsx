@@ -21,6 +21,7 @@ import {
   useRefundMatrix,
   useCategoryIcons,
   useNoShowReports,
+  useSettlementRequests,
   countNoShowsFor,
   REFUND_PERIOD_LABELS,
   type RefundPeriod,
@@ -87,6 +88,7 @@ export default function AdminWeb() {
   const [categoryIcons, setCategoryIcons] = useCategoryIcons();
   const [iconPickerFor, setIconPickerFor] = useState<string | null>(null);
   const [noShowReports, , setNoShowResolved] = useNoShowReports();
+  const [settlementRequests, , setSettlementRequestStatus] = useSettlementRequests();
 
   const [adModal, setAdModal] = useState<AdEntry | null>(null);
   const [adModalMode, setAdModalMode] = useState<"create" | "edit">("edit");
@@ -680,6 +682,70 @@ export default function AdminWeb() {
                   대표 확인 대기
                 </DismissibleNote>
               </div>
+            </div>
+
+            {/* 정산 요청 접수함 (업체가 MY → 정산 내역에서 요청한 건) */}
+            <div className="bg-white rounded-xl shadow-sm mb-6">
+              <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-sm">정산 요청 접수함</h3>
+                  <p className="text-[10px] text-gray-500 mt-0.5">업체가 MY → 정산 내역에서 &lsquo;정산 요청&rsquo;을 누르면 자동 누적됩니다.</p>
+                </div>
+                <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
+                  대기 {settlementRequests.filter(r => r.status === "대기").length}건
+                </span>
+              </div>
+              {settlementRequests.length === 0 ? (
+                <p className="p-5 text-center text-xs text-gray-400">접수된 정산 요청이 없습니다.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="p-3 text-left font-medium text-gray-500 text-xs">업체 (아이디-스튜디오)</th>
+                        <th className="p-3 text-left font-medium text-gray-500 text-xs">기간</th>
+                        <th className="p-3 text-left font-medium text-gray-500 text-xs">요청 금액</th>
+                        <th className="p-3 text-left font-medium text-gray-500 text-xs">요청 시각</th>
+                        <th className="p-3 text-left font-medium text-gray-500 text-xs">상태</th>
+                        <th className="p-3 text-left font-medium text-gray-500 text-xs">처리</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...settlementRequests].sort((a, b) => b.requestedAt - a.requestedAt).map(r => (
+                        <tr key={r.id} className="border-t border-gray-50">
+                          <td className="p-3">
+                            <p className="font-medium text-xs">
+                              <span className="text-gray-400 font-mono">{r.account}</span>
+                              <span className="text-gray-300 mx-1">-</span>
+                              <span>{r.studioName}</span>
+                            </p>
+                          </td>
+                          <td className="p-3 text-xs text-gray-600">{r.period}</td>
+                          <td className="p-3 text-xs font-bold text-amber-600">₩{r.amount.toLocaleString()}</td>
+                          <td className="p-3 text-[10px] text-gray-400">{new Date(r.requestedAt).toLocaleString("ko-KR")}</td>
+                          <td className="p-3">
+                            <span className={`text-xs font-medium ${
+                              r.status === "정산 완료" ? "text-green-700" : r.status === "반려" ? "text-red-500" : "text-amber-600"
+                            }`}>{r.status}</span>
+                          </td>
+                          <td className="p-3">
+                            {r.status === "대기" ? (
+                              <div className="flex gap-1">
+                                <button onClick={() => setSettlementRequestStatus(r.id, "정산 완료")}
+                                  className="text-[10px] text-green-700 px-2 py-1 bg-green-50 rounded hover:bg-green-100">정산 완료</button>
+                                <button onClick={() => setSettlementRequestStatus(r.id, "반려")}
+                                  className="text-[10px] text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">반려</button>
+                              </div>
+                            ) : (
+                              <span className="text-[10px] text-gray-400">{r.processedAt ? new Date(r.processedAt).toLocaleString("ko-KR") : "—"}</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
 
             {/* Settlement Table */}
