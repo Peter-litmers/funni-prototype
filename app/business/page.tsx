@@ -6,7 +6,7 @@ import {
   Camera, Home, LayoutGrid, User, Bell, Phone, Calendar, MapPin, Search, SlidersHorizontal,
   DollarSign, BarChart3, Building2, ImageIcon, X, Star, Check, ChevronDown,
 } from "lucide-react";
-import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness, useHomeKeywords, matchesKeyword, useCategoryIcons, useNoShowReports, countNoShowsFor, useAds, useSettlementRequests, type HomeKeyword } from "../lib/admin-store";
+import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness, useHomeKeywords, matchesKeyword, useCategoryIcons, useNoShowReports, countNoShowsFor, useAds, useSettlementRequests, useFeaturedPackages, getDisplayPrice, PACKAGE_LABELS, type HomeKeyword } from "../lib/admin-store";
 import { resolveCatIcon } from "../lib/category-icons";
 
 function BrandMark() {
@@ -99,6 +99,7 @@ export default function BusinessApp() {
   const [noShowReports, addNoShowReport] = useNoShowReports();
   const [settlementRequests, addSettlementRequest] = useSettlementRequests();
   const [ads] = useAds();
+  const [featuredPackages, setFeaturedPackage] = useFeaturedPackages();
   const getCatIcon = (name: string) => resolveCatIcon(name, categoryIcons);
   const CATEGORIES = [...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) })), { name: "전체", Icon: LayoutGrid }];
   const HOME_CATEGORY_GRID = adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }));
@@ -645,7 +646,7 @@ export default function BusinessApp() {
                           </div>
                         )}
                         <div className="mt-auto flex items-center justify-between pt-2 text-[11px]">
-                          <span className="font-bold text-gray-900">₩{parseStudioPrice(studio.price).toLocaleString()}</span>
+                          <span className="font-bold text-gray-900">₩{getDisplayPrice(parseStudioPrice(studio.price), featuredPackages[studio.name]).toLocaleString()}{featuredPackages[studio.name] !== undefined && <span className="ml-1 text-[9px] font-normal text-gray-400">· {PACKAGE_LABELS[featuredPackages[studio.name]]}</span>}</span>
                           <span className="text-yellow-500">★ {studio.rating}</span>
                         </div>
                       </div>
@@ -800,7 +801,7 @@ export default function BusinessApp() {
                         </div>
                       )}
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-sm font-bold">₩{parseStudioPrice(s.price).toLocaleString()}</span>
+                        <span className="text-sm font-bold">₩{getDisplayPrice(parseStudioPrice(s.price), featuredPackages[s.name]).toLocaleString()}{featuredPackages[s.name] !== undefined && <span className="ml-1 text-[10px] font-normal text-gray-400">· {PACKAGE_LABELS[featuredPackages[s.name]]}</span>}</span>
                         <span className="text-xs text-yellow-500">★ {s.rating}</span>
                       </div>
                     </div>
@@ -1120,27 +1121,40 @@ export default function BusinessApp() {
                   <div className="bg-primary/5 rounded-xl p-3 border border-primary/10">
                     <p className="text-sm font-bold text-gray-900 mb-2">{selectedCat} 촬영</p>
 
-                    <p className="text-[10px] text-gray-500 mb-1">가격 패키지 (여러 개 가능)</p>
+                    <p className="text-[10px] text-gray-500 mb-1">가격 패키지 (여러 개 가능 · <span className="text-primary font-medium">광고 노출용 1개 선택</span>)</p>
                     <div className="space-y-1.5 mb-2">
                       {[
                         { title: "1컨셉", price: 270000, desc: "보정본 4컷 · 30분 소요" },
                         { title: "2컨셉", price: 420000, desc: "보정본 7컷 · 60분 소요" },
                         { title: "3컨셉", price: 580000, desc: "보정본 12컷 · 90분 소요" },
-                      ].map((pkg, idx) => (
-                        <div key={idx} className="bg-white rounded-lg p-2 border border-gray-100">
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <input type="text" defaultValue={pkg.title} placeholder="예: 1컨셉 / 4컷 / 기본"
-                              className="flex-1 bg-gray-50 rounded px-2 py-1 text-xs border border-transparent outline-none focus:border-primary" />
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs">₩</span>
-                              <input type="text" defaultValue={pkg.price.toLocaleString()}
-                                className="w-24 bg-gray-50 rounded px-2 py-1 text-xs text-right border border-transparent outline-none focus:border-primary" />
+                      ].map((pkg, idx) => {
+                        const studioName = editingStudio?.name ?? "새 스튜디오";
+                        const isFeatured = featuredPackages[studioName] === idx;
+                        return (
+                          <div key={idx} className={`rounded-lg p-2 border transition-colors ${isFeatured ? "bg-primary/5 border-primary/40" : "bg-white border-gray-100"}`}>
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <button
+                                type="button"
+                                onClick={() => setFeaturedPackage(studioName, idx)}
+                                title="광고·추천 카드에 이 패키지 가격 노출"
+                                className={`shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${isFeatured ? "border-primary bg-primary" : "border-gray-300 bg-white"}`}
+                              >
+                                {isFeatured && <Check size={10} strokeWidth={3} className="text-white" />}
+                              </button>
+                              <input type="text" defaultValue={pkg.title} placeholder="예: 1컨셉 / 4컷 / 기본"
+                                className="flex-1 bg-gray-50 rounded px-2 py-1 text-xs border border-transparent outline-none focus:border-primary" />
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs">₩</span>
+                                <input type="text" defaultValue={pkg.price.toLocaleString()}
+                                  className="w-24 bg-gray-50 rounded px-2 py-1 text-xs text-right border border-transparent outline-none focus:border-primary" />
+                              </div>
                             </div>
+                            <input type="text" defaultValue={pkg.desc} placeholder="보정본 컷수·소요시간·포함내역"
+                              className="w-full bg-gray-50 rounded px-2 py-1 text-[11px] text-gray-500 border border-transparent outline-none focus:border-primary" />
+                            {isFeatured && <p className="text-[10px] text-primary mt-1">★ 광고·추천 카드에 이 패키지 가격이 노출됩니다</p>}
                           </div>
-                          <input type="text" defaultValue={pkg.desc} placeholder="보정본 컷수·소요시간·포함내역"
-                            className="w-full bg-gray-50 rounded px-2 py-1 text-[11px] text-gray-500 border border-transparent outline-none focus:border-primary" />
-                        </div>
-                      ))}
+                        );
+                      })}
                       <button className="w-full text-xs text-primary bg-white border border-dashed border-primary/30 rounded-lg py-1.5 font-medium">
                         + 패키지 추가
                       </button>

@@ -6,7 +6,7 @@ import {
   Camera, Home, LayoutGrid, User, Bell, Phone, MapPin, Star, Pencil, Check,
   CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal, ChevronDown,
 } from "lucide-react";
-import { useCategories, useHomeKeywords, matchesKeyword, useAds, useRefundMatrix, pickRefundRate, REFUND_PERIOD_LABELS, useCategoryIcons, useNoShowReports, type HomeKeyword } from "../lib/admin-store";
+import { useCategories, useHomeKeywords, matchesKeyword, useAds, useRefundMatrix, pickRefundRate, REFUND_PERIOD_LABELS, useCategoryIcons, useNoShowReports, useFeaturedPackages, getDisplayPrice, PACKAGE_LABELS, type HomeKeyword } from "../lib/admin-store";
 import { resolveCatIcon } from "../lib/category-icons";
 
 function BrandMark() {
@@ -683,6 +683,7 @@ export default function ConsumerApp() {
   const [adminCategories] = useCategories();
   const [homeKeywords] = useHomeKeywords();
   const [ads] = useAds();
+  const [featuredPackages] = useFeaturedPackages();
   const [refundMatrix] = useRefundMatrix();
   const [categoryIcons] = useCategoryIcons();
   const [noShowReports] = useNoShowReports();
@@ -1164,7 +1165,7 @@ export default function ConsumerApp() {
                           </div>
                         )}
                         <div className="mt-auto flex items-center justify-between pt-2 text-[11px]">
-                          <span className="font-bold text-gray-900">₩{studio.price.toLocaleString()}</span>
+                          <span className="font-bold text-gray-900">₩{getDisplayPrice(studio.price, featuredPackages[studio.name]).toLocaleString()}{featuredPackages[studio.name] !== undefined && <span className="ml-1 text-[9px] font-normal text-gray-400">· {PACKAGE_LABELS[featuredPackages[studio.name]]}</span>}</span>
                           <span className="text-yellow-500">★ {studio.rating}</span>
                         </div>
                       </div>
@@ -1319,7 +1320,7 @@ export default function ConsumerApp() {
                         </div>
                       )}
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-sm font-bold">₩{s.price.toLocaleString()}</span>
+                        <span className="text-sm font-bold">₩{getDisplayPrice(s.price, featuredPackages[s.name]).toLocaleString()}{featuredPackages[s.name] !== undefined && <span className="ml-1 text-[10px] font-normal text-gray-400">· {PACKAGE_LABELS[featuredPackages[s.name]]}</span>}</span>
                         <span className="text-xs text-yellow-500">★ {s.rating}</span>
                       </div>
                     </div>
@@ -1905,7 +1906,7 @@ export default function ConsumerApp() {
                         <p className="truncate text-[11px] font-semibold text-gray-900">{studio.name}</p>
                         <p className="truncate text-[9px] text-gray-400">{studio.area}</p>
                         <div className="mt-auto flex items-center justify-between pt-1">
-                          <span className="text-[10px] font-bold text-gray-900">₩{studio.price.toLocaleString()}</span>
+                          <span className="text-[10px] font-bold text-gray-900">₩{getDisplayPrice(studio.price, featuredPackages[studio.name]).toLocaleString()}</span>
                           <span className="text-[9px] text-yellow-500">★ {studio.rating}</span>
                         </div>
                       </div>

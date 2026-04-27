@@ -22,6 +22,8 @@ import {
   useCategoryIcons,
   useNoShowReports,
   useSettlementRequests,
+  useFeaturedPackages,
+  PACKAGE_LABELS,
   countNoShowsFor,
   REFUND_PERIOD_LABELS,
   type RefundPeriod,
@@ -79,6 +81,7 @@ export default function AdminWeb() {
   const [policies, updatePolicy, resetPolicy] = usePolicies();
   const [dismissed, dismissNote] = useDismissed();
   const [ads, setAds] = useAds();
+  const [featuredPackages] = useFeaturedPackages();
   const [banners, setBanners] = useBanners();
   const [blockedMembers, blockMember, unblockMember] = useBlockedMembers();
   const [hiddenReviews, hideReview, unhideReview] = useHiddenReviews();
@@ -930,7 +933,12 @@ export default function AdminWeb() {
                                     <button onClick={() => moveAd(globalIdx, 1)} disabled={isLast} className="text-[10px] text-gray-400 disabled:opacity-30">▼</button>
                                   </div>
                                 </td>
-                                <td className="px-3 py-2.5 font-medium align-middle truncate">{a.studio}</td>
+                                <td className="px-3 py-2.5 font-medium align-middle truncate">
+                                  {a.studio}
+                                  {featuredPackages[a.studio] !== undefined && (
+                                    <span className="ml-1.5 text-[9px] font-normal text-primary bg-primary/10 px-1 py-0.5 rounded">노출: {PACKAGE_LABELS[featuredPackages[a.studio]]}</span>
+                                  )}
+                                </td>
                                 <td className="px-3 py-2.5 text-gray-500 text-xs align-middle">{period}</td>
                                 <td className="px-3 py-2.5 align-middle">
                                   <button onClick={() => toggleAdStatus(a.id)}
@@ -989,7 +997,12 @@ export default function AdminWeb() {
                                     <button onClick={() => moveAd(globalIdx, 1)} disabled={isLast} className="text-[10px] text-gray-400 disabled:opacity-30">▼</button>
                                   </div>
                                 </td>
-                                <td className="px-3 py-2.5 font-medium align-middle truncate">{a.studio}</td>
+                                <td className="px-3 py-2.5 font-medium align-middle truncate">
+                                  {a.studio}
+                                  {featuredPackages[a.studio] !== undefined && (
+                                    <span className="ml-1.5 text-[9px] font-normal text-primary bg-primary/10 px-1 py-0.5 rounded">노출: {PACKAGE_LABELS[featuredPackages[a.studio]]}</span>
+                                  )}
+                                </td>
                                 <td className="px-3 py-2.5 text-gray-500 text-xs align-middle">{period}</td>
                                 <td className="px-3 py-2.5 align-middle"><button onClick={() => toggleAdStatus(a.id)} className={`text-xs px-2 py-1 rounded-full ${isLive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>{a.status}</button></td>
                                 <td className="px-3 py-2.5 align-middle">
@@ -1058,7 +1071,12 @@ export default function AdminWeb() {
                         <div className="w-12 h-12 bg-white/60 rounded-lg flex items-center justify-center text-gray-400"><ImageIcon size={18} strokeWidth={1.5} /></div>
                         <div>
                           <p className="text-xs font-bold">{a.studio}</p>
-                          <p className="text-[10px] text-gray-500">{a.cat} · 프리미엄 구좌</p>
+                          <p className="text-[10px] text-gray-500">
+                            {a.cat} · 프리미엄 구좌
+                            {featuredPackages[a.studio] !== undefined && (
+                              <span className="ml-1 text-primary">· 노출: {PACKAGE_LABELS[featuredPackages[a.studio]]}</span>
+                            )}
+                          </p>
                         </div>
                       </div>
                     </div>
