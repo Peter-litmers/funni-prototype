@@ -811,14 +811,19 @@ export default function ConsumerApp() {
     }
   };
 
-  // 추천 스튜디오 = 어드민에서 '노출중'으로 편성한 광고 기준 (순서 유지).
-  // 매칭 스튜디오 없거나 광고 0건이면 paymentCount 상위 4곳으로 fallback.
+  // 추천 스튜디오 = 카테고리당 진행중 광고 상위 2개씩 (어드민 정렬 순), 카테고리 순서대로 펼침.
+  // 광고 0건이면 paymentCount 상위 4곳으로 fallback.
   const promotedStudios = (() => {
-    const adStudios = ads
-      .filter(a => a.status === "노출중")
-      .map(a => STUDIOS.find(s => s.name === a.studio))
-      .filter((s): s is typeof STUDIOS[number] => !!s);
-    if (adStudios.length > 0) return adStudios.slice(0, 4);
+    const result: typeof STUDIOS[number][] = [];
+    for (const catName of adminCategories) {
+      const catTwo = ads
+        .filter(a => a.status === "진행중" && a.cat === catName)
+        .map(a => STUDIOS.find(s => s.name === a.studio))
+        .filter((s): s is typeof STUDIOS[number] => !!s)
+        .slice(0, 2);
+      result.push(...catTwo);
+    }
+    if (result.length > 0) return result;
     return [...STUDIOS].sort((a, b) => b.paymentCount - a.paymentCount).slice(0, 4);
   })();
   const hotStudios = [...STUDIOS].sort((a, b) => {
@@ -1135,7 +1140,10 @@ export default function ConsumerApp() {
                       <div className="relative flex h-28 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400">
                         <ImageIcon size={28} strokeWidth={1.5} />
                         <span className="absolute left-2 top-2 rounded-full bg-white/85 px-2 py-0.5 text-[9px] font-semibold text-gray-500">
-                          AD #{index + 1}
+                          AD
+                        </span>
+                        <span className="absolute right-2 top-2 rounded-full bg-primary/90 text-white px-2 py-0.5 text-[9px] font-semibold">
+                          {studio.cat}
                         </span>
                       </div>
                       <div className="flex flex-1 flex-col p-3">
@@ -1253,17 +1261,39 @@ export default function ConsumerApp() {
                 })()}
               </div>
 
-              {/* AD 배너 */}
-              <div className="mx-4 mt-3 overflow-hidden rounded-xl">
-                <div className="bg-gradient-to-r from-rose-100 to-pink-200 rounded-xl p-4 flex items-center gap-3 relative">
-                  <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
-                  <div className="w-14 h-14 bg-white/60 rounded-lg flex items-center justify-center shrink-0 text-gray-400"><ImageIcon size={22} strokeWidth={1.5} /></div>
-                  <div>
-                    <p className="text-xs font-bold text-gray-900">카테고리별 추천 배너</p>
-                    <p className="text-[10px] text-gray-600 mt-0.5">관리자가 등록한 광고 배너 영역</p>
+              {/* 추천 슬롯 2개 (위·아래 스택) — 어드민 광고 '진행중' + cat 일치 (전체 페이지는 cat="전체") */}
+              {!freeKeyword && (() => {
+                const targetAds = ads
+                  .filter(a => a.status === "진행중" && a.cat === categoryCat)
+                  .map(a => ({ ad: a, studio: STUDIOS.find(s => s.name === a.studio) }))
+                  .filter(x => !!x.studio)
+                  .slice(0, 2);
+                if (targetAds.length === 0) return null;
+                return (
+                  <div className="mx-4 mt-3 space-y-2">
+                    {targetAds.map(x => {
+                      const s = x.studio!;
+                      return (
+                        <button
+                          key={s.id}
+                          onClick={() => openDetail(s, categoryCat)}
+                          className="w-full overflow-hidden rounded-xl bg-gradient-to-r from-rose-100 to-pink-200 p-4 flex items-center gap-3 relative text-left"
+                        >
+                          <span className="absolute top-2 left-2 bg-primary/80 text-white text-[9px] px-2 py-0.5 rounded font-medium">AD</span>
+                          <div className="w-14 h-14 bg-white/60 rounded-lg flex items-center justify-center shrink-0 text-gray-400"><ImageIcon size={22} strokeWidth={1.5} /></div>
+                          <div className="flex-1 min-w-0 mt-2">
+                            <p className="text-sm font-bold text-gray-900 truncate">{s.name}</p>
+                            <div className="flex items-center gap-1.5 text-[10px] text-gray-600 mt-0.5">
+                              <span className="truncate">{s.area}</span>
+                              <span className="text-yellow-500">★ {s.rating}</span>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
-                </div>
-              </div>
+                );
+              })()}
 
               {/* 리스트 */}
               <div className="px-4 pb-4">
@@ -1845,12 +1875,12 @@ export default function ConsumerApp() {
                 </div>
               </div>
 
-              {/* 추천 스튜디오 — 어드민 광고 노출중 기준 (MY용 컴팩트) */}
+              {/* 추천 스튜디오 — 어드민 광고 진행중 기준 (MY용 컴팩트) */}
               <div className="mb-5 -mx-4">
                 <div className="mb-2.5 flex items-center justify-between px-4">
                   <div>
-                    <p className="text-[10px] text-gray-400">요즘 추천하는 스튜디오</p>
-                    <h3 className="text-sm font-bold text-gray-900">오늘은 이런 곳 어때요?</h3>
+                    <p className="text-[10px] text-gray-400">에디터 셀렉션</p>
+                    <h3 className="text-sm font-bold text-gray-900">요즘 추천하는 스튜디오</h3>
                   </div>
                   <button onClick={() => { setCategoryCat("전체"); setScreen("category"); setTab("category"); }}
                     className="text-[11px] font-medium text-gray-400 hover:text-primary">전체보기</button>
@@ -1865,7 +1895,10 @@ export default function ConsumerApp() {
                       <div className="relative flex h-20 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400">
                         <ImageIcon size={20} strokeWidth={1.5} />
                         <span className="absolute left-1 top-1 rounded-full bg-white/85 px-1.5 py-0.5 text-[8px] font-semibold text-gray-500">
-                          AD #{index + 1}
+                          AD
+                        </span>
+                        <span className="absolute right-1 top-1 rounded-full bg-primary/90 text-white px-1.5 py-0.5 text-[8px] font-semibold">
+                          {studio.cat}
                         </span>
                       </div>
                       <div className="flex flex-1 flex-col p-2">
