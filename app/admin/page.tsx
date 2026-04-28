@@ -1646,7 +1646,7 @@ export default function AdminWeb() {
                     { id: "P-0140B", consumer: "박스튜", account: "bloom_wedding", studio: "블룸 웨딩 스튜디오", kind: "잔금", date: "05.24", amount: "₩560,000", status: "결제대기", linkedId: "P-0140" },
                     { id: "P-0135", consumer: "최민지", account: "brandcut", studio: "브랜드컷 스튜디오", kind: "전액", date: "04.18", amount: "₩80,000", status: "결제완료", linkedId: "P-0135" },
                     { id: "P-0130", consumer: "한소희", account: "petmoments", studio: "펫모먼츠 스튜디오", kind: "전액", date: "04.13", amount: "₩120,000", status: "환불완료", linkedId: "P-0130" },
-                  ].map((p, i) => (
+                  ].slice().sort((a, b) => b.date.localeCompare(a.date)).map((p, i) => (
                     <tr key={i} className="border-t border-gray-50">
                       <td className="p-4 font-mono text-xs text-gray-400">{p.id}</td>
                       <td className="p-4">{p.consumer}</td>
