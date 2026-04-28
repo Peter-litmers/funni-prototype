@@ -1606,30 +1606,31 @@ export default function ConsumerApp() {
                   const opt = HAIR_MAKEUP_OPTIONS.find(o => o.id === id);
                   return opt ? <div key={id} className="flex justify-between text-sm"><span className="text-gray-500">{opt.name}</span><span className="font-medium">+₩{opt.price.toLocaleString()}</span></div> : null;
                 })}
-                <div className="flex justify-between text-sm border-t border-gray-100 pt-3"><span className="text-gray-500 font-bold">총 금액</span><span className="font-bold text-gray-900 text-base">₩{totalPrice.toLocaleString()}</span></div>
-
                 {(() => {
                   const dep = studioDeposits[selectedStudio.name];
                   const depositAmount = calculateDeposit(totalPrice, dep);
                   const balanceAmount = totalPrice - depositAmount;
-                  if (depositAmount === 0) {
-                    return (
-                      <p className="text-[11px] text-gray-400 pt-1">예약 시 전액 결제 후 업체 승인 시 확정되며, 영업일 기준 48시간 내 미승인 시 자동 취소 및 전액 환불됩니다.</p>
-                    );
-                  }
+                  const noDeposit = depositAmount === 0;
                   return (
-                    <div className="bg-primary/5 border border-primary/15 rounded-xl p-3 mt-1">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-xs font-bold text-primary">오늘 결제 (예약금)</span>
-                        <span className="text-base font-bold text-primary">₩{depositAmount.toLocaleString()}</span>
-                      </div>
-                      <p className="text-[10px] text-gray-500 mb-2">{describeDeposit(dep)} · 옵션 포함 총액 기준</p>
-                      <div className="flex items-center justify-between border-t border-primary/15 pt-1.5">
-                        <span className="text-[11px] text-gray-600">잔금 (촬영 전 결제)</span>
-                        <span className="text-sm font-semibold text-gray-700">₩{balanceAmount.toLocaleString()}</span>
-                      </div>
-                      <p className="text-[10px] text-gray-400 mt-2">잔금은 촬영일 D-1 23:59까지 MY → 예약 카드에서 결제. 미결제 시 예약 자동 취소 및 환불 정책 적용.</p>
-                    </div>
+                    <>
+                      <div className="flex justify-between text-sm border-t border-gray-100 pt-3"><span className="text-gray-500 font-bold">{noDeposit ? "결제 예정 금액" : "총 금액"}</span><span className="font-bold text-gray-900 text-base">₩{totalPrice.toLocaleString()}</span></div>
+                      {noDeposit ? (
+                        <p className="text-[11px] text-gray-400 pt-1">예약 신청 후 업체 승인 시 확정됩니다. 결제는 별도로 진행되며, 영업일 기준 48시간 내 미승인 시 예약은 자동 취소됩니다.</p>
+                      ) : (
+                        <div className="bg-primary/5 border border-primary/15 rounded-xl p-3 mt-1">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-bold text-primary">오늘 결제 (예약금)</span>
+                            <span className="text-base font-bold text-primary">₩{depositAmount.toLocaleString()}</span>
+                          </div>
+                          <p className="text-[10px] text-gray-500 mb-2">{describeDeposit(dep)} · 옵션 포함 총액 기준</p>
+                          <div className="flex items-center justify-between border-t border-primary/15 pt-1.5">
+                            <span className="text-[11px] text-gray-600">잔금 (촬영 전 결제)</span>
+                            <span className="text-sm font-semibold text-gray-700">₩{balanceAmount.toLocaleString()}</span>
+                          </div>
+                          <p className="text-[10px] text-gray-400 mt-2">잔금은 촬영일 D-1 23:59까지 MY → 예약 카드에서 결제. 미결제 시 예약 자동 취소 및 환불 정책 적용.</p>
+                        </div>
+                      )}
+                    </>
                   );
                 })()}
               </div>
@@ -1639,7 +1640,7 @@ export default function ConsumerApp() {
                 const depositAmount = calculateDeposit(totalPrice, dep);
                 const buttonLabel = depositAmount > 0
                   ? `예약금 ₩${depositAmount.toLocaleString()} 결제 · 토스페이먼츠`
-                  : `결제하기 · 토스페이먼츠`;
+                  : `예약하기`;
                 return (
                   <button onClick={() => navigate("done")} className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm">{buttonLabel}</button>
                 );
@@ -1656,11 +1657,11 @@ export default function ConsumerApp() {
             return (
               <div className="p-6 flex flex-col items-center justify-center" style={{ minHeight: 500 }}>
                 <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary"><CheckCircle2 size={48} strokeWidth={1.5} /></div>
-                <h2 className="text-lg font-bold mb-1">{splitMode ? "예약금 결제 완료!" : "예약 요청 완료!"}</h2>
+                <h2 className="text-lg font-bold mb-1">{splitMode ? "예약금 결제 완료!" : "예약 신청 완료!"}</h2>
                 <p className="text-sm text-gray-500">{selectedStudio.name}</p>
                 <p className="text-xs text-gray-400 mb-6">2026.05.{selectedDate} {selectedTime} ~ {endTime}</p>
                 <div className="bg-primary/5 rounded-xl p-4 w-full mb-4 border border-primary/10">
-                  <p className="text-xs text-primary font-medium">토스페이먼츠 {splitMode ? "예약금" : "결제"} 완료</p>
+                  <p className="text-xs text-primary font-medium">{splitMode ? "토스페이먼츠 예약금 완료" : "결제 예정 금액"}</p>
                   <p className="text-sm font-bold text-gray-900 mt-1">₩{(splitMode ? depositAmount : totalPrice).toLocaleString()}</p>
                   {splitMode && (
                     <div className="mt-3 pt-3 border-t border-primary/15 space-y-1">
@@ -1675,9 +1676,11 @@ export default function ConsumerApp() {
                       </div>
                     </div>
                   )}
-                  <p className="text-[11px] text-gray-500 mt-3">업체가 승인하면 예약이 확정됩니다. 만약 업체가 승인하지 않을 시 예약금은 환불됩니다.{splitMode && " 잔금은 촬영일 전까지 MY → 예약 카드에서 결제하세요."}</p>
+                  <p className="text-[11px] text-gray-500 mt-3">{splitMode
+                    ? "업체가 승인하면 예약이 확정됩니다. 만약 업체가 승인하지 않을 시 예약금은 환불됩니다. 잔금은 촬영일 전까지 MY → 예약 카드에서 결제하세요."
+                    : "업체가 승인하면 예약이 확정됩니다. 결제는 별도로 진행되며, 미승인 시 예약은 자동 취소됩니다."}</p>
                 </div>
-                <button onClick={() => { setScreen("myBookings"); setTab("mypage"); }} className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium text-sm mb-2">예약 요청 내역 확인</button>
+                <button onClick={() => { setScreen("myBookings"); setTab("mypage"); }} className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium text-sm mb-2">예약 신청 내역 확인</button>
                 <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm">홈으로</button>
               </div>
             );
