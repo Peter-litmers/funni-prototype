@@ -912,6 +912,9 @@ export default function ConsumerApp() {
     setSelectedStudio(s);
     setSelectedOptions([]);
     setDetailEntryCat(fromCat || "");
+    // 광고/추천 카드에 노출된 패키지(featured)를 상세 진입 시 기본 선택
+    const featuredIdx = featuredPackages[s.name];
+    setSelectedPackageIdx(featuredIdx !== undefined ? featuredIdx : 0);
     navigate("detail");
   };
   return (
