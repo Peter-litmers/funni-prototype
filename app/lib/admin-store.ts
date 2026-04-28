@@ -262,9 +262,120 @@ export function useAds(): [AdEntry[], (next: AdEntry[]) => void] {
   return [value, (next) => writeStored(K_ADS, sanitizeAds(next))];
 }
 
-// ===== 광고 노출용 패키지 (업체가 카드 노출 시 사용할 패키지 idx 선택) =====
+// ===== 스튜디오별 가격 패키지 (실제 업체가 등록한 패키지) =====
+export type StudioPackage = { title: string; price: number; desc: string };
+
+// fallback 라벨 (저장된 패키지 없는 신규 스튜디오용)
 export const PACKAGE_LABELS = ["1컨셉", "2컨셉", "3컨셉"] as const;
 export const PACKAGE_MULTIPLIERS = [0.9, 1.4, 1.9] as const;
+
+const DEFAULT_STUDIO_PACKAGES: Record<string, StudioPackage[]> = {
+  "루미에르 스튜디오": [
+    { title: "증명사진 베이직", price: 45000, desc: "보정본 4컷 · 30분" },
+    { title: "취업 프로필", price: 70000, desc: "보정본 7컷 · 60분" },
+    { title: "프리미엄 풀세트", price: 95000, desc: "보정본 12컷 · 헤메 포함" },
+  ],
+  "아이덴티티 프로필": [
+    { title: "베이직", price: 27000, desc: "보정본 3컷 · 30분" },
+    { title: "스탠다드", price: 42000, desc: "보정본 6컷 · 60분" },
+    { title: "프리미엄", price: 57000, desc: "보정본 10컷 · 헤메 포함" },
+  ],
+  "선셋 포토랩": [
+    { title: "1인 바디", price: 72000, desc: "보정본 5컷 · 60분" },
+    { title: "피트니스 풀", price: 112000, desc: "보정본 10컷 · 90분" },
+    { title: "커플 바디", price: 152000, desc: "보정본 15컷 · 2인 촬영" },
+  ],
+  "바디에디션 랩": [
+    { title: "바디 에센셜", price: 135000, desc: "보정본 8컷 · 60분" },
+    { title: "선수 프로필", price: 210000, desc: "보정본 15컷 · 90분" },
+    { title: "선수 풀패키지", price: 285000, desc: "보정본 25컷 · 2회 촬영" },
+  ],
+  "블룸 웨딩 스튜디오": [
+    { title: "스몰 웨딩", price: 180000, desc: "본식 1시간 · 30컷" },
+    { title: "본식 풀스냅", price: 280000, desc: "본식 2시간 · 60컷" },
+    { title: "프리미엄 야외", price: 380000, desc: "리허설+본식 · 100컷" },
+  ],
+  "프라이빗 웨딩하우스": [
+    { title: "셀프 웨딩", price: 234000, desc: "스튜디오 2시간 · 30컷" },
+    { title: "프리웨딩 컨셉", price: 364000, desc: "야외 3시간 · 60컷" },
+    { title: "리마인드 풀", price: 494000, desc: "다회차 · 100컷" },
+  ],
+  "브랜드컷 스튜디오": [
+    { title: "사내 단체", price: 54000, desc: "5인 단체 · 30분" },
+    { title: "대표 프로필", price: 84000, desc: "1인 6컷 · 60분" },
+    { title: "팀 풀패키지", price: 114000, desc: "10인+개별 · 90분" },
+  ],
+  "비즈니스 데이랩": [
+    { title: "1인 사내", price: 85000, desc: "기본 4컷 · 30분" },
+    { title: "팀 단체", price: 132000, desc: "10인 단체 · 60분" },
+    { title: "제품·단체 풀", price: 180000, desc: "단체+제품 · 90분" },
+  ],
+};
+
+const K_STUDIO_PACKAGES = "photopot.studioPackages";
+
+function sanitizeStudioPackages(input: unknown): Record<string, StudioPackage[]> {
+  if (!input || typeof input !== "object") return { ...DEFAULT_STUDIO_PACKAGES };
+  const out: Record<string, StudioPackage[]> = {};
+  for (const [name, list] of Object.entries(input as Record<string, unknown>)) {
+    if (!Array.isArray(list)) continue;
+    const arr: StudioPackage[] = [];
+    for (const item of list) {
+      if (!item || typeof item !== "object") continue;
+      const obj = item as Record<string, unknown>;
+      const title = typeof obj.title === "string" ? obj.title : "";
+      const price = typeof obj.price === "number" && Number.isFinite(obj.price) ? obj.price : 0;
+      const desc = typeof obj.desc === "string" ? obj.desc : "";
+      if (!title) continue;
+      arr.push({ title, price, desc });
+    }
+    if (arr.length > 0) out[name] = arr;
+  }
+  return out;
+}
+
+export function useStudioPackages(): [Record<string, StudioPackage[]>, (studioName: string, packages: StudioPackage[]) => void] {
+  const value = useStored<Record<string, StudioPackage[]>>(
+    K_STUDIO_PACKAGES,
+    DEFAULT_STUDIO_PACKAGES,
+    (raw) => (raw === undefined ? { ...DEFAULT_STUDIO_PACKAGES } : sanitizeStudioPackages(raw)),
+  );
+  const setOne = (studioName: string, packages: StudioPackage[]) => {
+    writeStored(K_STUDIO_PACKAGES, sanitizeStudioPackages({ ...value, [studioName]: packages }));
+  };
+  return [value, setOne];
+}
+
+// 스튜디오 패키지 조회 (저장 X 시 basePrice × multiplier로 fallback)
+export function resolveStudioPackages(
+  packagesMap: Record<string, StudioPackage[]>,
+  studioName: string,
+  basePrice?: number,
+): StudioPackage[] {
+  const stored = packagesMap[studioName];
+  if (stored && stored.length > 0) return stored;
+  if (basePrice !== undefined && basePrice > 0) {
+    return PACKAGE_LABELS.map((label, i) => ({
+      title: label,
+      price: Math.round(basePrice * PACKAGE_MULTIPLIERS[i]),
+      desc: "",
+    }));
+  }
+  return PACKAGE_LABELS.map(label => ({ title: label, price: 0, desc: "" }));
+}
+
+// 단일 패키지 조회 (idx 무효 시 첫 번째 또는 undefined)
+export function resolveStudioPackage(
+  packagesMap: Record<string, StudioPackage[]>,
+  studioName: string,
+  idx: number | undefined,
+  basePrice?: number,
+): StudioPackage | undefined {
+  const list = resolveStudioPackages(packagesMap, studioName, basePrice);
+  if (list.length === 0) return undefined;
+  if (idx === undefined || idx < 0 || idx >= list.length) return list[0];
+  return list[idx];
+}
 
 export function getDisplayPrice(basePrice: number, featuredIdx?: number): number {
   if (featuredIdx === undefined || featuredIdx < 0 || featuredIdx >= PACKAGE_MULTIPLIERS.length) {

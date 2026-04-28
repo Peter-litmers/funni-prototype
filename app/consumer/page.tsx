@@ -6,7 +6,7 @@ import {
   Camera, Home, LayoutGrid, User, Bell, Phone, MapPin, Star, Pencil, Check,
   CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal, ChevronDown,
 } from "lucide-react";
-import { useCategories, useHomeKeywords, matchesKeyword, useAds, useRefundMatrix, pickRefundRate, REFUND_PERIOD_LABELS, useCategoryIcons, useNoShowReports, useFeaturedPackages, getDisplayPrice, PACKAGE_LABELS, type HomeKeyword } from "../lib/admin-store";
+import { useCategories, useHomeKeywords, matchesKeyword, useAds, useRefundMatrix, pickRefundRate, REFUND_PERIOD_LABELS, useCategoryIcons, useNoShowReports, useFeaturedPackages, useStudioPackages, resolveStudioPackages, resolveStudioPackage, type HomeKeyword } from "../lib/admin-store";
 import { resolveCatIcon } from "../lib/category-icons";
 
 function BrandMark() {
@@ -684,6 +684,7 @@ export default function ConsumerApp() {
   const [homeKeywords] = useHomeKeywords();
   const [ads] = useAds();
   const [featuredPackages] = useFeaturedPackages();
+  const [studioPackages] = useStudioPackages();
   const [refundMatrix] = useRefundMatrix();
   const [categoryIcons] = useCategoryIcons();
   const [noShowReports] = useNoShowReports();
@@ -863,11 +864,7 @@ export default function ConsumerApp() {
 
   const timeIdx = TIMES.indexOf(selectedTime);
   const endTime = TIMES[Math.min(timeIdx + 1, TIMES.length - 1)] || "22:00";
-  const packageList = [
-    { title: "1컨셉", price: Math.round(selectedStudio.price * 0.9), desc: "보정본 4컷 · 30분 소요" },
-    { title: "2컨셉", price: Math.round(selectedStudio.price * 1.4), desc: "보정본 7컷 · 60분 소요" },
-    { title: "3컨셉", price: Math.round(selectedStudio.price * 1.9), desc: "보정본 12컷 · 90분 소요" },
-  ];
+  const packageList = resolveStudioPackages(studioPackages, selectedStudio.name, selectedStudio.price);
   const selectedPackage = packageList[selectedPackageIdx] ?? packageList[0];
   const addonList = [
     { id: 101, name: "원본 추가", price: 40000 },
@@ -1168,7 +1165,12 @@ export default function ConsumerApp() {
                           </div>
                         )}
                         <div className="mt-auto flex items-center justify-between pt-2 text-[11px]">
-                          <span className="font-bold text-gray-900">₩{getDisplayPrice(studio.price, featuredPackages[studio.name]).toLocaleString()}{featuredPackages[studio.name] !== undefined && <span className="ml-1 text-[9px] font-normal text-gray-400">· {PACKAGE_LABELS[featuredPackages[studio.name]]}</span>}</span>
+                          {(() => {
+                            const pkg = resolveStudioPackage(studioPackages, studio.name, featuredPackages[studio.name], studio.price);
+                            return (
+                              <span className="font-bold text-gray-900">₩{(pkg?.price ?? studio.price).toLocaleString()}{pkg && <span className="ml-1 text-[9px] font-normal text-gray-400">· {pkg.title}</span>}</span>
+                            );
+                          })()}
                           <span className="text-yellow-500">★ {studio.rating}</span>
                         </div>
                       </div>
@@ -1323,7 +1325,12 @@ export default function ConsumerApp() {
                         </div>
                       )}
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-sm font-bold">₩{getDisplayPrice(s.price, featuredPackages[s.name]).toLocaleString()}{featuredPackages[s.name] !== undefined && <span className="ml-1 text-[10px] font-normal text-gray-400">· {PACKAGE_LABELS[featuredPackages[s.name]]}</span>}</span>
+                        {(() => {
+                          const pkg = resolveStudioPackage(studioPackages, s.name, featuredPackages[s.name], s.price);
+                          return (
+                            <span className="text-sm font-bold">₩{(pkg?.price ?? s.price).toLocaleString()}{pkg && <span className="ml-1 text-[10px] font-normal text-gray-400">· {pkg.title}</span>}</span>
+                          );
+                        })()}
                         <span className="text-xs text-yellow-500">★ {s.rating}</span>
                       </div>
                     </div>
@@ -1909,7 +1916,7 @@ export default function ConsumerApp() {
                         <p className="truncate text-[11px] font-semibold text-gray-900">{studio.name}</p>
                         <p className="truncate text-[9px] text-gray-400">{studio.area}</p>
                         <div className="mt-auto flex items-center justify-between pt-1">
-                          <span className="text-[10px] font-bold text-gray-900">₩{getDisplayPrice(studio.price, featuredPackages[studio.name]).toLocaleString()}</span>
+                          <span className="text-[10px] font-bold text-gray-900">₩{(resolveStudioPackage(studioPackages, studio.name, featuredPackages[studio.name], studio.price)?.price ?? studio.price).toLocaleString()}</span>
                           <span className="text-[9px] text-yellow-500">★ {studio.rating}</span>
                         </div>
                       </div>

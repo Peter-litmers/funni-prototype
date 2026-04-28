@@ -23,6 +23,8 @@ import {
   useNoShowReports,
   useSettlementRequests,
   useFeaturedPackages,
+  useStudioPackages,
+  resolveStudioPackages,
   PACKAGE_LABELS,
   countNoShowsFor,
   REFUND_PERIOD_LABELS,
@@ -82,6 +84,7 @@ export default function AdminWeb() {
   const [dismissed, dismissNote] = useDismissed();
   const [ads, setAds] = useAds();
   const [featuredPackages, setFeaturedPackage] = useFeaturedPackages();
+  const [studioPackages] = useStudioPackages();
   const [banners, setBanners] = useBanners();
   const [blockedMembers, blockMember, unblockMember] = useBlockedMembers();
   const [hiddenReviews, hideReview, unhideReview] = useHiddenReviews();
@@ -935,19 +938,25 @@ export default function AdminWeb() {
                                 </td>
                                 <td className="px-3 py-2.5 font-medium align-middle">
                                   <div className="truncate">{a.studio}</div>
-                                  <div className="mt-1 flex items-center gap-1">
-                                    <span className="text-[9px] text-gray-400">노출 패키지</span>
-                                    {PACKAGE_LABELS.map((label, idx) => {
-                                      const isFeatured = featuredPackages[a.studio] === idx;
-                                      return (
-                                        <button
-                                          key={idx}
-                                          onClick={() => setFeaturedPackage(a.studio, idx)}
-                                          title={`'${a.studio}'의 광고 노출용을 ${label}로 변경`}
-                                          className={`text-[9px] px-1.5 py-0.5 rounded transition-colors ${isFeatured ? "bg-primary text-white font-semibold" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
-                                        >{label}</button>
-                                      );
-                                    })}
+                                  <div className="mt-1 flex flex-wrap items-center gap-1">
+                                    <span className="text-[9px] text-gray-400 shrink-0">노출 패키지</span>
+                                    {(() => {
+                                      const packages = resolveStudioPackages(studioPackages, a.studio);
+                                      return packages.map((pkg, idx) => {
+                                        const isFeatured = featuredPackages[a.studio] === idx;
+                                        return (
+                                          <button
+                                            key={idx}
+                                            onClick={() => setFeaturedPackage(a.studio, idx)}
+                                            title={`'${a.studio}'의 광고 노출용을 ${pkg.title}(₩${pkg.price.toLocaleString()})로 변경`}
+                                            className={`text-[9px] px-1.5 py-0.5 rounded transition-colors ${isFeatured ? "bg-primary text-white font-semibold" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
+                                          >
+                                            {pkg.title}
+                                            {pkg.price > 0 && <span className="ml-1 opacity-80">₩{pkg.price.toLocaleString()}</span>}
+                                          </button>
+                                        );
+                                      });
+                                    })()}
                                   </div>
                                 </td>
                                 <td className="px-3 py-2.5 text-gray-500 text-xs align-middle">{period}</td>
@@ -1010,19 +1019,25 @@ export default function AdminWeb() {
                                 </td>
                                 <td className="px-3 py-2.5 font-medium align-middle">
                                   <div className="truncate">{a.studio}</div>
-                                  <div className="mt-1 flex items-center gap-1">
-                                    <span className="text-[9px] text-gray-400">노출 패키지</span>
-                                    {PACKAGE_LABELS.map((label, idx) => {
-                                      const isFeatured = featuredPackages[a.studio] === idx;
-                                      return (
-                                        <button
-                                          key={idx}
-                                          onClick={() => setFeaturedPackage(a.studio, idx)}
-                                          title={`'${a.studio}'의 광고 노출용을 ${label}로 변경`}
-                                          className={`text-[9px] px-1.5 py-0.5 rounded transition-colors ${isFeatured ? "bg-primary text-white font-semibold" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
-                                        >{label}</button>
-                                      );
-                                    })}
+                                  <div className="mt-1 flex flex-wrap items-center gap-1">
+                                    <span className="text-[9px] text-gray-400 shrink-0">노출 패키지</span>
+                                    {(() => {
+                                      const packages = resolveStudioPackages(studioPackages, a.studio);
+                                      return packages.map((pkg, idx) => {
+                                        const isFeatured = featuredPackages[a.studio] === idx;
+                                        return (
+                                          <button
+                                            key={idx}
+                                            onClick={() => setFeaturedPackage(a.studio, idx)}
+                                            title={`'${a.studio}'의 광고 노출용을 ${pkg.title}(₩${pkg.price.toLocaleString()})로 변경`}
+                                            className={`text-[9px] px-1.5 py-0.5 rounded transition-colors ${isFeatured ? "bg-primary text-white font-semibold" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
+                                          >
+                                            {pkg.title}
+                                            {pkg.price > 0 && <span className="ml-1 opacity-80">₩{pkg.price.toLocaleString()}</span>}
+                                          </button>
+                                        );
+                                      });
+                                    })()}
                                   </div>
                                 </td>
                                 <td className="px-3 py-2.5 text-gray-500 text-xs align-middle">{period}</td>
@@ -2212,22 +2227,44 @@ export default function AdminWeb() {
               </div>
               <div>
                 <label className="text-xs text-gray-500 block mb-1">노출 패키지 (카드에 표시될 가격)</label>
-                <div className="flex gap-2">
-                  {PACKAGE_LABELS.map((label, idx) => {
-                    const studioName = adModal.studio.trim();
-                    const isFeatured = !!studioName && featuredPackages[studioName] === idx;
-                    const disabled = !studioName;
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => { if (!disabled) setFeaturedPackage(studioName, idx); }}
-                        disabled={disabled}
-                        className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${isFeatured ? "bg-primary text-white" : "bg-gray-100 text-gray-500"} ${disabled ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-200"}`}
-                      >{label}</button>
-                    );
-                  })}
-                </div>
-                <p className="text-[10px] text-gray-400 mt-1">※ 광고 카드·소비자 리스트에 노출될 가격 패키지를 선택합니다. 미선택 시 기본 가격 표시.{!adModal.studio.trim() && " 스튜디오명 입력 후 선택 가능."}</p>
+                {(() => {
+                  const studioName = adModal.studio.trim();
+                  const disabled = !studioName;
+                  const packages = studioName ? resolveStudioPackages(studioPackages, studioName) : [];
+                  const hasRegistered = !!studioPackages[studioName];
+                  return (
+                    <>
+                      <div className="space-y-1.5">
+                        {packages.length > 0 ? packages.map((pkg, idx) => {
+                          const isFeatured = !!studioName && featuredPackages[studioName] === idx;
+                          return (
+                            <button
+                              key={idx}
+                              onClick={() => { if (!disabled) setFeaturedPackage(studioName, idx); }}
+                              disabled={disabled}
+                              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors text-left ${isFeatured ? "bg-primary text-white border-2 border-primary" : "bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100"} ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
+                            >
+                              <span className="flex items-center gap-2">
+                                <span className={`w-3 h-3 rounded-full border-2 ${isFeatured ? "bg-white border-white" : "bg-white border-gray-300"} flex items-center justify-center`}>
+                                  {isFeatured && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                                </span>
+                                <span className="font-semibold">{pkg.title}</span>
+                                {pkg.desc && <span className={`text-[10px] ${isFeatured ? "text-white/80" : "text-gray-400"}`}>{pkg.desc}</span>}
+                              </span>
+                              <span className="font-bold">{pkg.price > 0 ? `₩${pkg.price.toLocaleString()}` : "가격 미설정"}</span>
+                            </button>
+                          );
+                        }) : (
+                          <p className="text-[11px] text-gray-400 bg-gray-50 px-3 py-3 rounded-lg text-center">스튜디오명 입력 후 선택 가능.</p>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-gray-400 mt-1.5">
+                        ※ 광고 카드·소비자 리스트에 노출될 패키지를 선택합니다. 미선택 시 첫 번째 패키지로 표시.
+                        {studioName && !hasRegistered && <span className="block mt-0.5 text-amber-600">⚠ 이 스튜디오는 등록된 패키지가 없어 임시 fallback (1·2·3컨셉) 가격이 표시됩니다.</span>}
+                      </p>
+                    </>
+                  );
+                })()}
               </div>
               <p className="text-[10px] text-gray-400">※ 저장 시 소비자 홈 &lsquo;요즘 추천하는 스튜디오&rsquo; 섹션에 &lsquo;진행중&rsquo; 광고가 카테고리당 상위 2개씩 즉시 반영됩니다.</p>
             </div>
