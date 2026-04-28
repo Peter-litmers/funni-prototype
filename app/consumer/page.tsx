@@ -695,7 +695,7 @@ export default function ConsumerApp() {
   const [categoryIcons] = useCategoryIcons();
   const [noShowReports] = useNoShowReports();
   const getCatIcon = (name: string) => resolveCatIcon(name, categoryIcons);
-  const CATEGORIES = [...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) })), { name: "전체", Icon: LayoutGrid }];
+  const CATEGORIES = [{ name: "전체", Icon: LayoutGrid }, ...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }))];
   const HOME_CATEGORY_GRID = adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }));
   const [screen, setScreen] = useState<Screen>("home");
   const [selectedStudio, setSelectedStudio] = useState(STUDIOS[0]);
@@ -721,7 +721,7 @@ export default function ConsumerApp() {
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
   const [selectedPackageIdx, setSelectedPackageIdx] = useState(0);
   const [selectedAddons, setSelectedAddons] = useState<number[]>([]);
-  const [categoryCat, setCategoryCat] = useState("프로필");
+  const [categoryCat, setCategoryCat] = useState("전체");
   const [selectedRegion, setSelectedRegion] = useState("전체");
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
   const [customPriceMin, setCustomPriceMin] = useState<string>("");
@@ -2282,8 +2282,8 @@ export default function ConsumerApp() {
         {showHeader && (
           <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">
             {[
-              { key: "home" as Tab, Icon: Home, label: "홈", s: "home" as Screen },
-              { key: "category" as Tab, Icon: Camera, label: "스튜디오", s: "category" as Screen },
+              { key: "home" as Tab, Icon: Home, label: "Home", s: "home" as Screen },
+              { key: "category" as Tab, Icon: Camera, label: "Studio", s: "category" as Screen },
               { key: "mypage" as Tab, Icon: User, label: "MY", s: "mypage" as Screen },
             ].map(t => (
               <button key={t.key} onClick={() => { setTab(t.key); setScreen(t.s); }}

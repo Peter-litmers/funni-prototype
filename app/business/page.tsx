@@ -138,7 +138,7 @@ export default function BusinessApp() {
   const [studioPackages] = useStudioPackages();
   const [studioDeposits, setStudioDeposit] = useStudioDeposits();
   const getCatIcon = (name: string) => resolveCatIcon(name, categoryIcons);
-  const CATEGORIES = [...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) })), { name: "전체", Icon: LayoutGrid }];
+  const CATEGORIES = [{ name: "전체", Icon: LayoutGrid }, ...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }))];
   const HOME_CATEGORY_GRID = adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }));
   const [homeKeywords] = useHomeKeywords();
   const myFee = getFeeForBusiness("루미에르 스튜디오", feeRate, bizFees);
@@ -211,7 +211,11 @@ export default function BusinessApp() {
   const [hasNotif, setHasNotif] = useState(true);
   const [settlementMonth, setSettlementMonth] = useState("4월");
   const [selectedStudio, setSelectedStudio] = useState(STUDIOS[0]);
-  const [categoryCat, setCategoryCat] = useState("프로필");
+  const [categoryCat, setCategoryCat] = useState("전체");
+  // 실적 대시보드 조회 기간 (프리셋 + 직접 설정)
+  const [dashboardPeriod, setDashboardPeriod] = useState<"1m" | "3m" | "6m" | "1y" | "custom">("3m");
+  const [dashStart, setDashStart] = useState<string>(() => { const d = new Date(); d.setMonth(d.getMonth() - 3); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; });
+  const [dashEnd, setDashEnd] = useState<string>(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; });
   const historyStack = useRef<{ s: Screen; t: Tab }[]>([]);
   const touchStartX = useRef(0);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -906,19 +910,47 @@ export default function BusinessApp() {
             <div className="p-4">
               <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>실적 대시보드</h2>
 
-              {/* 조회 기간 셀렉터 */}
-              <div className="flex gap-1.5 mb-4">
-                {[
-                  { k: "1m", label: "1개월" },
-                  { k: "3m", label: "3개월" },
-                  { k: "6m", label: "6개월" },
-                  { k: "1y", label: "1년" },
-                ].map((p, i) => (
-                  <button key={p.k}
-                    className={`flex-1 py-2 rounded-xl text-xs font-medium border transition-all ${
-                      i === 1 ? "bg-primary text-white border-primary" : "bg-white text-gray-500 border-gray-200"
-                    }`}>{p.label}</button>
-                ))}
+              {/* 조회 기간 — 프리셋 + 직접 날짜 지정 */}
+              <div className="bg-white border border-gray-200 rounded-xl p-3 mb-4">
+                <div className="flex gap-1.5 mb-3">
+                  {[
+                    { k: "1m" as const, label: "1개월" },
+                    { k: "3m" as const, label: "3개월" },
+                    { k: "6m" as const, label: "6개월" },
+                    { k: "1y" as const, label: "1년" },
+                    { k: "custom" as const, label: "직접 설정" },
+                  ].map(p => (
+                    <button key={p.k}
+                      onClick={() => {
+                        const today = new Date();
+                        const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                        setDashboardPeriod(p.k);
+                        if (p.k === "1m") { const s = new Date(today); s.setMonth(s.getMonth() - 1); setDashStart(fmt(s)); setDashEnd(fmt(today)); }
+                        else if (p.k === "3m") { const s = new Date(today); s.setMonth(s.getMonth() - 3); setDashStart(fmt(s)); setDashEnd(fmt(today)); }
+                        else if (p.k === "6m") { const s = new Date(today); s.setMonth(s.getMonth() - 6); setDashStart(fmt(s)); setDashEnd(fmt(today)); }
+                        else if (p.k === "1y") { const s = new Date(today); s.setFullYear(s.getFullYear() - 1); setDashStart(fmt(s)); setDashEnd(fmt(today)); }
+                      }}
+                      className={`flex-1 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
+                        dashboardPeriod === p.k ? "bg-primary text-white border-primary" : "bg-white text-gray-500 border-gray-200"
+                      }`}>{p.label}</button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="date"
+                    value={dashStart}
+                    onChange={e => { setDashStart(e.target.value); setDashboardPeriod("custom"); }}
+                    className="flex-1 bg-gray-50 rounded-lg px-2 py-1.5 text-[11px] border border-gray-100 outline-none focus:border-primary"
+                  />
+                  <span className="text-[10px] text-gray-400">~</span>
+                  <input
+                    type="date"
+                    value={dashEnd}
+                    onChange={e => { setDashEnd(e.target.value); setDashboardPeriod("custom"); }}
+                    className="flex-1 bg-gray-50 rounded-lg px-2 py-1.5 text-[11px] border border-gray-100 outline-none focus:border-primary"
+                  />
+                </div>
+                <p className="text-[10px] text-gray-400 mt-1.5">조회 기간: <span className="text-gray-700 font-medium">{dashStart || "—"} ~ {dashEnd || "—"}</span></p>
               </div>
 
               {/* 적용 수수료율 안내 */}
@@ -2029,8 +2061,8 @@ export default function BusinessApp() {
 {/* Bottom Tab - 소비자 앱과 동일 3탭: 홈/카테고리/마이페이지 (마이페이지만 업체 전용) */}
         {screen !== "login" && <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">
           {[
-            { key: "home" as Tab, Icon: Home, label: "홈", s: "home" as Screen },
-            { key: "category" as Tab, Icon: Camera, label: "스튜디오", s: "category" as Screen },
+            { key: "home" as Tab, Icon: Home, label: "Home", s: "home" as Screen },
+            { key: "category" as Tab, Icon: Camera, label: "Studio", s: "category" as Screen },
             { key: "my" as Tab, Icon: User, label: "MY", s: "mypage" as Screen },
           ].map(t => (
             <button key={t.key} onClick={() => { setTab(t.key); setScreen(t.s); }}

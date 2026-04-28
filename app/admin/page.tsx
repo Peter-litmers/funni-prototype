@@ -1630,7 +1630,7 @@ export default function AdminWeb() {
                     <th className="text-left p-4 font-medium text-gray-500">소비자</th>
                     <th className="text-left p-4 font-medium text-gray-500">업체 (아이디-스튜디오)</th>
                     <th className="text-left p-4 font-medium text-gray-500">결제 종류</th>
-                    <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">결제일</th>
+                    <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">결제 시간</th>
                     <th className="text-left p-4 font-medium text-gray-500">금액</th>
                     <th className="text-left p-4 font-medium text-gray-500">상태</th>
                     <th className="text-left p-4 font-medium text-gray-500">액션</th>
@@ -1638,14 +1638,14 @@ export default function AdminWeb() {
                 </thead>
                 <tbody>
                   {[
-                    { id: "P-0142D", consumer: "김포토", account: "lumiere_biz", studio: "루미에르 스튜디오", kind: "예약금", date: "05.08", amount: "₩20,000", status: "결제완료", linkedId: "P-0142" },
-                    { id: "P-0142B", consumer: "김포토", account: "lumiere_biz", studio: "루미에르 스튜디오", kind: "잔금", date: "05.09", amount: "₩80,000", status: "결제완료", linkedId: "P-0142" },
-                    { id: "P-0141D", consumer: "이촬영", account: "sunset_lab", studio: "선셋 포토랩", kind: "예약금", date: "05.05", amount: "₩30,000", status: "결제완료", linkedId: "P-0141" },
-                    { id: "P-0141B", consumer: "이촬영", account: "sunset_lab", studio: "선셋 포토랩", kind: "잔금", date: "05.17", amount: "₩130,000", status: "결제대기", linkedId: "P-0141" },
-                    { id: "P-0140D", consumer: "박스튜", account: "bloom_wedding", studio: "블룸 웨딩 스튜디오", kind: "예약금", date: "04.03", amount: "₩240,000", status: "결제완료", linkedId: "P-0140" },
-                    { id: "P-0140B", consumer: "박스튜", account: "bloom_wedding", studio: "블룸 웨딩 스튜디오", kind: "잔금", date: "05.24", amount: "₩560,000", status: "결제대기", linkedId: "P-0140" },
-                    { id: "P-0135", consumer: "최민지", account: "brandcut", studio: "브랜드컷 스튜디오", kind: "전액", date: "04.18", amount: "₩80,000", status: "결제완료", linkedId: "P-0135" },
-                    { id: "P-0130", consumer: "한소희", account: "petmoments", studio: "펫모먼츠 스튜디오", kind: "전액", date: "04.13", amount: "₩120,000", status: "환불완료", linkedId: "P-0130" },
+                    { id: "P-0142D", consumer: "김포토", account: "lumiere_biz", studio: "루미에르 스튜디오", kind: "예약금", date: "2026.05.08 14:32", amount: "₩20,000", status: "결제완료", linkedId: "P-0142" },
+                    { id: "P-0142B", consumer: "김포토", account: "lumiere_biz", studio: "루미에르 스튜디오", kind: "잔금", date: "2026.05.09 09:18", amount: "₩80,000", status: "결제완료", linkedId: "P-0142" },
+                    { id: "P-0141D", consumer: "이촬영", account: "sunset_lab", studio: "선셋 포토랩", kind: "예약금", date: "2026.05.05 21:07", amount: "₩30,000", status: "결제완료", linkedId: "P-0141" },
+                    { id: "P-0141B", consumer: "이촬영", account: "sunset_lab", studio: "선셋 포토랩", kind: "잔금", date: "2026.05.17 23:45", amount: "₩130,000", status: "결제대기", linkedId: "P-0141" },
+                    { id: "P-0140D", consumer: "박스튜", account: "bloom_wedding", studio: "블룸 웨딩 스튜디오", kind: "예약금", date: "2026.04.03 11:55", amount: "₩240,000", status: "결제완료", linkedId: "P-0140" },
+                    { id: "P-0140B", consumer: "박스튜", account: "bloom_wedding", studio: "블룸 웨딩 스튜디오", kind: "잔금", date: "2026.05.24 22:12", amount: "₩560,000", status: "결제대기", linkedId: "P-0140" },
+                    { id: "P-0135", consumer: "최민지", account: "brandcut", studio: "브랜드컷 스튜디오", kind: "전액", date: "2026.04.18 16:20", amount: "₩80,000", status: "결제완료", linkedId: "P-0135" },
+                    { id: "P-0130", consumer: "한소희", account: "petmoments", studio: "펫모먼츠 스튜디오", kind: "전액", date: "2026.04.13 10:45", amount: "₩120,000", status: "환불완료", linkedId: "P-0130" },
                   ].slice().sort((a, b) => b.date.localeCompare(a.date)).map((p, i) => (
                     <tr key={i} className="border-t border-gray-50">
                       <td className="p-4 font-mono text-xs text-gray-400">{p.id}</td>
