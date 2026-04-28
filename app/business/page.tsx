@@ -1853,25 +1853,6 @@ export default function BusinessApp() {
                   </button>
                 )}
 
-                {/* 과거 정산 기록 */}
-                <h3 className="text-xs font-medium text-gray-500 mb-2 mt-4">과거 정산 기록</h3>
-                {SETTLEMENTS.map(s => (
-                  <div key={s.id} className="bg-white rounded-xl p-4 border border-gray-100 mb-2">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <p className="text-sm font-medium">{s.period}</p>
-                        <p className="text-[10px] text-gray-400">{s.date} · {s.count}건</p>
-                      </div>
-                      <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">{s.status}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-xs text-gray-400">
-                        총 ₩{s.total.toLocaleString()} → 수수료 {s.fee}
-                      </div>
-                      <p className="text-sm font-bold text-amber-600">정산액 {s.net}</p>
-                    </div>
-                  </div>
-                ))}
               </div>
             );
           })()}
