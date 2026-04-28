@@ -6,7 +6,7 @@ import {
   Camera, Home, LayoutGrid, User, Bell, Phone, MapPin, Star, Pencil, Check,
   CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal, ChevronDown, ChevronLeft,
 } from "lucide-react";
-import { useCategories, useHomeKeywords, matchesKeyword, useAds, useRefundMatrix, pickRefundRate, REFUND_PERIOD_LABELS, useCategoryIcons, useNoShowReports, useFeaturedPackages, useStudioPackages, resolveStudioPackages, resolveStudioPackage, PACKAGE_LABELS, type HomeKeyword } from "../lib/admin-store";
+import { useCategories, useHomeKeywords, matchesKeyword, useAds, useRefundMatrix, pickRefundRate, REFUND_PERIOD_LABELS, useCategoryIcons, useNoShowReports, useFeaturedPackages, useStudioPackages, resolveStudioPackages, resolveStudioPackage, useStudioDeposits, calculateDeposit, describeDeposit, PACKAGE_LABELS, type HomeKeyword } from "../lib/admin-store";
 import { resolveCatIcon } from "../lib/category-icons";
 
 function BrandMark() {
@@ -635,16 +635,21 @@ type UpcomingBooking = {
   price: string;
   status: string;
   cancelReason?: string;
+  totalPrice?: number;        // 총 결제 금액 (시안: 분리 결제 흐름에서 사용)
+  depositPaid?: number;       // 이미 결제된 예약금
+  balanceDueDate?: string;    // 잔금 결제 마감 (YYYY-MM-DD HH:mm)
+  balancePaid?: boolean;      // 잔금 결제 완료 여부
 };
 const UPCOMING_BOOKINGS: UpcomingBooking[] = [
-  { studio: "루미에르 스튜디오", date: "2026.05.10 (토)", time: "14:00~16:00", cat: "프로필", price: "₩100,000", status: "확정" },
-  { studio: "선셋 포토랩", date: "2026.05.18 (일)", time: "10:00~12:00", cat: "바디프로필", price: "₩160,000", status: "확정" },
-  { studio: "블룸 웨딩 스튜디오", date: "2026.05.25 (일)", time: "10:00~14:00", cat: "웨딩", price: "₩800,000", status: "대기" },
+  { studio: "루미에르 스튜디오", date: "2026.05.10 (토)", time: "14:00~16:00", cat: "프로필", price: "₩100,000", status: "확정", totalPrice: 100000, depositPaid: 20000, balanceDueDate: "2026.05.09 23:59", balancePaid: false },
+  { studio: "선셋 포토랩", date: "2026.05.18 (일)", time: "10:00~12:00", cat: "바디프로필", price: "₩160,000", status: "확정", totalPrice: 160000, depositPaid: 30000, balanceDueDate: "2026.05.17 23:59", balancePaid: false },
+  { studio: "블룸 웨딩 스튜디오", date: "2026.05.25 (일)", time: "10:00~14:00", cat: "웨딩", price: "₩800,000", status: "대기", totalPrice: 800000, depositPaid: 240000, balanceDueDate: "2026.05.24 23:59", balancePaid: false },
 ];
-const COMPLETED_BOOKINGS = [
-  { studio: "브랜드컷 스튜디오", date: "2026.04.20 (일)", time: "13:00~15:00", cat: "비즈니스", price: "₩80,000", status: "완료", canReview: true },
-  { studio: "블룸 웨딩 스튜디오", date: "2026.04.05 (토)", time: "10:00~14:00", cat: "웨딩", price: "₩800,000", status: "완료", canReview: false },
-  { studio: "패밀리 모먼츠", date: "2026.03.22 (토)", time: "10:00~12:00", cat: "가족", price: "₩240,000", status: "완료", canReview: false },
+type CompletedBooking = { studio: string; date: string; time: string; cat: string; price: string; status: string; photoDelivered: boolean };
+const COMPLETED_BOOKINGS: CompletedBooking[] = [
+  { studio: "브랜드컷 스튜디오", date: "2026.04.20 (일)", time: "13:00~15:00", cat: "비즈니스", price: "₩80,000", status: "완료", photoDelivered: true },
+  { studio: "블룸 웨딩 스튜디오", date: "2026.04.05 (토)", time: "10:00~14:00", cat: "웨딩", price: "₩800,000", status: "완료", photoDelivered: false },
+  { studio: "패밀리 모먼츠", date: "2026.03.22 (토)", time: "10:00~12:00", cat: "가족", price: "₩240,000", status: "완료", photoDelivered: false },
 ];
 const CANCELLED_BOOKINGS = [
   { studio: "펫모먼츠 스튜디오", date: "2026.04.15 (화)", time: "15:00~17:00", cat: "반려동물", price: "₩120,000", status: "취소됨", reason: "소비자 취소 · 촬영 1일 전 취소로 50% 환불" },
@@ -672,7 +677,7 @@ const ALL_MY_BOOKINGS_FOR_MYPAGE = [
   { studio: "블룸 웨딩 스튜디오", date: "2026.03.22 (토) 10:00~14:00", cat: "웨딩", status: "완료" },
 ];
 
-type Screen = "home" | "category" | "myBookings" | "detail" | "booking" | "done" | "mypage" | "reviewWrite" | "myReviews" | "paymentHistory" | "login" | "signup" | "bizSignup" | "forgotPassword" | "notifications";
+type Screen = "home" | "category" | "myBookings" | "detail" | "booking" | "done" | "mypage" | "reviewWrite" | "myReviews" | "paymentHistory" | "login" | "signup" | "bizSignup" | "forgotPassword" | "notifications" | "balancePayment";
 type Sort = "payments" | "rating" | "distance";
 type BookingFilter = "예정" | "완료" | "취소";
 type Tab = "home" | "category" | "mypage";
@@ -685,6 +690,7 @@ export default function ConsumerApp() {
   const [ads] = useAds();
   const [featuredPackages] = useFeaturedPackages();
   const [studioPackages] = useStudioPackages();
+  const [studioDeposits] = useStudioDeposits();
   const [refundMatrix] = useRefundMatrix();
   const [categoryIcons] = useCategoryIcons();
   const [noShowReports] = useNoShowReports();
@@ -705,6 +711,7 @@ export default function ConsumerApp() {
   const [reviewTarget, setReviewTarget] = useState("");
   const [myBookingPage, setMyBookingPage] = useState(0);
   const [upcomingBookings, setUpcomingBookings] = useState<UpcomingBooking[]>(UPCOMING_BOOKINGS);
+  const [balancePaymentIdx, setBalancePaymentIdx] = useState<number | null>(null);
   const [cancelModal, setCancelModal] = useState<{ idx: number; studio: string } | null>(null);
   const [cancelReasonInput, setCancelReasonInput] = useState("");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -885,7 +892,14 @@ export default function ConsumerApp() {
   const BOOKINGS_PER_PAGE = 3;
   const totalBookingPages = Math.ceil(ALL_MY_BOOKINGS_FOR_MYPAGE.length / BOOKINGS_PER_PAGE);
   const pagedBookings = ALL_MY_BOOKINGS_FOR_MYPAGE.slice(myBookingPage * BOOKINGS_PER_PAGE, (myBookingPage + 1) * BOOKINGS_PER_PAGE);
-  const filteredBookings = bookingFilter === "예정" ? upcomingBookings : bookingFilter === "완료" ? COMPLETED_BOOKINGS : CANCELLED_BOOKINGS;
+  // 예정: 잔금 미결제(또는 분리 결제 미적용)
+  // 완료: 기본 완료 목록 + 잔금까지 결제된 예약 (사진 수령 전 상태로 추가)
+  const upcomingActive = upcomingBookings.filter(b => !b.balancePaid);
+  const upcomingPaidAsCompleted: CompletedBooking[] = upcomingBookings
+    .filter(b => b.balancePaid)
+    .map(b => ({ studio: b.studio, date: b.date, time: b.time, cat: b.cat, price: b.price, status: "완료", photoDelivered: false }));
+  const completedAll: CompletedBooking[] = [...upcomingPaidAsCompleted, ...COMPLETED_BOOKINGS];
+  const filteredBookings = bookingFilter === "예정" ? upcomingActive : bookingFilter === "완료" ? completedAll : CANCELLED_BOOKINGS;
 
   const statusColor = (s: string) => {
     if (s === "확정" || s === "대기") return "bg-green-100 text-green-700";
@@ -1592,38 +1606,155 @@ export default function ConsumerApp() {
                   const opt = HAIR_MAKEUP_OPTIONS.find(o => o.id === id);
                   return opt ? <div key={id} className="flex justify-between text-sm"><span className="text-gray-500">{opt.name}</span><span className="font-medium">+₩{opt.price.toLocaleString()}</span></div> : null;
                 })}
-                <div className="flex justify-between text-sm border-t border-gray-100 pt-3"><span className="text-gray-500 font-bold">총 금액</span><span className="font-bold text-primary text-base">₩{totalPrice.toLocaleString()}</span></div>
-                <p className="text-[11px] text-gray-400 pt-1">예약금 결제 후 업체 승인 시 확정되며, 영업일 기준 48시간 내 미승인 시 자동 취소 및 전액 환불됩니다.</p>
+                <div className="flex justify-between text-sm border-t border-gray-100 pt-3"><span className="text-gray-500 font-bold">총 금액</span><span className="font-bold text-gray-900 text-base">₩{totalPrice.toLocaleString()}</span></div>
+
+                {(() => {
+                  const dep = studioDeposits[selectedStudio.name];
+                  const depositAmount = calculateDeposit(totalPrice, dep);
+                  const balanceAmount = totalPrice - depositAmount;
+                  if (depositAmount === 0) {
+                    return (
+                      <p className="text-[11px] text-gray-400 pt-1">예약 시 전액 결제 후 업체 승인 시 확정되며, 영업일 기준 48시간 내 미승인 시 자동 취소 및 전액 환불됩니다.</p>
+                    );
+                  }
+                  return (
+                    <div className="bg-primary/5 border border-primary/15 rounded-xl p-3 mt-1">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-bold text-primary">오늘 결제 (예약금)</span>
+                        <span className="text-base font-bold text-primary">₩{depositAmount.toLocaleString()}</span>
+                      </div>
+                      <p className="text-[10px] text-gray-500 mb-2">{describeDeposit(dep)} · 옵션 포함 총액 기준</p>
+                      <div className="flex items-center justify-between border-t border-primary/15 pt-1.5">
+                        <span className="text-[11px] text-gray-600">잔금 (촬영 전 결제)</span>
+                        <span className="text-sm font-semibold text-gray-700">₩{balanceAmount.toLocaleString()}</span>
+                      </div>
+                      <p className="text-[10px] text-gray-400 mt-2">잔금은 촬영일 D-1 23:59까지 MY → 예약 카드에서 결제. 미결제 시 예약 자동 취소 및 환불 정책 적용.</p>
+                    </div>
+                  );
+                })()}
               </div>
 
-              <button onClick={() => navigate("done")} className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm">결제하기 · 토스페이먼츠</button>
+              {(() => {
+                const dep = studioDeposits[selectedStudio.name];
+                const depositAmount = calculateDeposit(totalPrice, dep);
+                const buttonLabel = depositAmount > 0
+                  ? `예약금 ₩${depositAmount.toLocaleString()} 결제 · 토스페이먼츠`
+                  : `결제하기 · 토스페이먼츠`;
+                return (
+                  <button onClick={() => navigate("done")} className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm">{buttonLabel}</button>
+                );
+              })()}
             </div>
           )}
 
           {/* ===== DONE (IA-022) ===== */}
-          {screen === "done" && (
-            <div className="p-6 flex flex-col items-center justify-center" style={{ minHeight: 500 }}>
-              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary"><CheckCircle2 size={48} strokeWidth={1.5} /></div>
-              <h2 className="text-lg font-bold mb-1">예약 요청 완료!</h2>
-              <p className="text-sm text-gray-500">{selectedStudio.name}</p>
-              <p className="text-xs text-gray-400 mb-6">2026.05.{selectedDate} {selectedTime} ~ {endTime}</p>
-              <div className="bg-primary/5 rounded-xl p-4 w-full mb-4 border border-primary/10">
-                <p className="text-xs text-primary font-medium">토스페이먼츠 예약금 결제 완료</p>
-                <p className="text-sm font-bold text-gray-900 mt-1">₩{totalPrice.toLocaleString()}</p>
-                <p className="text-[11px] text-gray-500 mt-2">업체 승인 후 예약이 확정되며, 영업일 기준 48시간 내 미승인 시 자동 취소 및 전액 환불됩니다.</p>
+          {screen === "done" && (() => {
+            const dep = studioDeposits[selectedStudio.name];
+            const depositAmount = calculateDeposit(totalPrice, dep);
+            const balanceAmount = totalPrice - depositAmount;
+            const splitMode = depositAmount > 0;
+            return (
+              <div className="p-6 flex flex-col items-center justify-center" style={{ minHeight: 500 }}>
+                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary"><CheckCircle2 size={48} strokeWidth={1.5} /></div>
+                <h2 className="text-lg font-bold mb-1">{splitMode ? "예약금 결제 완료!" : "예약 요청 완료!"}</h2>
+                <p className="text-sm text-gray-500">{selectedStudio.name}</p>
+                <p className="text-xs text-gray-400 mb-6">2026.05.{selectedDate} {selectedTime} ~ {endTime}</p>
+                <div className="bg-primary/5 rounded-xl p-4 w-full mb-4 border border-primary/10">
+                  <p className="text-xs text-primary font-medium">토스페이먼츠 {splitMode ? "예약금" : "결제"} 완료</p>
+                  <p className="text-sm font-bold text-gray-900 mt-1">₩{(splitMode ? depositAmount : totalPrice).toLocaleString()}</p>
+                  {splitMode && (
+                    <div className="mt-3 pt-3 border-t border-primary/15 space-y-1">
+                      <div className="flex justify-between text-[11px] text-gray-500">
+                        <span>총 금액</span><span>₩{totalPrice.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-[11px] text-gray-500">
+                        <span>오늘 결제 (예약금)</span><span className="text-primary font-semibold">- ₩{depositAmount.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-xs font-semibold text-gray-700 pt-1 border-t border-gray-100">
+                        <span>남은 잔금</span><span>₩{balanceAmount.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  )}
+                  <p className="text-[11px] text-gray-500 mt-3">업체가 승인하면 예약이 확정됩니다. 만약 업체가 승인하지 않을 시 예약금은 환불됩니다.{splitMode && " 잔금은 촬영일 전까지 MY → 예약 카드에서 결제하세요."}</p>
+                </div>
+                <button onClick={() => { setScreen("myBookings"); setTab("mypage"); }} className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium text-sm mb-2">예약 요청 내역 확인</button>
+                <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm">홈으로</button>
               </div>
-              <button onClick={() => { setScreen("myBookings"); setTab("mypage"); }} className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium text-sm mb-2">예약 요청 내역 확인</button>
-              <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm">홈으로</button>
-            </div>
-          )}
+            );
+          })()}
+
+          {/* ===== BALANCE PAYMENT (시안) ===== */}
+          {screen === "balancePayment" && balancePaymentIdx !== null && (() => {
+            const b = upcomingBookings[balancePaymentIdx];
+            if (!b || !b.totalPrice || !b.depositPaid) return null;
+            const balance = b.totalPrice - b.depositPaid;
+            return (
+              <div className="p-4">
+                <h2 className="text-lg font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={20} strokeWidth={2} /></button>잔금 결제</h2>
+                <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                  <p className="font-bold text-sm">{b.studio}</p>
+                  <p className="text-xs text-gray-400 mt-1">{b.cat} · {b.date} {b.time}</p>
+                </div>
+                <div className="space-y-3 mb-4 px-1">
+                  <div className="flex justify-between text-sm"><span className="text-gray-500">총 결제 금액</span><span className="font-medium">₩{b.totalPrice.toLocaleString()}</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-gray-500">예약금 결제 완료</span><span className="font-medium text-gray-400">- ₩{b.depositPaid.toLocaleString()}</span></div>
+                  <div className="flex justify-between text-sm border-t border-gray-100 pt-3"><span className="text-gray-700 font-bold">오늘 결제할 잔금</span><span className="font-bold text-primary text-base">₩{balance.toLocaleString()}</span></div>
+                  {b.balanceDueDate && <p className="text-[11px] text-gray-400 pt-1">결제 마감: {b.balanceDueDate} (D-1 23:59까지). 미결제 시 예약 자동 취소 + 환불 정책 적용.</p>}
+                </div>
+
+                {/* 카테고리별 환불 정책 표 */}
+                {(() => {
+                  const row = refundMatrix[b.cat];
+                  if (!row) return null;
+                  const periods: { key: keyof typeof row; label: string }[] = [
+                    { key: "d7", label: "7일 이상 전" },
+                    { key: "d3to6", label: "3~6일 전" },
+                    { key: "d1to2", label: "1~2일 전" },
+                    { key: "sameDay", label: "당일" },
+                  ];
+                  return (
+                    <div className="bg-rose-50/50 border border-rose-100 rounded-xl p-3 mb-4">
+                      <p className="text-xs font-bold text-gray-700 mb-2">{b.studio} 환불 정책 ({b.cat})</p>
+                      <table className="w-full text-[11px]">
+                        <thead>
+                          <tr className="text-gray-500">
+                            <th className="text-left font-medium py-1.5 border-b border-rose-100">취소 시점</th>
+                            <th className="text-right font-medium py-1.5 border-b border-rose-100">환불율</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {periods.map(p => (
+                            <tr key={p.key} className="border-b border-rose-100/50 last:border-0">
+                              <td className="py-1.5 text-gray-700">{p.label}</td>
+                              <td className="py-1.5 text-right font-semibold text-gray-900">{row[p.key]}%</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      <p className="text-[10px] text-gray-500 mt-2">※ 결제 총액 기준 적용. 예약금에서 우선 차감.</p>
+                    </div>
+                  );
+                })()}
+                <button
+                  onClick={() => {
+                    setUpcomingBookings(prev => prev.map((bk, j) => j === balancePaymentIdx ? { ...bk, balancePaid: true } : bk));
+                    alert(`토스페이먼츠 잔금 ₩${balance.toLocaleString()} 결제 완료 (시안)`);
+                    setBalancePaymentIdx(null);
+                    navigate("myBookings");
+                  }}
+                  className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm"
+                >잔금 ₩{balance.toLocaleString()} 결제 · 토스페이먼츠</button>
+              </div>
+            );
+          })()}
 
           {/* ===== MY BOOKINGS (IA-023/051) ===== */}
           {screen === "myBookings" && (
             <div className="p-4">
-              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>내 예약</h2>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>예약</h2>
               <div className="flex gap-2 mb-4">
                 {(["예정", "완료", "취소"] as BookingFilter[]).map(f => (
-                  <button key={f} onClick={() => setBookingFilter(f)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${bookingFilter === f ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{f} {f === "예정" ? upcomingBookings.length : f === "완료" ? COMPLETED_BOOKINGS.length : CANCELLED_BOOKINGS.length}</button>
+                  <button key={f} onClick={() => setBookingFilter(f)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${bookingFilter === f ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{f} {f === "예정" ? upcomingActive.length : f === "완료" ? completedAll.length : CANCELLED_BOOKINGS.length}</button>
                 ))}
               </div>
               {bookingFilter === "완료" && <p className="text-[11px] text-gray-400 mb-3">리뷰는 업체가 촬영 건을 완료 처리한 시점부터 2주 이내 작성, 작성 후 3일 이내 수정 가능합니다.</p>}
@@ -1652,6 +1783,28 @@ export default function ConsumerApp() {
                       <p className="text-[11px] text-gray-700">{cancelReason}</p>
                     </div>
                   )}
+                  {bookingFilter === "예정" && (() => {
+                    const ub = b as UpcomingBooking;
+                    if (!ub.totalPrice || !ub.depositPaid || ub.balancePaid) return null;
+                    const balance = ub.totalPrice - ub.depositPaid;
+                    return (
+                      <div className="bg-primary/5 border border-primary/15 rounded-lg p-2.5 mb-2">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[10px] text-primary font-semibold">잔금 결제 대기</span>
+                          {ub.balanceDueDate && <span className="text-[10px] text-gray-500">마감 {ub.balanceDueDate}</span>}
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="text-[10px] text-gray-500">
+                            예약금 ₩{ub.depositPaid.toLocaleString()} 완료 / 잔금 <span className="font-bold text-gray-900">₩{balance.toLocaleString()}</span>
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setBalancePaymentIdx(i); navigate("balancePayment"); }}
+                            className="shrink-0 bg-primary text-white text-[10px] font-bold px-3 py-1.5 rounded-full"
+                          >잔금 결제</button>
+                        </div>
+                      </div>
+                    );
+                  })()}
                   <div className="flex justify-between items-center pt-2 border-t border-gray-100">
                     <span className="text-sm font-bold">{b.price}</span>
                     <div className="flex items-center gap-2">
@@ -1665,9 +1818,15 @@ export default function ConsumerApp() {
                       {bookingFilter === "예정" && b.status === "예약 취소 중" && (
                         <span className="text-[10px] text-amber-600">업체 승인 대기 중</span>
                       )}
-                      {bookingFilter === "완료" && (b as { canReview?: boolean }).canReview && (
-                        <button onClick={(e) => { e.stopPropagation(); setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); navigate("reviewWrite"); }} className="text-xs text-primary font-medium">리뷰 작성 →</button>
-                      )}
+                      {bookingFilter === "완료" && (() => {
+                        const cb = b as CompletedBooking;
+                        if (cb.photoDelivered) {
+                          return (
+                            <button onClick={(e) => { e.stopPropagation(); setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); navigate("reviewWrite"); }} className="text-xs text-primary bg-primary/10 px-2.5 py-1 rounded-full font-medium">리뷰 작성</button>
+                          );
+                        }
+                        return <span className="text-xs text-gray-400">사진 수령 전</span>;
+                      })()}
                       {bookingFilter === "취소" && <span className="text-[10px] text-gray-400">{(b as { reason?: string }).reason}</span>}
                     </div>
                   </div>
@@ -1788,7 +1947,7 @@ export default function ConsumerApp() {
           {/* ===== MY REVIEWS (IA-053) ===== */}
           {screen === "myReviews" && editingReviewIdx === null && (
             <div className="p-4">
-              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>내 리뷰 관리</h2>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>리뷰 관리</h2>
               {MY_REVIEWS_DATA.map((r, i) => (
                 <div key={i} className="bg-gray-50 rounded-xl p-4 mb-3">
                   <div className="flex justify-between items-start mb-2"><div><p className="text-sm font-bold">{r.studio}</p><p className="text-xs text-gray-400 mt-0.5">{r.date}</p></div><span className="text-xs text-yellow-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span></div>
@@ -1920,10 +2079,10 @@ export default function ConsumerApp() {
 
               <div className="space-y-0">
                 <button onClick={() => navigate("myBookings")} className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
-                  <span className="text-sm">내 예약 내역</span><span className="text-gray-300 text-xs">›</span>
+                  <span className="text-sm">예약 내역</span><span className="text-gray-300 text-xs">›</span>
                 </button>
                 <button onClick={() => navigate("myReviews")} className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
-                  <span className="text-sm">내 리뷰 관리</span><span className="text-gray-300 text-xs">›</span>
+                  <span className="text-sm">리뷰 관리</span><span className="text-gray-300 text-xs">›</span>
                 </button>
                 <button onClick={() => navigate("paymentHistory")} className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
                   <span className="text-sm">결제 내역</span><span className="text-gray-300 text-xs">›</span>
