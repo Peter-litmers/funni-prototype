@@ -645,10 +645,11 @@ const UPCOMING_BOOKINGS: UpcomingBooking[] = [
   { studio: "선셋 포토랩", date: "2026.05.18 (일)", time: "10:00~12:00", cat: "바디프로필", price: "₩160,000", status: "확정", totalPrice: 160000, depositPaid: 30000, balanceDueDate: "2026.05.17 23:59", balancePaid: false },
   { studio: "블룸 웨딩 스튜디오", date: "2026.05.25 (일)", time: "10:00~14:00", cat: "웨딩", price: "₩800,000", status: "대기", totalPrice: 800000, depositPaid: 240000, balanceDueDate: "2026.05.24 23:59", balancePaid: false },
 ];
-const COMPLETED_BOOKINGS = [
-  { studio: "브랜드컷 스튜디오", date: "2026.04.20 (일)", time: "13:00~15:00", cat: "비즈니스", price: "₩80,000", status: "완료", canReview: true },
-  { studio: "블룸 웨딩 스튜디오", date: "2026.04.05 (토)", time: "10:00~14:00", cat: "웨딩", price: "₩800,000", status: "완료", canReview: false },
-  { studio: "패밀리 모먼츠", date: "2026.03.22 (토)", time: "10:00~12:00", cat: "가족", price: "₩240,000", status: "완료", canReview: false },
+type CompletedBooking = { studio: string; date: string; time: string; cat: string; price: string; status: string; photoDelivered: boolean };
+const COMPLETED_BOOKINGS: CompletedBooking[] = [
+  { studio: "브랜드컷 스튜디오", date: "2026.04.20 (일)", time: "13:00~15:00", cat: "비즈니스", price: "₩80,000", status: "완료", photoDelivered: true },
+  { studio: "블룸 웨딩 스튜디오", date: "2026.04.05 (토)", time: "10:00~14:00", cat: "웨딩", price: "₩800,000", status: "완료", photoDelivered: false },
+  { studio: "패밀리 모먼츠", date: "2026.03.22 (토)", time: "10:00~12:00", cat: "가족", price: "₩240,000", status: "완료", photoDelivered: false },
 ];
 const CANCELLED_BOOKINGS = [
   { studio: "펫모먼츠 스튜디오", date: "2026.04.15 (화)", time: "15:00~17:00", cat: "반려동물", price: "₩120,000", status: "취소됨", reason: "소비자 취소 · 촬영 1일 전 취소로 50% 환불" },
@@ -891,7 +892,14 @@ export default function ConsumerApp() {
   const BOOKINGS_PER_PAGE = 3;
   const totalBookingPages = Math.ceil(ALL_MY_BOOKINGS_FOR_MYPAGE.length / BOOKINGS_PER_PAGE);
   const pagedBookings = ALL_MY_BOOKINGS_FOR_MYPAGE.slice(myBookingPage * BOOKINGS_PER_PAGE, (myBookingPage + 1) * BOOKINGS_PER_PAGE);
-  const filteredBookings = bookingFilter === "예정" ? upcomingBookings : bookingFilter === "완료" ? COMPLETED_BOOKINGS : CANCELLED_BOOKINGS;
+  // 예정: 잔금 미결제(또는 분리 결제 미적용)
+  // 완료: 기본 완료 목록 + 잔금까지 결제된 예약 (사진 수령 전 상태로 추가)
+  const upcomingActive = upcomingBookings.filter(b => !b.balancePaid);
+  const upcomingPaidAsCompleted: CompletedBooking[] = upcomingBookings
+    .filter(b => b.balancePaid)
+    .map(b => ({ studio: b.studio, date: b.date, time: b.time, cat: b.cat, price: b.price, status: "완료", photoDelivered: false }));
+  const completedAll: CompletedBooking[] = [...upcomingPaidAsCompleted, ...COMPLETED_BOOKINGS];
+  const filteredBookings = bookingFilter === "예정" ? upcomingActive : bookingFilter === "완료" ? completedAll : CANCELLED_BOOKINGS;
 
   const statusColor = (s: string) => {
     if (s === "확정" || s === "대기") return "bg-green-100 text-green-700";
@@ -1743,10 +1751,10 @@ export default function ConsumerApp() {
           {/* ===== MY BOOKINGS (IA-023/051) ===== */}
           {screen === "myBookings" && (
             <div className="p-4">
-              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>내 예약</h2>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>예약</h2>
               <div className="flex gap-2 mb-4">
                 {(["예정", "완료", "취소"] as BookingFilter[]).map(f => (
-                  <button key={f} onClick={() => setBookingFilter(f)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${bookingFilter === f ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{f} {f === "예정" ? upcomingBookings.length : f === "완료" ? COMPLETED_BOOKINGS.length : CANCELLED_BOOKINGS.length}</button>
+                  <button key={f} onClick={() => setBookingFilter(f)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${bookingFilter === f ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{f} {f === "예정" ? upcomingActive.length : f === "완료" ? completedAll.length : CANCELLED_BOOKINGS.length}</button>
                 ))}
               </div>
               {bookingFilter === "완료" && <p className="text-[11px] text-gray-400 mb-3">리뷰는 업체가 촬영 건을 완료 처리한 시점부터 2주 이내 작성, 작성 후 3일 이내 수정 가능합니다.</p>}
@@ -1810,9 +1818,15 @@ export default function ConsumerApp() {
                       {bookingFilter === "예정" && b.status === "예약 취소 중" && (
                         <span className="text-[10px] text-amber-600">업체 승인 대기 중</span>
                       )}
-                      {bookingFilter === "완료" && (b as { canReview?: boolean }).canReview && (
-                        <button onClick={(e) => { e.stopPropagation(); setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); navigate("reviewWrite"); }} className="text-xs text-primary font-medium">리뷰 작성 →</button>
-                      )}
+                      {bookingFilter === "완료" && (() => {
+                        const cb = b as CompletedBooking;
+                        if (cb.photoDelivered) {
+                          return (
+                            <button onClick={(e) => { e.stopPropagation(); setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); navigate("reviewWrite"); }} className="text-xs text-primary font-medium">리뷰 작성</button>
+                          );
+                        }
+                        return <span className="text-xs text-gray-400">사진 수령 전</span>;
+                      })()}
                       {bookingFilter === "취소" && <span className="text-[10px] text-gray-400">{(b as { reason?: string }).reason}</span>}
                     </div>
                   </div>
@@ -1933,7 +1947,7 @@ export default function ConsumerApp() {
           {/* ===== MY REVIEWS (IA-053) ===== */}
           {screen === "myReviews" && editingReviewIdx === null && (
             <div className="p-4">
-              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>내 리뷰 관리</h2>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>리뷰 관리</h2>
               {MY_REVIEWS_DATA.map((r, i) => (
                 <div key={i} className="bg-gray-50 rounded-xl p-4 mb-3">
                   <div className="flex justify-between items-start mb-2"><div><p className="text-sm font-bold">{r.studio}</p><p className="text-xs text-gray-400 mt-0.5">{r.date}</p></div><span className="text-xs text-yellow-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span></div>
@@ -2065,10 +2079,10 @@ export default function ConsumerApp() {
 
               <div className="space-y-0">
                 <button onClick={() => navigate("myBookings")} className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
-                  <span className="text-sm">내 예약 내역</span><span className="text-gray-300 text-xs">›</span>
+                  <span className="text-sm">예약 내역</span><span className="text-gray-300 text-xs">›</span>
                 </button>
                 <button onClick={() => navigate("myReviews")} className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
-                  <span className="text-sm">내 리뷰 관리</span><span className="text-gray-300 text-xs">›</span>
+                  <span className="text-sm">리뷰 관리</span><span className="text-gray-300 text-xs">›</span>
                 </button>
                 <button onClick={() => navigate("paymentHistory")} className="flex justify-between items-center py-3.5 border-b border-gray-50 w-full text-left">
                   <span className="text-sm">결제 내역</span><span className="text-gray-300 text-xs">›</span>
