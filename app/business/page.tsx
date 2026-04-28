@@ -956,7 +956,7 @@ export default function BusinessApp() {
               {/* 적용 수수료율 안내 */}
               <div className="mb-4 flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5">
                 <div>
-                  <p className="text-[10px] text-gray-500">내 스튜디오 적용 수수료율</p>
+                  <p className="text-[10px] text-gray-500">스튜디오 적용 수수료율</p>
                   <p className="text-sm font-bold text-primary">
                     {myFee.rate}%
                     {myFee.isOverride && <span className="ml-1.5 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">개별</span>}
@@ -1409,7 +1409,7 @@ export default function BusinessApp() {
           {screen === "register" && registered && (
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-bold">내 스튜디오 <span className="text-xs text-gray-400 font-normal">({myStudios.length}개)</span></h2>
+                <h2 className="text-base font-bold">스튜디오 <span className="text-xs text-gray-400 font-normal">({myStudios.length}개)</span></h2>
                 <button onClick={handleAddNewStudio}
                   className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-medium">+ 새 스튜디오 추가</button>
               </div>
@@ -1717,13 +1717,13 @@ export default function BusinessApp() {
                 <button onClick={() => { navigate("register"); }}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <Home size={20} strokeWidth={1.5} className="text-gray-700" />
-                  <p className="text-sm font-medium mt-1">내 스튜디오 관리</p>
+                  <p className="text-sm font-medium mt-1">스튜디오 관리</p>
                   <p className="text-[10px] text-gray-400">등록 · 수정 · 삭제</p>
                 </button>
                 <button onClick={() => { navigate("bookings"); }}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <Calendar size={20} strokeWidth={1.5} className="text-gray-700" />
-                  <p className="text-sm font-medium mt-1">내 예약 달력</p>
+                  <p className="text-sm font-medium mt-1">예약 달력</p>
                   <p className="text-[10px] text-gray-400">예약 · 수기 일정</p>
                 </button>
               </div>
@@ -1737,7 +1737,7 @@ export default function BusinessApp() {
                 <button onClick={() => navigate("settlement")}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <DollarSign size={20} strokeWidth={1.5} className="text-gray-700" />
-                  <p className="text-sm font-medium mt-1">정산 내역</p>
+                  <p className="text-sm font-medium mt-1">정산 요청</p>
                   <p className="text-[10px] text-gray-400">월별 정산</p>
                 </button>
               </div>
@@ -1768,80 +1768,113 @@ export default function BusinessApp() {
           )}
 
           {/* ===== SETTLEMENT ===== */}
-          {screen === "settlement" && (
-            <div className="p-4">
-              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>정산 내역</h2>
+          {screen === "settlement" && (() => {
+            // 이번 달 주차별 시연용 데이터 (시안)
+            const weeklyData = [
+              { week: "1주차", range: "5/1 ~ 5/7", bookings: 3, payments: 2, expectedNet: 540000 },
+              { week: "2주차", range: "5/8 ~ 5/14", bookings: 5, payments: 4, expectedNet: 1080000 },
+              { week: "3주차", range: "5/15 ~ 5/21", bookings: 4, payments: 3, expectedNet: 810000 },
+              { week: "4주차", range: "5/22 ~ 5/28", bookings: 6, payments: 1, expectedNet: 270000 },
+              { week: "5주차", range: "5/29 ~ 5/31", bookings: 1, payments: 0, expectedNet: 0 },
+            ];
+            const totalBookings = weeklyData.reduce((s, w) => s + w.bookings, 0);
+            const totalPayments = weeklyData.reduce((s, w) => s + w.payments, 0);
+            const totalExpectedNet = weeklyData.reduce((s, w) => s + w.expectedNet, 0);
+            const periodLabel = "2026년 5월";
+            const alreadyRequested = settlementRequests.some(r => r.account === "lumiere_biz" && r.period === periodLabel && r.status === "대기");
+            return (
+              <div className="p-4">
+                <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>이번 달 정산 요청</h2>
 
-              {/* Period Filter */}
-              <div className="flex gap-2 mb-4">
-                {["전체", "4월", "3월"].map(m => (
-                  <button key={m} onClick={() => setSettlementMonth(m)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                      settlementMonth === m ? "bg-primary text-white" : "bg-gray-100 text-gray-500"
-                    }`}>{m}</button>
+                {/* 이번 달 전체 요약 */}
+                <div className="mb-4 bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/15 rounded-2xl p-4">
+                  <p className="text-[10px] text-gray-500">{periodLabel} 예상 정산금</p>
+                  <p className="text-2xl font-bold text-primary mt-0.5">₩{totalExpectedNet.toLocaleString()}</p>
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    <div className="bg-white rounded-lg p-2 text-center"><p className="text-[9px] text-gray-400">예약</p><p className="text-sm font-bold text-gray-900 mt-0.5">{totalBookings}건</p></div>
+                    <div className="bg-white rounded-lg p-2 text-center"><p className="text-[9px] text-gray-400">결제 완료</p><p className="text-sm font-bold text-gray-900 mt-0.5">{totalPayments}건</p></div>
+                    <div className="bg-white rounded-lg p-2 text-center"><p className="text-[9px] text-gray-400">수수료율</p><p className="text-sm font-bold text-gray-900 mt-0.5">{myFee.rate}%</p></div>
+                  </div>
+                  <p className="text-[10px] text-gray-500 mt-3">예약금·잔금 모두 정산 대상에 포함. 결제 완료된 건만 정산 가능.</p>
+                </div>
+
+                {/* 주차별 상세 */}
+                <h3 className="text-xs font-medium text-gray-500 mb-2">{periodLabel} 주차별 상세</h3>
+                <div className="bg-white rounded-xl border border-gray-100 overflow-hidden mb-4">
+                  <table className="w-full text-xs">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="text-left p-3 font-medium text-gray-500">주차</th>
+                        <th className="text-right p-3 font-medium text-gray-500">예약</th>
+                        <th className="text-right p-3 font-medium text-gray-500">결제</th>
+                        <th className="text-right p-3 font-medium text-gray-500">예상 정산금</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {weeklyData.map(w => (
+                        <tr key={w.week} className="border-t border-gray-50">
+                          <td className="p-3">
+                            <p className="font-medium text-gray-700">{w.week}</p>
+                            <p className="text-[10px] text-gray-400">{w.range}</p>
+                          </td>
+                          <td className="p-3 text-right text-gray-700">{w.bookings}건</td>
+                          <td className="p-3 text-right text-gray-700">{w.payments}건</td>
+                          <td className="p-3 text-right font-semibold text-primary">₩{w.expectedNet.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                      <tr className="bg-primary/5 border-t-2 border-primary/15">
+                        <td className="p-3 font-bold text-gray-900">합계</td>
+                        <td className="p-3 text-right font-bold text-gray-900">{totalBookings}건</td>
+                        <td className="p-3 text-right font-bold text-gray-900">{totalPayments}건</td>
+                        <td className="p-3 text-right font-bold text-primary">₩{totalExpectedNet.toLocaleString()}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* 정산 요청 버튼 */}
+                {alreadyRequested ? (
+                  <div className="w-full bg-amber-50 text-amber-700 py-3 rounded-xl text-sm font-medium border border-amber-200 text-center mb-3">
+                    ⏳ {periodLabel} 정산 요청 접수 완료 · 어드민 검토 대기
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      addSettlementRequest({
+                        account: "lumiere_biz",
+                        studioName: "루미에르 스튜디오",
+                        period: periodLabel,
+                        amount: totalExpectedNet,
+                      });
+                      alert(`${periodLabel} 정산 요청이 접수되었습니다.\n• 요청 금액: ₩${totalExpectedNet.toLocaleString()}\n• 어드민 정산 탭에 즉시 반영\n• 영업일 기준 3~5일 내 지정 계좌로 입금됩니다`);
+                    }}
+                    className="w-full bg-primary text-white py-3.5 rounded-xl text-sm font-bold mb-3">
+                    {periodLabel} 정산 요청
+                  </button>
+                )}
+
+                {/* 과거 정산 기록 */}
+                <h3 className="text-xs font-medium text-gray-500 mb-2 mt-4">과거 정산 기록</h3>
+                {SETTLEMENTS.map(s => (
+                  <div key={s.id} className="bg-white rounded-xl p-4 border border-gray-100 mb-2">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="text-sm font-medium">{s.period}</p>
+                        <p className="text-[10px] text-gray-400">{s.date} · {s.count}건</p>
+                      </div>
+                      <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">{s.status}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="text-xs text-gray-400">
+                        총 ₩{s.total.toLocaleString()} → 수수료 {s.fee}
+                      </div>
+                      <p className="text-sm font-bold text-amber-600">정산액 {s.net}</p>
+                    </div>
+                  </div>
                 ))}
               </div>
-
-              <div className="mb-4 bg-gray-50 rounded-xl p-4">
-                <p className="text-xs text-gray-500">{settlementMonth === "전체" ? "전체 정산금" : "이번달 금액"}</p>
-                <p className="text-2xl font-bold text-primary mt-0.5">₩{pendingAmount.toLocaleString()}</p>
-                <div className="mt-3 grid grid-cols-2 gap-2 text-[10px]">
-                  <div className="bg-white rounded-lg p-2"><span className="text-gray-400">수수료율</span><br/><span className="text-gray-700 font-medium">플랫폼 10%</span></div>
-                  <div className="bg-white rounded-lg p-2"><span className="text-gray-400">정산 방식</span><br/><span className="text-gray-700 font-medium">월 기준, 주별 조회 가능</span></div>
-                  <div className="bg-white rounded-lg p-2"><span className="text-gray-400">정산 단위</span><br/><span className="text-gray-700 font-medium">업체별 일괄 정산</span></div>
-                  <div className="bg-white rounded-lg p-2"><span className="text-gray-400">환불 반영</span><br/><span className="text-gray-700 font-medium">결제 방식별 정책 확인 예정</span></div>
-                </div>
-                <p className="mt-3 text-[11px] text-gray-400">예약 시 받은 예약금도 정산 대상에 포함됩니다.</p>
-                {(() => {
-                  const periodLabel = settlementMonth === "전체" ? "2026년 4월" : `2026년 ${settlementMonth}`;
-                  const alreadyRequested = settlementRequests.some(r => r.account === "lumiere_biz" && r.period === periodLabel && r.status === "대기");
-                  if (alreadyRequested) {
-                    return (
-                      <div className="mt-4 w-full bg-amber-50 text-amber-700 py-3 rounded-xl text-sm font-medium border border-amber-200 text-center">
-                        ⏳ {periodLabel} 정산 요청 접수 완료 · 어드민 검토 대기
-                      </div>
-                    );
-                  }
-                  return (
-                    <button
-                      onClick={() => {
-                        addSettlementRequest({
-                          account: "lumiere_biz",
-                          studioName: "루미에르 스튜디오",
-                          period: periodLabel,
-                          amount: pendingAmount,
-                        });
-                        alert(`${periodLabel} 정산 요청이 접수되었습니다.\n• 요청 금액: ₩${pendingAmount.toLocaleString()}\n• 어드민 정산 탭에 즉시 반영\n• 영업일 기준 3~5일 내 지정 계좌로 입금됩니다`);
-                      }}
-                      className="mt-4 w-full bg-primary text-white py-3 rounded-xl text-sm font-bold">
-                      {periodLabel} 정산 요청
-                    </button>
-                  );
-                })()}
-              </div>
-
-              <h3 className="text-xs font-medium text-gray-500 mb-2">정산 기록</h3>
-              {SETTLEMENTS
-                .filter(s => settlementMonth === "전체" || s.period.includes(settlementMonth))
-                .map(s => (
-                <div key={s.id} className="bg-white rounded-xl p-4 border border-gray-100 mb-2">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <p className="text-sm font-medium">{s.period}</p>
-                      <p className="text-[10px] text-gray-400">{s.date} · {s.count}건</p>
-                    </div>
-                    <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">{s.status}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div className="text-xs text-gray-400">
-                      총 ₩{s.total.toLocaleString()} → 수수료 {s.fee}
-                    </div>
-                    <p className="text-sm font-bold text-amber-600">정산액 {s.net}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+            );
+          })()}
 
           {/* ===== REVIEWS (REQ-111 업체 리뷰 답변) ===== */}
           {screen === "reviews" && (
