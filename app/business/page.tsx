@@ -144,21 +144,6 @@ export default function BusinessApp() {
   const myFee = getFeeForBusiness("루미에르 스튜디오", feeRate, bizFees);
   const [screen, setScreen] = useState<Screen>("home");
   const [tab, setTab] = useState<Tab>("home");
-  const [previewToast, setPreviewToast] = useState(false);
-  const previewToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const showPreviewToast = () => {
-    setPreviewToast(true);
-    if (previewToastTimer.current) clearTimeout(previewToastTimer.current);
-    previewToastTimer.current = setTimeout(() => setPreviewToast(false), 1800);
-  };
-  const blockPreviewClicks: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    const target = e.target as HTMLElement;
-    if (target.closest('button, [role="button"], a, input, textarea, select')) {
-      showPreviewToast();
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  };
   const [sort, setSort] = useState<Sort>("payments");
   const [sortOpen, setSortOpen] = useState(false);
   const [adIdx, setAdIdx] = useState(0);
@@ -458,7 +443,7 @@ export default function BusinessApp() {
 
           {/* ===== HOME (IA-010: 소비자와 동일한 스튜디오 탐색) ===== */}
           {screen === "home" && (
-            <div className="pb-6" onClickCapture={blockPreviewClicks}>
+            <div className="pb-6">
               <div className="px-4 pt-2">
                 <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-3 focus-within:border-primary transition-colors">
                   <Search size={16} strokeWidth={1.8} className="text-gray-400 shrink-0" />
@@ -694,7 +679,7 @@ export default function BusinessApp() {
 
           {/* ===== CATEGORY (IA-011) ===== */}
           {screen === "category" && (
-            <div onClickCapture={blockPreviewClicks}>
+            <div>
               {/* 검색창 — 홈에서 검색한 값이 그대로 노출됨 */}
               <div className="px-4 pt-3">
                 <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-2.5 focus-within:border-primary transition-colors">
@@ -2041,14 +2026,7 @@ export default function BusinessApp() {
           </div>
         )}
 
-        {/* Preview Toast — 업체 미리보기 안내 */}
-        {previewToast && (
-          <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-20 z-50 bg-gray-900/90 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg whitespace-nowrap">
-            업체 계정은 미리보기만 가능합니다.
-          </div>
-        )}
-
-        {/* Bottom Tab - 소비자 앱과 동일 3탭: 홈/카테고리/마이페이지 (마이페이지만 업체 전용) */}
+{/* Bottom Tab - 소비자 앱과 동일 3탭: 홈/카테고리/마이페이지 (마이페이지만 업체 전용) */}
         {screen !== "login" && <div className="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex items-center z-10">
           {[
             { key: "home" as Tab, Icon: Home, label: "홈", s: "home" as Screen },
