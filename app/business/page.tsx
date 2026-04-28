@@ -1109,7 +1109,6 @@ export default function BusinessApp() {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-xs text-gray-500 font-medium">스튜디오 소개</label>
-                    <span className="text-[10px] text-gray-400">소비자 상세 화면에 노출 · 최대 4,000자</span>
                   </div>
                   <textarea
                     value={introText}
