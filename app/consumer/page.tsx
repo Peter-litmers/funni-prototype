@@ -6,7 +6,7 @@ import {
   Camera, Home, LayoutGrid, User, Bell, Phone, MapPin, Star, Pencil, Check,
   CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal, ChevronDown,
 } from "lucide-react";
-import { useCategories, useHomeKeywords, matchesKeyword, useAds, useRefundMatrix, pickRefundRate, REFUND_PERIOD_LABELS, useCategoryIcons, useNoShowReports, useFeaturedPackages, useStudioPackages, resolveStudioPackages, resolveStudioPackage, type HomeKeyword } from "../lib/admin-store";
+import { useCategories, useHomeKeywords, matchesKeyword, useAds, useRefundMatrix, pickRefundRate, REFUND_PERIOD_LABELS, useCategoryIcons, useNoShowReports, useFeaturedPackages, useStudioPackages, resolveStudioPackages, resolveStudioPackage, PACKAGE_LABELS, type HomeKeyword } from "../lib/admin-store";
 import { resolveCatIcon } from "../lib/category-icons";
 
 function BrandMark() {
@@ -1166,9 +1166,10 @@ export default function ConsumerApp() {
                         )}
                         <div className="mt-auto flex items-center justify-between pt-2 text-[11px]">
                           {(() => {
-                            const pkg = resolveStudioPackage(studioPackages, studio.name, featuredPackages[studio.name], studio.price);
+                            const featIdx = featuredPackages[studio.name] ?? 0;
+                            const pkg = resolveStudioPackage(studioPackages, studio.name, featIdx, studio.price);
                             return (
-                              <span className="font-bold text-gray-900">₩{(pkg?.price ?? studio.price).toLocaleString()}{pkg && <span className="ml-1 text-[9px] font-normal text-gray-400">· {pkg.title}</span>}</span>
+                              <span className="font-bold text-gray-900">₩{(pkg?.price ?? studio.price).toLocaleString()}<span className="ml-1 text-[9px] font-normal text-gray-400">· {PACKAGE_LABELS[featIdx]}</span></span>
                             );
                           })()}
                           <span className="text-yellow-500">★ {studio.rating}</span>
@@ -1326,9 +1327,10 @@ export default function ConsumerApp() {
                       )}
                       <div className="flex items-center gap-2 mt-1">
                         {(() => {
-                          const pkg = resolveStudioPackage(studioPackages, s.name, featuredPackages[s.name], s.price);
+                          const featIdx = featuredPackages[s.name] ?? 0;
+                          const pkg = resolveStudioPackage(studioPackages, s.name, featIdx, s.price);
                           return (
-                            <span className="text-sm font-bold">₩{(pkg?.price ?? s.price).toLocaleString()}{pkg && <span className="ml-1 text-[10px] font-normal text-gray-400">· {pkg.title}</span>}</span>
+                            <span className="text-sm font-bold">₩{(pkg?.price ?? s.price).toLocaleString()}<span className="ml-1 text-[10px] font-normal text-gray-400">· {PACKAGE_LABELS[featIdx]}</span></span>
                           );
                         })()}
                         <span className="text-xs text-yellow-500">★ {s.rating}</span>

@@ -6,7 +6,7 @@ import {
   Camera, Home, LayoutGrid, User, Bell, Phone, Calendar, MapPin, Search, SlidersHorizontal,
   DollarSign, BarChart3, Building2, ImageIcon, X, Star, Check, ChevronDown,
 } from "lucide-react";
-import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness, useHomeKeywords, matchesKeyword, useCategoryIcons, useNoShowReports, countNoShowsFor, useAds, useSettlementRequests, useFeaturedPackages, useStudioPackages, resolveStudioPackage, type HomeKeyword } from "../lib/admin-store";
+import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness, useHomeKeywords, matchesKeyword, useCategoryIcons, useNoShowReports, countNoShowsFor, useAds, useSettlementRequests, useFeaturedPackages, useStudioPackages, resolveStudioPackage, PACKAGE_LABELS, type HomeKeyword } from "../lib/admin-store";
 import { resolveCatIcon } from "../lib/category-icons";
 
 function BrandMark() {
@@ -648,9 +648,10 @@ export default function BusinessApp() {
                         )}
                         <div className="mt-auto flex items-center justify-between pt-2 text-[11px]">
                           {(() => {
-                            const pkg = resolveStudioPackage(studioPackages, studio.name, featuredPackages[studio.name], parseStudioPrice(studio.price));
+                            const featIdx = featuredPackages[studio.name] ?? 0;
+                            const pkg = resolveStudioPackage(studioPackages, studio.name, featIdx, parseStudioPrice(studio.price));
                             return (
-                              <span className="font-bold text-gray-900">₩{(pkg?.price ?? parseStudioPrice(studio.price)).toLocaleString()}{pkg && <span className="ml-1 text-[9px] font-normal text-gray-400">· {pkg.title}</span>}</span>
+                              <span className="font-bold text-gray-900">₩{(pkg?.price ?? parseStudioPrice(studio.price)).toLocaleString()}<span className="ml-1 text-[9px] font-normal text-gray-400">· {PACKAGE_LABELS[featIdx]}</span></span>
                             );
                           })()}
                           <span className="text-yellow-500">★ {studio.rating}</span>
@@ -808,9 +809,10 @@ export default function BusinessApp() {
                       )}
                       <div className="flex items-center gap-2 mt-1">
                         {(() => {
-                          const pkg = resolveStudioPackage(studioPackages, s.name, featuredPackages[s.name], parseStudioPrice(s.price));
+                          const featIdx = featuredPackages[s.name] ?? 0;
+                          const pkg = resolveStudioPackage(studioPackages, s.name, featIdx, parseStudioPrice(s.price));
                           return (
-                            <span className="text-sm font-bold">₩{(pkg?.price ?? parseStudioPrice(s.price)).toLocaleString()}{pkg && <span className="ml-1 text-[10px] font-normal text-gray-400">· {pkg.title}</span>}</span>
+                            <span className="text-sm font-bold">₩{(pkg?.price ?? parseStudioPrice(s.price)).toLocaleString()}<span className="ml-1 text-[10px] font-normal text-gray-400">· {PACKAGE_LABELS[featIdx]}</span></span>
                           );
                         })()}
                         <span className="text-xs text-yellow-500">★ {s.rating}</span>
