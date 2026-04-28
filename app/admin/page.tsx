@@ -106,6 +106,8 @@ export default function AdminWeb() {
   const [bookingDetail, setBookingDetail] = useState<null | { id: string; consumer: string; studio: string; date: string; amount: string; status: string }>(null);
   const [settlementFilter, setSettlementFilter] = useState<"미정산" | "정산 완료">("미정산");
   const [settledRowIds, setSettledRowIds] = useState<Record<string, number>>({}); // rowId → 정산 처리 시각
+  const [settlementStart, setSettlementStart] = useState<string>("");
+  const [settlementEnd, setSettlementEnd] = useState<string>("");
   const [bookingSearch, setBookingSearch] = useState("");
   const [bookingStatusFilter, setBookingStatusFilter] = useState<string>("전체");
   const [memberSearch, setMemberSearch] = useState("");
@@ -685,20 +687,6 @@ export default function AdminWeb() {
           <div>
             <h2 className="text-xl font-bold mb-6">정산 관리</h2>
 
-            <div className="policy-area p-4 mb-6">
-              <PolicyBadge label="정산 정책 반영" />
-              <p className="text-[10px] text-gray-500 mt-1">• 정산 대상: 예약 시 받은 예약금 포함</p>
-              <p className="text-[10px] text-gray-500">• 정산 기준: 월별 기준, 주별 조회 가능</p>
-              <p className="text-[10px] text-gray-500">• 정산 단위: 업체별 일괄 정산</p>
-              <p className="text-[10px] text-gray-500">• 수수료 차등: 기본 10%, 업체별 개별 설정 가능</p>
-              <div className="text-[10px] text-gray-500 flex flex-wrap items-center gap-2">
-                <span>• 환불 반영: 정산 완료 전 발생 건은 정산액에서 차감, 정산 완료 후 발생 건은 다음 정산에서 차감</span>
-                <DismissibleNote id="admin.settlement-refund-note" dismissed={dismissed} onDismiss={dismissNote}
-                  className="text-[9px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full font-medium inline-flex items-center gap-1">
-                  대표 확인 대기
-                </DismissibleNote>
-              </div>
-            </div>
 
             {/* Settlement Table — 통합 (정산 안한 것 / 정산 완료 필터) */}
             {(() => {
@@ -717,9 +705,29 @@ export default function AdminWeb() {
 
               return (
                 <div className="bg-white rounded-xl shadow-sm p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold">정산 관리</h3>
-                    <p className="text-[11px] text-gray-400">관리자가 업체에 직접 이체 후 &lsquo;정산 완료 처리&rsquo; 클릭</p>
+                  <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+                    <h3 className="font-bold shrink-0">정산 관리</h3>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-gray-500">기간</span>
+                      <input
+                        type="date"
+                        value={settlementStart}
+                        onChange={e => setSettlementStart(e.target.value)}
+                        className="bg-gray-50 rounded-lg px-2 py-1 text-xs border border-gray-200 outline-none focus:border-primary"
+                      />
+                      <span className="text-[10px] text-gray-400">~</span>
+                      <input
+                        type="date"
+                        value={settlementEnd}
+                        onChange={e => setSettlementEnd(e.target.value)}
+                        className="bg-gray-50 rounded-lg px-2 py-1 text-xs border border-gray-200 outline-none focus:border-primary"
+                      />
+                      <button
+                        onClick={() => { setSettlementStart(""); setSettlementEnd(""); }}
+                        className="text-[10px] text-gray-500 bg-gray-100 px-2 py-1 rounded hover:bg-gray-200">
+                        초기화
+                      </button>
+                    </div>
                   </div>
 
                   {/* 필터 토글 */}
