@@ -63,6 +63,7 @@ const K_CATEGORY_ICONS = "photopot.categoryIcons";
 const K_NOSHOW_REPORTS = "photopot.noShowReports";
 const K_SETTLEMENT_REQUESTS = "photopot.settlementRequests";
 const K_FEATURED_PACKAGES = "photopot.featuredPackages";
+const K_STUDIO_DEPOSITS = "photopot.studioDeposits";
 
 const CHANGE_EVENT = "photopot-admin-store-change";
 
@@ -382,6 +383,69 @@ export function getDisplayPrice(basePrice: number, featuredIdx?: number): number
     return basePrice;
   }
   return Math.round(basePrice * PACKAGE_MULTIPLIERS[featuredIdx]);
+}
+
+// ===== 스튜디오별 예약금(선결제) 설정 =====
+export type DepositMode = "percent" | "fixed";
+export type StudioDeposit = {
+  enabled: boolean;
+  mode: DepositMode;
+  value: number; // percent: 0~100 / fixed: KRW
+};
+
+export const DEPOSIT_PERCENT_PRESETS = [5, 10, 20, 30] as const;
+
+const DEFAULT_STUDIO_DEPOSITS: Record<string, StudioDeposit> = {
+  "루미에르 스튜디오": { enabled: true, mode: "percent", value: 20 },
+  "아이덴티티 프로필": { enabled: true, mode: "percent", value: 30 },
+  "선셋 포토랩": { enabled: true, mode: "fixed", value: 30000 },
+  "바디에디션 랩": { enabled: true, mode: "percent", value: 30 },
+  "블룸 웨딩 스튜디오": { enabled: true, mode: "percent", value: 30 },
+  "프라이빗 웨딩하우스": { enabled: true, mode: "percent", value: 50 },
+  "브랜드컷 스튜디오": { enabled: false, mode: "percent", value: 20 }, // 예약금 미사용
+  "비즈니스 데이랩": { enabled: true, mode: "fixed", value: 50000 },
+};
+
+function sanitizeStudioDeposits(input: unknown): Record<string, StudioDeposit> {
+  if (!input || typeof input !== "object") return { ...DEFAULT_STUDIO_DEPOSITS };
+  const out: Record<string, StudioDeposit> = {};
+  for (const [name, raw] of Object.entries(input as Record<string, unknown>)) {
+    if (!raw || typeof raw !== "object") continue;
+    const obj = raw as Record<string, unknown>;
+    const enabled = typeof obj.enabled === "boolean" ? obj.enabled : false;
+    const mode: DepositMode = obj.mode === "fixed" ? "fixed" : "percent";
+    const value = typeof obj.value === "number" && Number.isFinite(obj.value) && obj.value >= 0 ? obj.value : 0;
+    out[name] = { enabled, mode, value };
+  }
+  return out;
+}
+
+export function useStudioDeposits(): [Record<string, StudioDeposit>, (studioName: string, config: StudioDeposit) => void] {
+  const value = useStored<Record<string, StudioDeposit>>(
+    K_STUDIO_DEPOSITS,
+    DEFAULT_STUDIO_DEPOSITS,
+    (raw) => (raw === undefined ? { ...DEFAULT_STUDIO_DEPOSITS } : sanitizeStudioDeposits(raw)),
+  );
+  const setOne = (studioName: string, config: StudioDeposit) => {
+    writeStored(K_STUDIO_DEPOSITS, sanitizeStudioDeposits({ ...value, [studioName]: config }));
+  };
+  return [value, setOne];
+}
+
+// 결제 총액(패키지 + 옵션)에 예약금 설정을 적용해 예약금/잔금 산출
+export function calculateDeposit(total: number, config?: StudioDeposit): number {
+  if (!config || !config.enabled || config.value <= 0 || total <= 0) return 0;
+  if (config.mode === "percent") {
+    const pct = Math.min(100, Math.max(0, config.value));
+    return Math.round(total * pct / 100);
+  }
+  return Math.min(Math.round(config.value), total);
+}
+
+export function describeDeposit(config?: StudioDeposit): string {
+  if (!config || !config.enabled) return "예약금 미사용";
+  if (config.mode === "percent") return `${config.value}%`;
+  return `₩${config.value.toLocaleString()} 고정`;
 }
 
 const DEFAULT_FEATURED_PACKAGES: Record<string, number> = {

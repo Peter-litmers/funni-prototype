@@ -6,7 +6,7 @@ import {
   Camera, Home, LayoutGrid, User, Bell, Phone, Calendar, MapPin, Search, SlidersHorizontal,
   DollarSign, BarChart3, Building2, ImageIcon, X, Star, Check, ChevronDown, ChevronLeft,
 } from "lucide-react";
-import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness, useHomeKeywords, matchesKeyword, useCategoryIcons, useNoShowReports, countNoShowsFor, useAds, useSettlementRequests, useFeaturedPackages, useStudioPackages, resolveStudioPackage, PACKAGE_LABELS, type HomeKeyword } from "../lib/admin-store";
+import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness, useHomeKeywords, matchesKeyword, useCategoryIcons, useNoShowReports, countNoShowsFor, useAds, useSettlementRequests, useFeaturedPackages, useStudioPackages, resolveStudioPackage, useStudioDeposits, calculateDeposit, describeDeposit, DEPOSIT_PERCENT_PRESETS, PACKAGE_LABELS, type HomeKeyword, type DepositMode } from "../lib/admin-store";
 import { resolveCatIcon } from "../lib/category-icons";
 
 function BrandMark() {
@@ -101,6 +101,7 @@ export default function BusinessApp() {
   const [ads] = useAds();
   const [featuredPackages, setFeaturedPackage] = useFeaturedPackages();
   const [studioPackages] = useStudioPackages();
+  const [studioDeposits, setStudioDeposit] = useStudioDeposits();
   const getCatIcon = (name: string) => resolveCatIcon(name, categoryIcons);
   const CATEGORIES = [...adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) })), { name: "전체", Icon: LayoutGrid }];
   const HOME_CATEGORY_GRID = adminCategories.map(n => ({ name: n, Icon: getCatIcon(n) }));
@@ -1173,23 +1174,70 @@ export default function BusinessApp() {
                       ))}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-1.5 mb-1">
-                      <div>
-                        <p className="text-[10px] text-gray-500 mb-0.5">예약금</p>
-                        <input type="text" defaultValue="₩50,000"
-                          className="w-full bg-white rounded-lg px-2 py-1.5 text-xs border border-gray-100 outline-none focus:border-primary" />
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-gray-500 mb-0.5">버퍼 시간 (청소·준비)</p>
-                        <select defaultValue="30" className="w-full bg-white rounded-lg px-2 py-1.5 text-xs border border-gray-100 outline-none focus:border-primary">
-                          <option value="0">없음</option>
-                          <option value="15">15분</option>
-                          <option value="30">30분</option>
-                          <option value="60">1시간</option>
-                          <option value="90">1시간 30분</option>
-                          <option value="120">2시간</option>
-                        </select>
-                      </div>
+                    {/* 예약금(선결제) 설정 — 스튜디오별 1개 */}
+                    {(() => {
+                      const studioName = editingStudio?.name ?? "새 스튜디오";
+                      const dep = studioDeposits[studioName] ?? { enabled: false, mode: "percent" as DepositMode, value: 20 };
+                      return (
+                        <div className="bg-white rounded-lg p-2 border border-gray-100 mb-2">
+                          <label className="flex items-center gap-1.5 cursor-pointer mb-1.5">
+                            <input
+                              type="checkbox"
+                              checked={dep.enabled}
+                              onChange={e => setStudioDeposit(studioName, { ...dep, enabled: e.target.checked })}
+                              className="w-3.5 h-3.5 accent-primary"
+                            />
+                            <span className="text-[11px] font-semibold text-gray-700">예약금 받기 (선결제)</span>
+                            <span className="text-[10px] text-gray-400">— 옵션 포함 총액에 적용</span>
+                          </label>
+                          {dep.enabled && (
+                            <>
+                              <div className="flex gap-1 mb-1.5">
+                                <button type="button" onClick={() => setStudioDeposit(studioName, { ...dep, mode: "percent" })}
+                                  className={`flex-1 text-[10px] py-1 rounded ${dep.mode === "percent" ? "bg-primary text-white font-semibold" : "bg-gray-100 text-gray-500"}`}>%</button>
+                                <button type="button" onClick={() => setStudioDeposit(studioName, { ...dep, mode: "fixed" })}
+                                  className={`flex-1 text-[10px] py-1 rounded ${dep.mode === "fixed" ? "bg-primary text-white font-semibold" : "bg-gray-100 text-gray-500"}`}>고정 ₩</button>
+                              </div>
+                              {dep.mode === "percent" ? (
+                                <>
+                                  <div className="flex gap-1 mb-1">
+                                    {DEPOSIT_PERCENT_PRESETS.map(p => (
+                                      <button key={p} type="button" onClick={() => setStudioDeposit(studioName, { ...dep, value: p })}
+                                        className={`flex-1 text-[10px] py-1 rounded border ${dep.value === p ? "border-primary bg-primary/10 text-primary font-semibold" : "border-gray-200 text-gray-500"}`}>{p}%</button>
+                                    ))}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <input type="number" min={0} max={100} value={dep.value}
+                                      onChange={e => setStudioDeposit(studioName, { ...dep, value: Math.max(0, Math.min(100, Number(e.target.value) || 0)) })}
+                                      className="flex-1 bg-gray-50 rounded px-2 py-1 text-xs border border-transparent outline-none focus:border-primary" />
+                                    <span className="text-xs text-gray-500">%</span>
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="flex items-center gap-1">
+                                  <span className="text-xs text-gray-500">₩</span>
+                                  <input type="number" min={0} value={dep.value}
+                                    onChange={e => setStudioDeposit(studioName, { ...dep, value: Math.max(0, Number(e.target.value) || 0) })}
+                                    className="flex-1 bg-gray-50 rounded px-2 py-1 text-xs border border-transparent outline-none focus:border-primary text-right" />
+                                </div>
+                              )}
+                              <p className="text-[10px] text-gray-400 mt-1">예) 옵션 포함 ₩100,000 결제 시 → 예약금 {dep.mode === "percent" ? `${dep.value}% = ₩${(100000 * dep.value / 100).toLocaleString()}` : `₩${Math.min(dep.value, 100000).toLocaleString()}`} / 잔금 ₩{(100000 - (dep.mode === "percent" ? Math.round(100000 * dep.value / 100) : Math.min(dep.value, 100000))).toLocaleString()}</p>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })()}
+
+                    <div>
+                      <p className="text-[10px] text-gray-500 mb-0.5">버퍼 시간 (청소·준비)</p>
+                      <select defaultValue="30" className="w-full bg-white rounded-lg px-2 py-1.5 text-xs border border-gray-100 outline-none focus:border-primary">
+                        <option value="0">없음</option>
+                        <option value="15">15분</option>
+                        <option value="30">30분</option>
+                        <option value="60">1시간</option>
+                        <option value="90">1시간 30분</option>
+                        <option value="120">2시간</option>
+                      </select>
                     </div>
                   </div>
                 </div>
