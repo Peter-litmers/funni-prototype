@@ -1089,9 +1089,6 @@ export default function BusinessApp() {
                 </button>
               </div>
 
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 text-[11px] text-amber-800">
-                💡 한 계정에 여러 스튜디오를 운영할 수 있습니다. 각 스튜디오는 단일 카테고리에 등록됩니다. (예: &ldquo;피터의 프로필사진&rdquo; - 프로필 / &ldquo;브라움의 커플 스튜디오&rdquo; - 커플)
-              </div>
 
               <div className="space-y-4">
                 <div>
@@ -1438,9 +1435,6 @@ export default function BusinessApp() {
                 </button>
               </div>
 
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 mb-4 text-[11px] text-amber-800">
-                💡 한 계정에 여러 스튜디오를 개별 등록·운영할 수 있습니다. 각 스튜디오는 단일 카테고리로 운영됩니다. (예: &ldquo;피터의 프로필사진&rdquo; - 프로필 / &ldquo;브라움의 커플 스튜디오&rdquo; - 커플)
-              </div>
 
               {myStudios.length === 0 ? (
                 <div className="bg-gray-50 rounded-2xl p-8 text-center">
