@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Camera, Home, LayoutGrid, User, Bell, Phone, MapPin, Star, Pencil, Check,
-  CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal, ChevronDown,
+  CheckCircle2, ImageIcon, Calendar, Clock, Search, SlidersHorizontal, ChevronDown, ChevronLeft,
 } from "lucide-react";
 import { useCategories, useHomeKeywords, matchesKeyword, useAds, useRefundMatrix, pickRefundRate, REFUND_PERIOD_LABELS, useCategoryIcons, useNoShowReports, useFeaturedPackages, useStudioPackages, resolveStudioPackages, resolveStudioPackage, PACKAGE_LABELS, type HomeKeyword } from "../lib/admin-store";
 import { resolveCatIcon } from "../lib/category-icons";
@@ -922,28 +922,19 @@ export default function ConsumerApp() {
       <div className="relative w-full max-w-[390px] overflow-hidden rounded-[28px] bg-white shadow-xl" style={{ height: 780 }}>
 
         {/* Header */}
-        {showHeader && (() => {
-          const tabScreens: Screen[] = ["home", "category", "mypage"];
-          const showBack = !tabScreens.includes(screen);
-          return (
-            <div className="relative z-10 bg-white pt-5 pl-4 pr-4 pb-2">
-              <div className="flex items-center justify-between mb-2">
-                <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center">
-                  <BrandMark />
-                </button>
-                <div className="flex items-center gap-1">
-                  {showBack && (
-                    <button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 text-lg leading-none p-1">‹</button>
-                  )}
-                  <button onClick={() => navigate("notifications")} className="text-gray-500 relative p-1">
-                    <Bell size={20} strokeWidth={1.5} />
-                    {(CONSUMER_NOTIFICATIONS.some(n => !n.read) || noShowReports.some(r => r.consumerName === userName)) && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
-                  </button>
-                </div>
-              </div>
+        {showHeader && (
+          <div className="relative z-10 bg-white pt-5 pl-4 pr-4 pb-2">
+            <div className="flex items-center justify-between mb-2">
+              <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center">
+                <BrandMark />
+              </button>
+              <button onClick={() => navigate("notifications")} className="text-gray-500 relative p-1">
+                <Bell size={20} strokeWidth={1.5} />
+                {(CONSUMER_NOTIFICATIONS.some(n => !n.read) || noShowReports.some(r => r.consumerName === userName)) && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
+              </button>
             </div>
-          );
-        })()}
+          </div>
+        )}
 
         <div ref={scrollRef} className="overflow-y-auto bg-white" style={{ height: showHeader ? "calc(780px - 72px - 56px)" : "calc(780px - 56px)" }}>
 
@@ -1584,7 +1575,7 @@ export default function ConsumerApp() {
           {/* ===== BOOKING (IA-020) ===== */}
           {screen === "booking" && (
             <div className="p-4">
-              <h2 className="text-lg font-bold mb-4">예약 확인</h2>
+              <h2 className="text-lg font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={20} strokeWidth={2} /></button>예약 확인</h2>
               <div className="bg-gray-50 rounded-xl p-4 mb-4">
                 <p className="font-bold text-sm">{selectedStudio.name}</p>
                 <p className="text-xs text-gray-400 mt-1">{selectedStudio.cat} · {selectedStudio.area}</p>
@@ -1629,7 +1620,7 @@ export default function ConsumerApp() {
           {/* ===== MY BOOKINGS (IA-023/051) ===== */}
           {screen === "myBookings" && (
             <div className="p-4">
-              <h2 className="text-base font-bold mb-4">내 예약</h2>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>내 예약</h2>
               <div className="flex gap-2 mb-4">
                 {(["예정", "완료", "취소"] as BookingFilter[]).map(f => (
                   <button key={f} onClick={() => setBookingFilter(f)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${bookingFilter === f ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>{f} {f === "예정" ? upcomingBookings.length : f === "완료" ? COMPLETED_BOOKINGS.length : CANCELLED_BOOKINGS.length}</button>
@@ -1776,7 +1767,7 @@ export default function ConsumerApp() {
           {/* ===== REVIEW WRITE (IA-030) ===== */}
           {screen === "reviewWrite" && (
             <div className="p-4">
-              <h2 className="text-base font-bold mb-4">리뷰 작성</h2>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>리뷰 작성</h2>
               <div className="bg-gray-50 rounded-xl p-4 mb-6"><p className="text-sm font-bold">{reviewTarget}</p></div>
               <div className="mb-6">
                 <p className="text-sm font-medium mb-3">별점</p>
@@ -1797,7 +1788,7 @@ export default function ConsumerApp() {
           {/* ===== MY REVIEWS (IA-053) ===== */}
           {screen === "myReviews" && editingReviewIdx === null && (
             <div className="p-4">
-              <h2 className="text-base font-bold mb-4">내 리뷰 관리</h2>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>내 리뷰 관리</h2>
               {MY_REVIEWS_DATA.map((r, i) => (
                 <div key={i} className="bg-gray-50 rounded-xl p-4 mb-3">
                   <div className="flex justify-between items-start mb-2"><div><p className="text-sm font-bold">{r.studio}</p><p className="text-xs text-gray-400 mt-0.5">{r.date}</p></div><span className="text-xs text-yellow-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span></div>
@@ -1814,7 +1805,7 @@ export default function ConsumerApp() {
           {/* ===== MY REVIEW EDIT ===== */}
           {screen === "myReviews" && editingReviewIdx !== null && (
             <div className="p-4">
-              <h2 className="text-base font-bold mb-4">리뷰 수정</h2>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>리뷰 수정</h2>
               <div className="bg-gray-50 rounded-xl p-4 mb-6"><p className="text-sm font-bold">{MY_REVIEWS_DATA[editingReviewIdx].studio}</p><p className="text-xs text-gray-400 mt-0.5">{MY_REVIEWS_DATA[editingReviewIdx].date}</p></div>
               <div className="mb-6">
                 <p className="text-sm font-medium mb-3">별점</p>
@@ -1839,7 +1830,7 @@ export default function ConsumerApp() {
           {/* ===== PAYMENT HISTORY (IA-052) ===== */}
           {screen === "paymentHistory" && (
             <div className="p-4">
-              <h2 className="text-base font-bold mb-4">결제 내역</h2>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>결제 내역</h2>
               {PAYMENT_HISTORY.map((p, i) => (
                 <div key={i} className="flex justify-between items-center py-3.5 border-b border-gray-50">
                   <div><p className="text-sm font-medium">{p.studio}</p><p className="text-xs text-gray-400 mt-0.5">{p.date} · {p.method}</p></div>
@@ -2082,7 +2073,7 @@ export default function ConsumerApp() {
           {/* ===== NOTIFICATIONS (IA-040) ===== */}
           {screen === "notifications" && (
             <div className="p-4">
-              <h2 className="text-base font-bold mb-4">알림</h2>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>알림</h2>
               {/* 노쇼 알림 — 업체 신고 즉시 반영 */}
               {noShowReports.filter(r => r.consumerName === userName).map(r => (
                 <div key={r.id} className="flex gap-3 py-3.5 border-b border-gray-50 w-full text-left bg-red-50/40">

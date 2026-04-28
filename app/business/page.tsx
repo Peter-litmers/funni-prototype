@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Camera, Home, LayoutGrid, User, Bell, Phone, Calendar, MapPin, Search, SlidersHorizontal,
-  DollarSign, BarChart3, Building2, ImageIcon, X, Star, Check, ChevronDown,
+  DollarSign, BarChart3, Building2, ImageIcon, X, Star, Check, ChevronDown, ChevronLeft,
 } from "lucide-react";
 import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness, useHomeKeywords, matchesKeyword, useCategoryIcons, useNoShowReports, countNoShowsFor, useAds, useSettlementRequests, useFeaturedPackages, useStudioPackages, resolveStudioPackage, PACKAGE_LABELS, type HomeKeyword } from "../lib/admin-store";
 import { resolveCatIcon } from "../lib/category-icons";
@@ -404,28 +404,19 @@ export default function BusinessApp() {
       <div className="relative w-full max-w-[390px] overflow-hidden rounded-[28px] bg-white shadow-xl" style={{ height: 780 }}>
 
         {/* Header */}
-        {screen !== "login" && (() => {
-          const tabScreens: Screen[] = ["home", "category", "mypage"];
-          const showBack = !tabScreens.includes(screen);
-          return (
-            <div className="relative z-10 bg-white pt-5 pl-4 pr-4 pb-2 border-b border-gray-50">
-              <div className="flex items-center justify-between">
-                <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center">
-                  <BrandMark />
-                </button>
-                <div className="flex items-center gap-1">
-                  {showBack && (
-                    <button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 text-lg leading-none p-1">‹</button>
-                  )}
-                  <button onClick={() => { navigate("notifications"); setHasNotif(false); }} className="relative text-gray-500 p-1">
-                    <Bell size={20} strokeWidth={1.5} />
-                    {hasNotif && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
-                  </button>
-                </div>
-              </div>
+        {screen !== "login" && (
+          <div className="relative z-10 bg-white pt-5 pl-4 pr-4 pb-2 border-b border-gray-50">
+            <div className="flex items-center justify-between">
+              <button onClick={() => { setScreen("home"); setTab("home"); }} className="flex items-center">
+                <BrandMark />
+              </button>
+              <button onClick={() => { navigate("notifications"); setHasNotif(false); }} className="relative text-gray-500 p-1">
+                <Bell size={20} strokeWidth={1.5} />
+                {hasNotif && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" />}
+              </button>
             </div>
-          );
-        })()}
+          </div>
+        )}
 
         <div ref={scrollRef} className="overflow-y-auto bg-white" style={{ height: screen === "login" ? "780px" : "calc(780px - 69px - 56px)" }}>
 
@@ -892,8 +883,7 @@ export default function BusinessApp() {
           {/* ===== DASHBOARD (IA-063 실적 대시보드) ===== */}
           {screen === "dashboard" && (
             <div className="p-4">
-              <button onClick={goBack} className="text-sm text-gray-400 mb-3">← 돌아가기</button>
-              <h2 className="text-base font-bold mb-4">실적 대시보드</h2>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>실적 대시보드</h2>
 
               {/* 조회 기간 셀렉터 */}
               <div className="flex gap-1.5 mb-4">
@@ -980,8 +970,7 @@ export default function BusinessApp() {
           {/* ===== BIZ INFO (IA-065 업체 기본정보 수정) ===== */}
           {screen === "bizInfo" && (
             <div className="p-4">
-              <button onClick={goBack} className="text-sm text-gray-400 mb-3">← 돌아가기</button>
-              <h2 className="text-base font-bold mb-4">업체 기본정보 수정</h2>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>업체 기본정보 수정</h2>
               <div className="space-y-3">
                 <div><p className="text-xs text-gray-500 mb-1">업체명</p><input type="text" defaultValue="루미에르 스튜디오" className="w-full bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-200" /></div>
                 <div><p className="text-xs text-gray-500 mb-1">대표자명</p><input type="text" defaultValue="김사장" className="w-full bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-200" /></div>
@@ -996,7 +985,7 @@ export default function BusinessApp() {
           {/* ===== NOTIFICATIONS ===== */}
           {screen === "notifications" && (
             <div className="p-4">
-              <h2 className="text-base font-bold mb-4">알림</h2>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>알림</h2>
               {NOTIFICATIONS.map(n => (
                 <button key={n.id} onClick={() => {
                   if (!n.action) return;
@@ -1026,7 +1015,7 @@ export default function BusinessApp() {
             return (
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-bold">{isEdit ? `${editingStudio!.name} 수정` : "새 스튜디오 등록"}</h2>
+                <h2 className="text-base font-bold flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>{isEdit ? `${editingStudio!.name} 수정` : "새 스튜디오 등록"}</h2>
                 {myStudios.length > 0 && (
                   <button onClick={() => { setRegistered(true); setEditingStudioId(null); }}
                     className="text-xs text-gray-400">취소</button>
@@ -1392,7 +1381,7 @@ export default function BusinessApp() {
           {screen === "bookings" && (
             <div className="p-4">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base font-bold">예약 관리</h2>
+                <h2 className="text-base font-bold flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>예약 관리</h2>
                 <button onClick={() => setShowManualModal(true)}
                   className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-[10px] font-medium">
                   ✏️ 수기 일정 추가
@@ -1481,8 +1470,7 @@ export default function BusinessApp() {
           {/* ===== BOOKING DETAIL ===== */}
           {screen === "bookingDetail" && (
             <div className="p-4">
-              <button onClick={goBack} className="text-sm text-gray-400 mb-3">← 예약 관리</button>
-              <h2 className="text-base font-bold mb-4">예약 상세</h2>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>예약 상세</h2>
 
               <div className="bg-gray-50 rounded-xl p-4 mb-4">
                 <div className="flex items-center gap-3 mb-3">
@@ -1676,7 +1664,7 @@ export default function BusinessApp() {
           {/* ===== SETTLEMENT ===== */}
           {screen === "settlement" && (
             <div className="p-4">
-              <h2 className="text-base font-bold mb-4">정산 내역</h2>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>정산 내역</h2>
 
               {/* Period Filter */}
               <div className="flex gap-2 mb-4">
@@ -1752,8 +1740,7 @@ export default function BusinessApp() {
           {/* ===== REVIEWS (REQ-111 업체 리뷰 답변) ===== */}
           {screen === "reviews" && (
             <div className="p-4">
-              <button onClick={goBack} className="text-sm text-gray-400 mb-3">← 돌아가기</button>
-              <h2 className="text-base font-bold mb-4">리뷰 관리</h2>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>리뷰 관리</h2>
               <p className="text-[11px] text-gray-400 mb-3">소비자 리뷰 등록 후 1주 이내 답글 작성이 가능합니다.</p>
 
               {[
