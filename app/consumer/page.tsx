@@ -1822,7 +1822,7 @@ export default function ConsumerApp() {
                         const cb = b as CompletedBooking;
                         if (cb.photoDelivered) {
                           return (
-                            <button onClick={(e) => { e.stopPropagation(); setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); navigate("reviewWrite"); }} className="text-xs text-primary font-medium">리뷰 작성</button>
+                            <button onClick={(e) => { e.stopPropagation(); setReviewTarget(b.studio); setReviewRating(5); setReviewText(""); navigate("reviewWrite"); }} className="text-xs text-primary bg-primary/10 px-2.5 py-1 rounded-full font-medium">리뷰 작성</button>
                           );
                         }
                         return <span className="text-xs text-gray-400">사진 수령 전</span>;
