@@ -2210,6 +2210,25 @@ export default function AdminWeb() {
                   ))}
                 </div>
               </div>
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">노출 패키지 (카드에 표시될 가격)</label>
+                <div className="flex gap-2">
+                  {PACKAGE_LABELS.map((label, idx) => {
+                    const studioName = adModal.studio.trim();
+                    const isFeatured = !!studioName && featuredPackages[studioName] === idx;
+                    const disabled = !studioName;
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => { if (!disabled) setFeaturedPackage(studioName, idx); }}
+                        disabled={disabled}
+                        className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${isFeatured ? "bg-primary text-white" : "bg-gray-100 text-gray-500"} ${disabled ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-200"}`}
+                      >{label}</button>
+                    );
+                  })}
+                </div>
+                <p className="text-[10px] text-gray-400 mt-1">※ 광고 카드·소비자 리스트에 노출될 가격 패키지를 선택합니다. 미선택 시 기본 가격 표시.{!adModal.studio.trim() && " 스튜디오명 입력 후 선택 가능."}</p>
+              </div>
               <p className="text-[10px] text-gray-400">※ 저장 시 소비자 홈 &lsquo;요즘 추천하는 스튜디오&rsquo; 섹션에 &lsquo;진행중&rsquo; 광고가 카테고리당 상위 2개씩 즉시 반영됩니다.</p>
             </div>
             <div className="p-4 border-t border-gray-100 flex justify-end gap-2">
