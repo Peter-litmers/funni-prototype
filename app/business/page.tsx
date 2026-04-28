@@ -9,6 +9,41 @@ import {
 import { useCategories, useFeeRate, useBusinessFees, getFeeForBusiness, useHomeKeywords, matchesKeyword, useCategoryIcons, useNoShowReports, countNoShowsFor, useAds, useSettlementRequests, useFeaturedPackages, useStudioPackages, resolveStudioPackage, useStudioDeposits, calculateDeposit, describeDeposit, DEPOSIT_PERCENT_PRESETS, PACKAGE_LABELS, type HomeKeyword, type DepositMode } from "../lib/admin-store";
 import { resolveCatIcon } from "../lib/category-icons";
 
+function DepositValueInput({ mode, value, onChange, className }: {
+  mode: "percent" | "fixed";
+  value: number;
+  onChange: (v: number) => void;
+  className?: string;
+}) {
+  const [text, setText] = useState<string>(value > 0 ? String(value) : "");
+  // mode 전환 또는 외부 값 변경(프리셋 클릭 등) 시 동기화
+  useEffect(() => {
+    setText(value > 0 ? String(value) : "");
+  }, [value, mode]);
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      placeholder="0"
+      value={text}
+      onChange={(e) => {
+        const v = e.target.value;
+        if (v === "") {
+          setText("");
+          onChange(0);
+          return;
+        }
+        if (!/^\d+$/.test(v)) return;
+        const num = parseInt(v, 10);
+        const capped = mode === "percent" ? Math.max(0, Math.min(100, num)) : Math.max(0, num);
+        setText(String(capped));
+        onChange(capped);
+      }}
+      className={className}
+    />
+  );
+}
+
 function BrandMark() {
   return (
     <div className="flex items-center">
@@ -1193,9 +1228,9 @@ export default function BusinessApp() {
                           {dep.enabled && (
                             <>
                               <div className="flex gap-1 mb-1.5">
-                                <button type="button" onClick={() => setStudioDeposit(studioName, { ...dep, mode: "percent" })}
+                                <button type="button" onClick={() => setStudioDeposit(studioName, { enabled: dep.enabled, mode: "percent", value: 0 })}
                                   className={`flex-1 text-[10px] py-1 rounded ${dep.mode === "percent" ? "bg-primary text-white font-semibold" : "bg-gray-100 text-gray-500"}`}>%</button>
-                                <button type="button" onClick={() => setStudioDeposit(studioName, { ...dep, mode: "fixed" })}
+                                <button type="button" onClick={() => setStudioDeposit(studioName, { enabled: dep.enabled, mode: "fixed", value: 0 })}
                                   className={`flex-1 text-[10px] py-1 rounded ${dep.mode === "fixed" ? "bg-primary text-white font-semibold" : "bg-gray-100 text-gray-500"}`}>고정 ₩</button>
                               </div>
                               {dep.mode === "percent" ? (
@@ -1207,18 +1242,24 @@ export default function BusinessApp() {
                                     ))}
                                   </div>
                                   <div className="flex items-center gap-1">
-                                    <input type="number" min={0} max={100} value={dep.value}
-                                      onChange={e => setStudioDeposit(studioName, { ...dep, value: Math.max(0, Math.min(100, Number(e.target.value) || 0)) })}
-                                      className="flex-1 bg-gray-50 rounded px-2 py-1 text-xs border border-transparent outline-none focus:border-primary" />
+                                    <DepositValueInput
+                                      mode="percent"
+                                      value={dep.value}
+                                      onChange={(v) => setStudioDeposit(studioName, { ...dep, value: v })}
+                                      className="flex-1 bg-gray-50 rounded px-2 py-1 text-xs border border-transparent outline-none focus:border-primary"
+                                    />
                                     <span className="text-xs text-gray-500">%</span>
                                   </div>
                                 </>
                               ) : (
                                 <div className="flex items-center gap-1">
                                   <span className="text-xs text-gray-500">₩</span>
-                                  <input type="number" min={0} value={dep.value}
-                                    onChange={e => setStudioDeposit(studioName, { ...dep, value: Math.max(0, Number(e.target.value) || 0) })}
-                                    className="flex-1 bg-gray-50 rounded px-2 py-1 text-xs border border-transparent outline-none focus:border-primary text-right" />
+                                  <DepositValueInput
+                                    mode="fixed"
+                                    value={dep.value}
+                                    onChange={(v) => setStudioDeposit(studioName, { ...dep, value: v })}
+                                    className="flex-1 bg-gray-50 rounded px-2 py-1 text-xs border border-transparent outline-none focus:border-primary text-right"
+                                  />
                                 </div>
                               )}
                               <p className="text-[10px] text-gray-400 mt-1">예) 옵션 포함 ₩100,000 결제 시 → 예약금 {dep.mode === "percent" ? `${dep.value}% = ₩${(100000 * dep.value / 100).toLocaleString()}` : `₩${Math.min(dep.value, 100000).toLocaleString()}`} / 잔금 ₩{(100000 - (dep.mode === "percent" ? Math.round(100000 * dep.value / 100) : Math.min(dep.value, 100000))).toLocaleString()}</p>

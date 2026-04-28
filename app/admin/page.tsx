@@ -1628,7 +1628,8 @@ export default function AdminWeb() {
                   <tr>
                     <th className="text-left p-4 font-medium text-gray-500">결제번호</th>
                     <th className="text-left p-4 font-medium text-gray-500">소비자</th>
-                    <th className="text-left p-4 font-medium text-gray-500">업체</th>
+                    <th className="text-left p-4 font-medium text-gray-500">업체 (아이디-스튜디오)</th>
+                    <th className="text-left p-4 font-medium text-gray-500">결제 종류</th>
                     <th className="text-left p-4 font-medium text-gray-500 hidden md:table-cell">결제일</th>
                     <th className="text-left p-4 font-medium text-gray-500">금액</th>
                     <th className="text-left p-4 font-medium text-gray-500">상태</th>
@@ -1637,19 +1638,26 @@ export default function AdminWeb() {
                 </thead>
                 <tbody>
                   {[
-                    { id: "P-0142", consumer: "김포토", studio: "루미에르", date: "05.08", amount: "₩100,000", status: "결제완료" },
-                    { id: "P-0141", consumer: "이촬영", studio: "선셋 포토랩", date: "05.05", amount: "₩160,000", status: "결제완료" },
-                    { id: "P-0140", consumer: "박스튜", studio: "블룸 웨딩", date: "04.03", amount: "₩800,000", status: "결제완료" },
-                    { id: "P-0135", consumer: "최민지", studio: "브랜드컷 스튜디오", date: "04.18", amount: "₩80,000", status: "결제완료" },
-                    { id: "P-0130", consumer: "한소희", studio: "펫모먼츠 스튜디오", date: "04.13", amount: "₩120,000", status: "환불완료" },
+                    { id: "P-0142D", consumer: "김포토", account: "lumiere_biz", studio: "루미에르 스튜디오", kind: "예약금", date: "05.08", amount: "₩20,000", status: "결제완료", linkedId: "P-0142" },
+                    { id: "P-0142B", consumer: "김포토", account: "lumiere_biz", studio: "루미에르 스튜디오", kind: "잔금", date: "05.09", amount: "₩80,000", status: "결제완료", linkedId: "P-0142" },
+                    { id: "P-0141D", consumer: "이촬영", account: "sunset_lab", studio: "선셋 포토랩", kind: "예약금", date: "05.05", amount: "₩30,000", status: "결제완료", linkedId: "P-0141" },
+                    { id: "P-0141B", consumer: "이촬영", account: "sunset_lab", studio: "선셋 포토랩", kind: "잔금", date: "05.17", amount: "₩130,000", status: "결제대기", linkedId: "P-0141" },
+                    { id: "P-0140D", consumer: "박스튜", account: "bloom_wedding", studio: "블룸 웨딩 스튜디오", kind: "예약금", date: "04.03", amount: "₩240,000", status: "결제완료", linkedId: "P-0140" },
+                    { id: "P-0140B", consumer: "박스튜", account: "bloom_wedding", studio: "블룸 웨딩 스튜디오", kind: "잔금", date: "05.24", amount: "₩560,000", status: "결제대기", linkedId: "P-0140" },
+                    { id: "P-0135", consumer: "최민지", account: "brandcut", studio: "브랜드컷 스튜디오", kind: "전액", date: "04.18", amount: "₩80,000", status: "결제완료", linkedId: "P-0135" },
+                    { id: "P-0130", consumer: "한소희", account: "petmoments", studio: "펫모먼츠 스튜디오", kind: "전액", date: "04.13", amount: "₩120,000", status: "환불완료", linkedId: "P-0130" },
                   ].map((p, i) => (
                     <tr key={i} className="border-t border-gray-50">
                       <td className="p-4 font-mono text-xs text-gray-400">{p.id}</td>
                       <td className="p-4">{p.consumer}</td>
-                      <td className="p-4">{p.studio}</td>
+                      <td className="p-4 text-xs">{p.account}-{p.studio}</td>
+                      <td className="p-4">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${p.kind === "예약금" ? "bg-primary/10 text-primary" : p.kind === "잔금" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"}`}>{p.kind}</span>
+                        {(p.kind === "예약금" || p.kind === "잔금") && <span className="ml-1.5 text-[9px] text-gray-400 font-mono">↔ {p.linkedId}</span>}
+                      </td>
                       <td className="p-4 text-gray-500 hidden md:table-cell text-xs">{p.date}</td>
                       <td className={`p-4 font-medium ${p.status === "환불완료" ? "text-red-500" : ""}`}>{p.status === "환불완료" ? "-" : ""}{p.amount}</td>
-                      <td className="p-4"><span className={`text-xs px-2 py-1 rounded-full ${p.status === "결제완료" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-500"}`}>{p.status}</span></td>
+                      <td className="p-4"><span className={`text-xs px-2 py-1 rounded-full ${p.status === "결제완료" ? "bg-green-100 text-green-700" : p.status === "결제대기" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-500"}`}>{p.status}</span></td>
                       <td className="p-4">{p.status === "결제완료" && <button className="text-xs text-red-500 px-2 py-1 bg-red-50 rounded">환불</button>}</td>
                     </tr>
                   ))}

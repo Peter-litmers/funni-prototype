@@ -1667,10 +1667,7 @@ export default function ConsumerApp() {
                       </div>
                     </div>
                   )}
-                  <p className="text-[11px] text-gray-500 mt-3">{splitMode
-                    ? "업체 승인 후 예약 확정. 잔금은 촬영일 D-1 23:59까지 MY → 예약 카드에서 결제. 미결제 시 자동 취소 + 환불 정책 적용."
-                    : "업체 승인 후 예약이 확정되며, 영업일 기준 48시간 내 미승인 시 자동 취소 및 전액 환불됩니다."}
-                  </p>
+                  <p className="text-[11px] text-gray-500 mt-3">업체가 승인하면 예약이 확정됩니다. 만약 업체가 승인하지 않을 시 예약금은 환불됩니다.{splitMode && " 잔금은 촬영일 전까지 MY → 예약 카드에서 결제하세요."}</p>
                 </div>
                 <button onClick={() => { setScreen("myBookings"); setTab("mypage"); }} className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium text-sm mb-2">예약 요청 내역 확인</button>
                 <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm">홈으로</button>
@@ -1696,6 +1693,40 @@ export default function ConsumerApp() {
                   <div className="flex justify-between text-sm border-t border-gray-100 pt-3"><span className="text-gray-700 font-bold">오늘 결제할 잔금</span><span className="font-bold text-primary text-base">₩{balance.toLocaleString()}</span></div>
                   {b.balanceDueDate && <p className="text-[11px] text-gray-400 pt-1">결제 마감: {b.balanceDueDate} (D-1 23:59까지). 미결제 시 예약 자동 취소 + 환불 정책 적용.</p>}
                 </div>
+
+                {/* 카테고리별 환불 정책 표 */}
+                {(() => {
+                  const row = refundMatrix[b.cat];
+                  if (!row) return null;
+                  const periods: { key: keyof typeof row; label: string }[] = [
+                    { key: "d7", label: "7일 이상 전" },
+                    { key: "d3to6", label: "3~6일 전" },
+                    { key: "d1to2", label: "1~2일 전" },
+                    { key: "sameDay", label: "당일" },
+                  ];
+                  return (
+                    <div className="bg-rose-50/50 border border-rose-100 rounded-xl p-3 mb-4">
+                      <p className="text-xs font-bold text-gray-700 mb-2">{b.studio} 환불 정책 ({b.cat})</p>
+                      <table className="w-full text-[11px]">
+                        <thead>
+                          <tr className="text-gray-500">
+                            <th className="text-left font-medium py-1.5 border-b border-rose-100">취소 시점</th>
+                            <th className="text-right font-medium py-1.5 border-b border-rose-100">환불율</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {periods.map(p => (
+                            <tr key={p.key} className="border-b border-rose-100/50 last:border-0">
+                              <td className="py-1.5 text-gray-700">{p.label}</td>
+                              <td className="py-1.5 text-right font-semibold text-gray-900">{row[p.key]}%</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      <p className="text-[10px] text-gray-500 mt-2">※ 결제 총액 기준 적용. 예약금에서 우선 차감.</p>
+                    </div>
+                  );
+                })()}
                 <button
                   onClick={() => {
                     setUpcomingBookings(prev => prev.map((bk, j) => j === balancePaymentIdx ? { ...bk, balancePaid: true } : bk));
