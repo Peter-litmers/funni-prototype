@@ -1068,15 +1068,29 @@ export default function BusinessApp() {
             return (
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-bold flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>{isEdit ? `${editingStudio!.name} 수정` : "새 스튜디오 등록"}</h2>
-                {myStudios.length > 0 && (
+                <h2 className="text-base font-bold flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>스튜디오 관리</h2>
+                {myStudios.length > 0 && !isEdit && (
                   <button onClick={() => { setRegistered(true); setEditingStudioId(null); }}
                     className="text-xs text-gray-400">취소</button>
                 )}
               </div>
 
+              {/* 기존 / 신규 탭 (편집 중에는 '기존 (편집중)'으로 표기) */}
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => { setRegistered(true); setEditingStudioId(null); }}
+                  className={`flex-1 py-2 rounded-xl text-xs font-medium border transition-all ${isEdit ? "bg-primary/10 text-primary border-primary/30" : "bg-white text-gray-500 border-gray-200"}`}>
+                  {isEdit ? `기존 · ${editingStudio!.name} 편집중` : `기존 (${myStudios.length})`}
+                </button>
+                <button
+                  onClick={() => { setRegistered(false); setEditingStudioId(null); }}
+                  className={`flex-1 py-2 rounded-xl text-xs font-medium border transition-all ${!isEdit ? "bg-primary text-white border-primary" : "bg-white text-gray-500 border-gray-200"}`}>
+                  신규 등록
+                </button>
+              </div>
+
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 text-[11px] text-amber-800">
-                💡 한 스튜디오는 한 카테고리에 등록됩니다. 여러 카테고리 운영 시 각각 별도 스튜디오로 등록해주세요. (예: &ldquo;루미에르 스튜디오&rdquo; - 프로필 / &ldquo;루미에르 비즈컷&rdquo; - 비즈니스)
+                💡 한 계정에 여러 스튜디오를 운영할 수 있습니다. 각 스튜디오는 단일 카테고리에 등록됩니다. (예: &ldquo;피터의 프로필사진&rdquo; - 프로필 / &ldquo;브라움의 커플 스튜디오&rdquo; - 커플)
               </div>
 
               <div className="space-y-4">
@@ -1408,14 +1422,24 @@ export default function BusinessApp() {
           {/* Studio Registered — My Studios List */}
           {screen === "register" && registered && (
             <div className="p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-bold">스튜디오 <span className="text-xs text-gray-400 font-normal">({myStudios.length}개)</span></h2>
-                <button onClick={handleAddNewStudio}
-                  className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-medium">+ 새 스튜디오 추가</button>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-1.5"><button onClick={goBack} aria-label="뒤로가기" className="text-gray-500 hover:text-gray-900 -ml-1 p-1"><ChevronLeft size={18} strokeWidth={2} /></button>스튜디오 관리</h2>
+
+              {/* 기존 / 신규 탭 */}
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => { setRegistered(true); setEditingStudioId(null); }}
+                  className="flex-1 py-2 rounded-xl text-xs font-medium border transition-all bg-primary text-white border-primary">
+                  기존 ({myStudios.length})
+                </button>
+                <button
+                  onClick={() => { setRegistered(false); setEditingStudioId(null); }}
+                  className="flex-1 py-2 rounded-xl text-xs font-medium border transition-all bg-white text-gray-500 border-gray-200">
+                  신규 등록
+                </button>
               </div>
 
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 mb-4 text-[11px] text-amber-800">
-                💡 한 계정에 여러 스튜디오를 개별 등록·운영할 수 있습니다. 각 스튜디오는 단일 카테고리로 운영됩니다.
+                💡 한 계정에 여러 스튜디오를 개별 등록·운영할 수 있습니다. 각 스튜디오는 단일 카테고리로 운영됩니다. (예: &ldquo;피터의 프로필사진&rdquo; - 프로필 / &ldquo;브라움의 커플 스튜디오&rdquo; - 커플)
               </div>
 
               {myStudios.length === 0 ? (
@@ -1714,7 +1738,7 @@ export default function BusinessApp() {
 
               {/* Quick Menu — 업체 마이페이지 전용 메뉴 (IA Group 07) */}
               <div className="grid grid-cols-2 gap-2 mb-2">
-                <button onClick={() => { navigate("register"); }}
+                <button onClick={() => { setRegistered(myStudios.length > 0); setEditingStudioId(null); navigate("register"); }}
                   className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
                   <Home size={20} strokeWidth={1.5} className="text-gray-700" />
                   <p className="text-sm font-medium mt-1">스튜디오 관리</p>
