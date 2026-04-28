@@ -1129,7 +1129,6 @@ export default function BusinessApp() {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-xs text-gray-500 font-medium">상세 카테고리 해시태그 (3개)</label>
-                    <span className="text-[10px] text-gray-400">소비자 카드·상세에 #형식으로 노출</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     {(() => {
@@ -1164,11 +1163,10 @@ export default function BusinessApp() {
                       ));
                     })()}
                   </div>
-                  <p className="text-[10px] text-gray-400 mt-1">※ 대분류({selectedCat}) 안의 상세 카테고리로 입력하세요. 예: {({ "프로필": "증명사진·취업프로필·이력서", "바디프로필": "일반바디·피트니스·커플바디", "웨딩": "본식스냅·야외웨딩·리마인드", "가족": "3대가족·돌잔치·가족나들이", "반려동물": "강아지·고양이·반려가족", "비즈니스": "사내프로필·단체촬영·음식", "커플": "기념일·데이트스냅·프리웨딩", "아기": "신생아·100일·돌" } as Record<string, string>)[selectedCat] ?? "자유 입력"}</p>
                 </div>
 
                 <div>
-                  <label className="text-xs text-gray-500 mb-1.5 block font-medium">카테고리 (한 스튜디오 = 한 카테고리)</label>
+                  <label className="text-xs text-gray-500 mb-1.5 block font-medium">카테고리</label>
                   <div className="flex flex-wrap gap-2">
                     {adminCategories.map(c => (
                       <button key={c} onClick={() => setSelectedCat(c)}
@@ -1187,7 +1185,7 @@ export default function BusinessApp() {
                   <div className="bg-primary/5 rounded-xl p-3 border border-primary/10">
                     <p className="text-sm font-bold text-gray-900 mb-2">{selectedCat} 촬영</p>
 
-                    <p className="text-[10px] text-gray-500 mb-1">가격 패키지 (여러 개 가능 · <span className="text-primary font-medium">광고 노출용 1개 선택</span>)</p>
+                    <p className="text-[10px] text-gray-500 mb-1">가격 패키지</p>
                     <div className="space-y-1.5 mb-2">
                       {[
                         { title: "1컨셉", price: 270000, desc: "보정본 4컷 · 30분 소요" },
@@ -1217,7 +1215,6 @@ export default function BusinessApp() {
                             </div>
                             <input type="text" defaultValue={pkg.desc} placeholder="보정본 컷수·소요시간·포함내역"
                               className="w-full bg-gray-50 rounded px-2 py-1 text-[11px] text-gray-500 border border-transparent outline-none focus:border-primary" />
-                            {isFeatured && <p className="text-[10px] text-primary mt-1">★ 광고·추천 카드에 이 패키지 가격이 노출됩니다</p>}
                           </div>
                         );
                       })}
@@ -1251,7 +1248,6 @@ export default function BusinessApp() {
                               className="w-3.5 h-3.5 accent-primary"
                             />
                             <span className="text-[11px] font-semibold text-gray-700">예약금 받기 (선결제)</span>
-                            <span className="text-[10px] text-gray-400">— 옵션 포함 총액에 적용</span>
                           </label>
                           {dep.enabled && (
                             <>
