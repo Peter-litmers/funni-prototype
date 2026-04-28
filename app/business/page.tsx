@@ -1830,9 +1830,8 @@ export default function BusinessApp() {
               <p className="text-3xl font-bold text-primary mb-1">포토팟</p>
               <p className="text-xs text-gray-400 mb-10">스튜디오 대관·예약 플랫폼</p>
 
-              <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-[#FEE500] text-[#191919] py-3 rounded-xl font-bold text-sm mb-2 flex items-center justify-center gap-2">💬 카카오로 로그인</button>
-              <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-[#03C75A] text-white py-3 rounded-xl font-bold text-sm mb-2 flex items-center justify-center gap-2">🟢 네이버로 로그인</button>
-              <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-white border border-gray-200 text-gray-700 py-3 rounded-xl font-bold text-sm mb-6 flex items-center justify-center gap-2">G 구글로 로그인</button>
+              <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-[#FEE500] text-[#191919] py-3 rounded-xl font-bold text-sm mb-2 flex items-center justify-center gap-2">카카오로 로그인</button>
+              <button onClick={() => { setScreen("home"); setTab("home"); }} className="w-full bg-[#03C75A] text-white py-3 rounded-xl font-bold text-sm mb-6 flex items-center justify-center gap-2">네이버로 로그인</button>
 
               <div className="flex items-center gap-4 w-full mb-6">
                 <div className="flex-1 h-px bg-gray-200" /><span className="text-xs text-gray-400">또는</span><div className="flex-1 h-px bg-gray-200" />
@@ -1848,7 +1847,7 @@ export default function BusinessApp() {
                 <button>비밀번호 찾기</button>
               </div>
 
-              <p className="text-[10px] text-gray-400 text-center">소비자 계정은 유저 앱에서 별도로 가입하세요.<br />동일 사용자도 소비자 + 업체 계정을 각각 보유해야 합니다.</p>
+              <p className="text-[10px] text-gray-400 text-center">소비자로도 이용하시려면 소비자 화면에서 별도 계정으로 가입하세요.<br />동일인은 소비자/업체 계정을 각 1개씩 보유 가능합니다 (다른 SNS·이메일로 가입).</p>
             </div>
           )}
 
