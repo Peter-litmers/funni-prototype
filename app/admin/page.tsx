@@ -71,8 +71,51 @@ function DismissibleNote({
 
 type Tab = "dashboard" | "businesses" | "settlement" | "ads" | "members" | "categories" | "banners" | "bookings" | "payments" | "reviews" | "policies";
 
+// 정산 데이터 — 정산 관리 탭과 국민은행 대시보드 탭에서 공유
+type SettlementRow = {
+  account: string;
+  studio: string;
+  category: string;
+  period: string;
+  count: number;
+  base: number;
+  options: number;
+  requestedAt: number;
+  settledAt?: number;
+  bankName?: string;
+  bankCode?: string;
+  accountNumber?: string;
+  ownerName?: string;
+};
+
+const SETTLEMENT_ROWS: SettlementRow[] = [
+  // 미정산 (4월분)
+  { account: "lumiere_biz", studio: "루미에르 스튜디오", category: "프로필", period: "2026년 4월", count: 8, base: 580000, options: 100000, requestedAt: new Date("2026-04-27T09:23:00+09:00").getTime(), bankName: "국민", bankCode: "004", accountNumber: "01234567891011", ownerName: "이루미에르" },
+  { account: "lumiere_biz", studio: "루미에르 비즈컷", category: "비즈니스", period: "2026년 4월", count: 4, base: 210000, options: 30000, requestedAt: new Date("2026-04-27T09:23:00+09:00").getTime(), bankName: "국민", bankCode: "004", accountNumber: "01234567891011", ownerName: "이루미에르" },
+  { account: "bloom_wedding", studio: "블룸 웨딩홀", category: "웨딩", period: "2026년 4월", count: 3, base: 450000, options: 70000, requestedAt: new Date("2026-04-28T22:40:00+09:00").getTime(), bankName: "신한", bankCode: "088", accountNumber: "110987654321", ownerName: "박블룸" },
+  { account: "brandcut", studio: "브랜드컷 스튜디오", category: "비즈니스", period: "2026년 4월", count: 12, base: 340000, options: 0, requestedAt: new Date("2026-04-28T15:30:00+09:00").getTime(), bankName: "토스뱅크", bankCode: "092", accountNumber: "100012345678", ownerName: "김브랜드" },
+  // 정산 완료 (3월분 더미)
+  { account: "sunset_lab", studio: "선셋 포토랩", category: "바디프로필", period: "2026년 3월", count: 6, base: 720000, options: 80000, requestedAt: new Date("2026-04-01T11:00:00+09:00").getTime(), settledAt: new Date("2026-04-03T16:20:00+09:00").getTime(), bankName: "카카오뱅크", bankCode: "090", accountNumber: "311222333444", ownerName: "최선셋" },
+  { account: "private_wedding", studio: "프라이빗 웨딩하우스", category: "웨딩", period: "2026년 3월", count: 2, base: 980000, options: 60000, requestedAt: new Date("2026-03-31T22:15:00+09:00").getTime(), settledAt: new Date("2026-04-02T10:45:00+09:00").getTime(), bankName: "KEB하나", bankCode: "081", accountNumber: "555666777888", ownerName: "정프라이빗" },
+  { account: "identity_profile", studio: "아이덴티티 프로필", category: "프로필", period: "2026년 3월", count: 11, base: 540000, options: 90000, requestedAt: new Date("2026-04-01T09:00:00+09:00").getTime(), settledAt: new Date("2026-04-02T14:10:00+09:00").getTime(), bankName: "우리", bankCode: "020", accountNumber: "1002777777777", ownerName: "한아이덴" },
+];
+
+const settlementRowId = (s: SettlementRow) => `${s.account}__${s.studio}__${s.period}`;
+
 // 국민은행 대량이체파일(KB ME) 등록 안내 — 어드민 정산 → 국민은행 대시보드 탭에서 사용
-function KbDashboard() {
+function KbDashboard({
+  feeRate,
+  bizFees,
+  settledRowIds,
+}: {
+  feeRate: number;
+  bizFees: Record<string, number>;
+  settledRowIds: Record<string, number>;
+}) {
+  const [guideOpen, setGuideOpen] = useState(false);
+  const [bankCodesOpen, setBankCodesOpen] = useState(false);
+  const [exportPeriod, setExportPeriod] = useState<string>("전체");
+  const [exportScope, setExportScope] = useState<"정산 완료만" | "미정산만" | "전체">("정산 완료만");
   const COLUMNS: { col: string; name: string; desc: string; required: boolean }[] = [
     { col: "A열", name: "은행명 또는 은행코드", desc: "셀서식을 텍스트로 지정한 후 은행(기관) 코드 숫자 3자리 입력 또는 한글명 입력", required: true },
     { col: "B열", name: "입금계좌번호", desc: "셀서식을 텍스트로 지정한 후 입금하실 계좌번호 입력 ('-' 생략가능)", required: true },
@@ -95,56 +138,172 @@ function KbDashboard() {
     { name: "HSBC", code: "054" }, { name: "케이뱅크", code: "089" }, { name: "카카오뱅크", code: "090" }, { name: "토스뱅크", code: "092" },
   ];
 
-  return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <div className="flex items-center justify-between mb-1">
-          <h3 className="font-bold">국민은행 대량이체파일(KB ME) 양식 안내</h3>
-          <span className="text-[10px] text-gray-400">출처: KB국민은행 인터넷뱅킹</span>
-        </div>
-        <p className="text-xs text-gray-500 mb-4">정산 데이터를 국민은행 KB ME 양식으로 변환할 때 따라야 할 컬럼 규칙입니다. 본 유의사항은 대량이체파일 등록 전에 모두 삭제해 주십시오.</p>
+  // KB ME 양식 다운로드 — 정산 데이터를 KB 대량이체 11열 양식으로 변환
+  const periodOptions = ["전체", ...Array.from(new Set(SETTLEMENT_ROWS.map(r => r.period)))];
+  const filteredRows = SETTLEMENT_ROWS.filter(s => {
+    const id = settlementRowId(s);
+    const settled = Boolean(s.settledAt) || id in settledRowIds;
+    if (exportScope === "정산 완료만" && !settled) return false;
+    if (exportScope === "미정산만" && settled) return false;
+    if (exportPeriod !== "전체" && s.period !== exportPeriod) return false;
+    return true;
+  });
+  const totalAmount = filteredRows.reduce((sum, s) => {
+    const total = s.base + s.options;
+    const { rate } = getFeeForBusiness(s.studio, feeRate, bizFees);
+    return sum + Math.round(total * (1 - rate / 100));
+  }, 0);
 
-        <div className="overflow-x-auto border border-amber-200 rounded-lg">
-          <table className="w-full text-xs">
-            <thead className="bg-amber-50">
-              <tr>
-                <th className="p-2 text-left font-medium text-amber-800 w-16">열</th>
-                <th className="p-2 text-left font-medium text-amber-800 w-44">항목명</th>
-                <th className="p-2 text-left font-medium text-amber-800">설명</th>
-                <th className="p-2 text-center font-medium text-amber-800 w-20">필수</th>
-              </tr>
-            </thead>
-            <tbody>
-              {COLUMNS.map((c) => (
-                <tr key={c.col} className="border-t border-amber-100">
-                  <td className="p-2 font-mono text-[11px] text-gray-700 align-top">{c.col}</td>
-                  <td className="p-2 font-medium text-gray-800 align-top">{c.name}</td>
-                  <td className="p-2 text-gray-600 leading-relaxed">{c.desc}</td>
-                  <td className="p-2 text-center align-top">
-                    {c.required ? (
-                      <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">필수</span>
-                    ) : (
-                      <span className="text-[10px] text-gray-400">—</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+  const downloadKbExcel = () => {
+    if (filteredRows.length === 0) {
+      alert("선택한 조건에 해당하는 정산 건이 없습니다.");
+      return;
+    }
+    // KB ME 양식 11열: A 은행명/코드, B 입금계좌, C 이체금액, D 예금주, E 입금메모, F 출금메모, G/H/I CMS, J 수수료부담, K 메모
+    const header = ["은행명또는은행코드", "입금계좌번호", "이체금액", "예금주성명", "입금계좌메모", "출금계좌메모", "CMS코드1", "CMS코드2", "CMS코드3", "수수료부담", "메모"];
+    const rows = filteredRows.map(s => {
+      const total = s.base + s.options;
+      const { rate } = getFeeForBusiness(s.studio, feeRate, bizFees);
+      const net = Math.round(total * (1 - rate / 100));
+      const periodMemo = s.period.replace("년 ", ".").replace("월", "정산"); // "2026.4정산"
+      return [
+        s.bankCode ?? s.bankName ?? "", // A: 은행 코드 우선 (3자리 숫자가 더 안정적)
+        s.accountNumber ?? "",          // B: 입금계좌
+        net,                             // C: 이체금액
+        s.ownerName ?? "",              // D: 예금주
+        "포토팟정산",                   // E: 입금계좌메모 (받는분 통장 표시) — 최대 10자
+        `포토팟-${s.account}`.slice(0, 14), // F: 출금계좌메모 (내 통장 메모) — 최대 14자
+        "",                              // G: CMS코드 1
+        "",                              // H: CMS코드 2
+        "",                              // I: CMS코드 3
+        0,                               // J: 수수료 부담 (0=송금자)
+        periodMemo.slice(0, 10),        // K: 메모 — 최대 10자
+      ];
+    });
+    const csv = [header, ...rows]
+      .map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const today = new Date().toISOString().slice(0, 10);
+    const periodPart = exportPeriod === "전체" ? "전체" : exportPeriod.replace(/[년월\s]/g, "");
+    a.href = url;
+    a.download = `KB_대량이체_${periodPart}_${today}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* KB ME 다운로드 — 핵심 액션 */}
+      <div className="bg-white rounded-xl shadow-sm p-6 border-2 border-emerald-200">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h3 className="font-bold text-emerald-700">KB 대량이체 파일 다운로드</h3>
+            <p className="text-xs text-gray-500 mt-0.5">정산 데이터를 국민은행 인터넷뱅킹 대량이체(KB ME) 양식으로 변환하여 내보냅니다.</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          <div>
+            <label className="text-[11px] text-gray-500 block mb-1">기간</label>
+            <select value={exportPeriod} onChange={e => setExportPeriod(e.target.value)}
+              className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200 outline-none focus:border-emerald-400">
+              {periodOptions.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-[11px] text-gray-500 block mb-1">대상</label>
+            <select value={exportScope} onChange={e => setExportScope(e.target.value as typeof exportScope)}
+              className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200 outline-none focus:border-emerald-400">
+              <option value="정산 완료만">정산 완료만 (KB 송금 후 기록용)</option>
+              <option value="미정산만">미정산만 (지금 송금할 건)</option>
+              <option value="전체">전체</option>
+            </select>
+          </div>
+          <div className="flex items-end">
+            <button onClick={downloadKbExcel}
+              className="w-full bg-emerald-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400"
+              disabled={filteredRows.length === 0}>
+              KB 양식으로 다운로드 ({filteredRows.length}건 / ₩{totalAmount.toLocaleString()})
+            </button>
+          </div>
+        </div>
+        <div className="bg-emerald-50 rounded p-3 text-[11px] text-emerald-900 leading-relaxed">
+          <p className="font-medium mb-1">⚙ 자동 매핑 규칙</p>
+          <p>• A열: 업체 등록 은행 코드 (3자리 숫자)  • B열: 업체 입금계좌  • C열: 정산액(=총액×(1−수수료율))</p>
+          <p>• D열: 예금주명  • E열: &ldquo;포토팟정산&rdquo; (10자 제한)  • F열: &ldquo;포토팟-{`{아이디}`}&rdquo; (14자 제한)  • J열: 0 (송금자 부담)  • K열: 기간 라벨</p>
+          <p>• G·H·I열(CMS): 비워둠 (당행 입금 시에만 사용)</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h3 className="font-bold mb-1">주요 은행 코드</h3>
-        <p className="text-xs text-gray-500 mb-4">A열에 한글 은행명 대신 코드 3자리를 직접 입력해도 됩니다.</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-          {BANKS.map((b) => (
-            <div key={b.code} className="flex items-center justify-between bg-gray-50 rounded px-3 py-2 border border-gray-100">
-              <span className="text-xs font-medium text-gray-800">{b.name}</span>
-              <span className="text-[11px] font-mono text-primary">{b.code}</span>
+      {/* 양식 안내 — 토글 */}
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <button onClick={() => setGuideOpen(v => !v)}
+          className="w-full flex items-center justify-between p-4 hover:bg-gray-50">
+          <div className="text-left">
+            <h3 className="font-bold text-sm">국민은행 대량이체파일(KB ME) 양식 안내</h3>
+            <p className="text-[11px] text-gray-400 mt-0.5">11개 컬럼의 입력 규칙 (출처: KB국민은행 인터넷뱅킹)</p>
+          </div>
+          <span className="text-gray-400 text-sm">{guideOpen ? "−" : "+"}</span>
+        </button>
+        {guideOpen && (
+          <div className="p-4 pt-0">
+            <p className="text-xs text-gray-500 mb-3">정산 데이터를 KB ME 양식으로 변환할 때 따라야 할 컬럼 규칙입니다. 본 유의사항은 대량이체파일 등록 전에 모두 삭제해 주십시오.</p>
+            <div className="overflow-x-auto border border-amber-200 rounded-lg">
+              <table className="w-full text-xs">
+                <thead className="bg-amber-50">
+                  <tr>
+                    <th className="p-2 text-left font-medium text-amber-800 w-14 whitespace-nowrap">열</th>
+                    <th className="p-2 text-left font-medium text-amber-800 w-40 whitespace-nowrap">항목명</th>
+                    <th className="p-2 text-left font-medium text-amber-800">설명</th>
+                    <th className="p-2 text-center font-medium text-amber-800 w-16 whitespace-nowrap">필수</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {COLUMNS.map((c) => (
+                    <tr key={c.col} className="border-t border-amber-100">
+                      <td className="p-2 font-mono text-[11px] text-gray-700 align-top whitespace-nowrap">{c.col}</td>
+                      <td className="p-2 font-medium text-gray-800 align-top whitespace-nowrap">{c.name}</td>
+                      <td className="p-2 text-gray-600 leading-relaxed">{c.desc}</td>
+                      <td className="p-2 text-center align-top">
+                        {c.required ? (
+                          <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">필수</span>
+                        ) : (
+                          <span className="text-[10px] text-gray-400">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
+      </div>
+
+      {/* 은행 코드 — 토글 */}
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <button onClick={() => setBankCodesOpen(v => !v)}
+          className="w-full flex items-center justify-between p-4 hover:bg-gray-50">
+          <div className="text-left">
+            <h3 className="font-bold text-sm">주요 은행 코드</h3>
+            <p className="text-[11px] text-gray-400 mt-0.5">총 {BANKS.length}개 — A열에 한글명 대신 코드 3자리 입력 가능</p>
+          </div>
+          <span className="text-gray-400 text-sm">{bankCodesOpen ? "−" : "+"}</span>
+        </button>
+        {bankCodesOpen && (
+          <div className="p-4 pt-0">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+              {BANKS.map((b) => (
+                <div key={b.code} className="flex items-center justify-between bg-gray-50 rounded px-3 py-2 border border-gray-100">
+                  <span className="text-xs font-medium text-gray-800">{b.name}</span>
+                  <span className="text-[11px] font-mono text-primary">{b.code}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -783,26 +942,13 @@ export default function AdminWeb() {
             </div>
 
             {settlementSubTab === "국민은행" && (
-              <KbDashboard />
+              <KbDashboard feeRate={feeRate} bizFees={bizFees} settledRowIds={settledRowIds} />
             )}
 
             {settlementSubTab === "정산" && (
             /* Settlement Table — 통합 (정산 안한 것 / 정산 완료 필터) */
             (() => {
-              type SettlementRow = { account: string; studio: string; category: string; period: string; count: number; base: number; options: number; requestedAt: number; settledAt?: number; bankName?: string; bankCode?: string; accountNumber?: string; ownerName?: string };
-              const SETTLEMENT_ROWS: SettlementRow[] = [
-                // 미정산 (4월분)
-                { account: "lumiere_biz", studio: "루미에르 스튜디오", category: "프로필", period: "2026년 4월", count: 8, base: 580000, options: 100000, requestedAt: new Date("2026-04-27T09:23:00+09:00").getTime(), bankName: "국민", bankCode: "004", accountNumber: "01234567891011", ownerName: "이루미에르" },
-                { account: "lumiere_biz", studio: "루미에르 비즈컷", category: "비즈니스", period: "2026년 4월", count: 4, base: 210000, options: 30000, requestedAt: new Date("2026-04-27T09:23:00+09:00").getTime(), bankName: "국민", bankCode: "004", accountNumber: "01234567891011", ownerName: "이루미에르" },
-                { account: "bloom_wedding", studio: "블룸 웨딩홀", category: "웨딩", period: "2026년 4월", count: 3, base: 450000, options: 70000, requestedAt: new Date("2026-04-28T22:40:00+09:00").getTime(), bankName: "신한", bankCode: "088", accountNumber: "110987654321", ownerName: "박블룸" },
-                { account: "brandcut", studio: "브랜드컷 스튜디오", category: "비즈니스", period: "2026년 4월", count: 12, base: 340000, options: 0, requestedAt: new Date("2026-04-28T15:30:00+09:00").getTime(), bankName: "토스뱅크", bankCode: "092", accountNumber: "100012345678", ownerName: "김브랜드" },
-                // 정산 완료 (3월분 더미)
-                { account: "sunset_lab", studio: "선셋 포토랩", category: "바디프로필", period: "2026년 3월", count: 6, base: 720000, options: 80000, requestedAt: new Date("2026-04-01T11:00:00+09:00").getTime(), settledAt: new Date("2026-04-03T16:20:00+09:00").getTime(), bankName: "카카오뱅크", bankCode: "090", accountNumber: "311222333444", ownerName: "최선셋" },
-                { account: "private_wedding", studio: "프라이빗 웨딩하우스", category: "웨딩", period: "2026년 3월", count: 2, base: 980000, options: 60000, requestedAt: new Date("2026-03-31T22:15:00+09:00").getTime(), settledAt: new Date("2026-04-02T10:45:00+09:00").getTime(), bankName: "KEB하나", bankCode: "081", accountNumber: "555666777888", ownerName: "정프라이빗" },
-                { account: "identity_profile", studio: "아이덴티티 프로필", category: "프로필", period: "2026년 3월", count: 11, base: 540000, options: 90000, requestedAt: new Date("2026-04-01T09:00:00+09:00").getTime(), settledAt: new Date("2026-04-02T14:10:00+09:00").getTime(), bankName: "우리", bankCode: "020", accountNumber: "1002777777777", ownerName: "한아이덴" },
-              ];
-              const rowId = (s: SettlementRow) => `${s.account}__${s.studio}__${s.period}`;
-              const isSettled = (s: SettlementRow) => Boolean(s.settledAt) || rowId(s) in settledRowIds;
+              const isSettled = (s: SettlementRow) => Boolean(s.settledAt) || settlementRowId(s) in settledRowIds;
               const visibleRows = SETTLEMENT_ROWS.filter(s => settlementFilter === "정산 완료" ? isSettled(s) : !isSettled(s));
               const pendingCount = SETTLEMENT_ROWS.filter(s => !isSettled(s)).length;
               const completedCount = SETTLEMENT_ROWS.filter(s => isSettled(s)).length;
@@ -812,7 +958,7 @@ export default function AdminWeb() {
                   const total = s.base + s.options;
                   const { rate } = getFeeForBusiness(s.studio, feeRate, bizFees);
                   const net = Math.round(total * (1 - rate / 100));
-                  const settledAtTime = settledRowIds[rowId(s)] ?? s.settledAt;
+                  const settledAtTime = settledRowIds[settlementRowId(s)] ?? s.settledAt;
                   return [`${s.account} - ${s.studio}`, s.category, s.period, `${s.count}건`, s.base, s.options, total, rate, net, new Date(s.requestedAt).toLocaleString("ko-KR"), settledAtTime ? new Date(settledAtTime).toLocaleString("ko-KR") : "", s.bankName ?? "", s.accountNumber ?? "", s.ownerName ?? ""];
                 });
                 const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
@@ -878,15 +1024,15 @@ export default function AdminWeb() {
                     <table className="w-full text-sm">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="p-3 text-left font-medium text-gray-500 text-xs">업체 (아이디-스튜디오)</th>
-                          <th className="p-3 text-left font-medium text-gray-500 text-xs">카테고리</th>
-                          <th className="p-3 text-left font-medium text-gray-500 text-xs">기간</th>
-                          <th className="p-3 text-left font-medium text-gray-500 text-xs">예약건수</th>
-                          <th className="p-3 text-left font-medium text-gray-500 text-xs">총액 (촬영+옵션)</th>
-                          <th className="p-3 text-left font-medium text-gray-500 text-xs">수수료율</th>
-                          <th className="p-3 text-left font-medium text-gray-500 text-xs">정산액</th>
-                          <th className="p-3 text-left font-medium text-gray-500 text-xs">요청 시각</th>
-                          <th className="p-3 text-left font-medium text-gray-500 text-xs">처리</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs whitespace-nowrap">업체 (아이디-스튜디오)</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs whitespace-nowrap">카테고리</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs whitespace-nowrap">기간</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs whitespace-nowrap">예약건수</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs whitespace-nowrap">총액 (촬영+옵션)</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs whitespace-nowrap">수수료율</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs whitespace-nowrap">정산액</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs whitespace-nowrap">요청 시각</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs whitespace-nowrap">처리</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -895,7 +1041,7 @@ export default function AdminWeb() {
                             {settlementFilter === "미정산" ? "정산할 건이 없습니다." : "정산 완료된 건이 없습니다."}
                           </td></tr>
                         ) : visibleRows.map((s) => {
-                          const id = rowId(s);
+                          const id = settlementRowId(s);
                           const total = s.base + s.options;
                           const { rate } = getFeeForBusiness(s.studio, feeRate, bizFees);
                           const net = Math.round(total * (1 - rate / 100));
@@ -910,19 +1056,19 @@ export default function AdminWeb() {
                                   <span>{s.studio}</span>
                                 </p>
                               </td>
-                              <td className="p-3"><span className="text-[11px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{s.category}</span></td>
-                              <td className="p-3 text-xs text-gray-600">{s.period}</td>
-                              <td className="p-3">{s.count}건</td>
-                              <td className="p-3">
+                              <td className="p-3 whitespace-nowrap"><span className="text-[11px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded whitespace-nowrap">{s.category}</span></td>
+                              <td className="p-3 text-xs text-gray-600 whitespace-nowrap">{s.period}</td>
+                              <td className="p-3 whitespace-nowrap">{s.count}건</td>
+                              <td className="p-3 whitespace-nowrap">
                                 <p>₩{total.toLocaleString()}</p>
                                 <p className="text-[9px] text-gray-400">촬영 ₩{s.base.toLocaleString()} + 옵션 ₩{s.options.toLocaleString()}</p>
                               </td>
-                              <td className="p-3 text-primary font-medium">{rate}%</td>
-                              <td className="p-3 font-bold">₩{net.toLocaleString()}</td>
-                              <td className="p-3">
+                              <td className="p-3 text-primary font-medium whitespace-nowrap">{rate}%</td>
+                              <td className="p-3 font-bold whitespace-nowrap">₩{net.toLocaleString()}</td>
+                              <td className="p-3 whitespace-nowrap">
                                 <p className="text-[11px] text-gray-600">{new Date(s.requestedAt).toLocaleString("ko-KR")}</p>
                               </td>
-                              <td className="p-3">
+                              <td className="p-3 whitespace-nowrap">
                                 {settledAtTime ? (
                                   <div>
                                     <span className="text-[10px] text-green-700 font-medium">정산 완료</span>
