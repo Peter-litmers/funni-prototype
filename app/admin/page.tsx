@@ -102,6 +102,17 @@ const SETTLEMENT_ROWS: SettlementRow[] = [
 
 const settlementRowId = (s: SettlementRow) => `${s.account}__${s.studio}__${s.period}`;
 
+// 정산 표용 짧은 datetime 포맷 (yyyy.MM.dd HH:mm) — 컬럼 폭 절약
+function formatShortKR(ms: number): string {
+  const d = new Date(ms);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${y}.${m}.${day} ${hh}:${mm}`;
+}
+
 // 국민은행 대량이체파일(KB ME) 등록 안내 — 어드민 정산 → 국민은행 대시보드 탭에서 사용
 function KbDashboard({
   feeRate,
@@ -1137,12 +1148,9 @@ export default function AdminWeb() {
                           const settledAtTime = settledRowIds[id] ?? s.settledAt;
                           return (
                             <tr key={id} className="border-t border-gray-50">
-                              <td className="p-3">
-                                <p className="font-medium">
-                                  <span className="text-gray-400 font-mono text-xs">{s.account}</span>
-                                  <span className="text-gray-300 mx-1">-</span>
-                                  <span>{s.studio}</span>
-                                </p>
+                              <td className="p-3 align-top whitespace-nowrap">
+                                <p className="text-gray-400 font-mono text-[10px]">{s.account}</p>
+                                <p className="font-medium text-sm">{s.studio}</p>
                               </td>
                               <td className="p-3 whitespace-nowrap"><span className="text-[11px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded whitespace-nowrap">{s.category}</span></td>
                               <td className="p-3 text-xs text-gray-600 whitespace-nowrap">{s.period}</td>
@@ -1154,13 +1162,13 @@ export default function AdminWeb() {
                               <td className="p-3 text-primary font-medium whitespace-nowrap">{rate}%</td>
                               <td className="p-3 font-bold whitespace-nowrap">₩{net.toLocaleString()}</td>
                               <td className="p-3 whitespace-nowrap">
-                                <p className="text-[11px] text-gray-600">{new Date(s.requestedAt).toLocaleString("ko-KR")}</p>
+                                <p className="text-[11px] text-gray-600 font-mono">{formatShortKR(s.requestedAt)}</p>
                               </td>
                               <td className="p-3 whitespace-nowrap">
                                 {settledAtTime ? (
                                   <div>
                                     <span className="text-[10px] text-green-700 font-medium">정산 완료</span>
-                                    <p className="text-[10px] text-gray-400 mt-1">{new Date(settledAtTime).toLocaleString("ko-KR")}</p>
+                                    <p className="text-[10px] text-gray-400 mt-1 font-mono">{formatShortKR(settledAtTime)}</p>
                                   </div>
                                 ) : (
                                   <button
