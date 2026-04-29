@@ -1022,12 +1022,9 @@ export default function BusinessApp() {
                 })}
               </div>
 
-              {/* 월별 실적 — 기간 내 월만 노출, 예약/매출/정산/예정 표시 */}
+              {/* 월별 실적 — 기간 내 월만 노출, 예약/매출/정산완료/정산 예정 */}
               <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-bold">월별 실적</p>
-                  <p className="text-[10px] text-gray-400">수수료 {myFee.rate}% 적용</p>
-                </div>
+                <p className="text-xs font-bold mb-3">월별 실적</p>
                 <div className="space-y-2.5">
                   {periodMonthlyStats.length === 0 ? (
                     <p className="text-xs text-gray-400 text-center py-3">선택한 기간 내 실적이 없습니다.</p>
@@ -1039,9 +1036,9 @@ export default function BusinessApp() {
                       </div>
                       <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
                         <div className="flex justify-between"><span className="text-gray-400">예약</span><span className="text-gray-900">{s.bk}건</span></div>
-                        <div className="flex justify-between"><span className="text-gray-400">매출</span><span className="text-gray-900">₩{(s.rv / 10000).toFixed(0)}만</span></div>
-                        <div className="flex justify-between"><span className="text-gray-400">정산</span><span className="text-emerald-700 font-medium">₩{(s.settled / 10000).toFixed(0)}만</span></div>
-                        <div className="flex justify-between"><span className="text-gray-400">예정</span><span className="text-amber-600 font-medium">₩{(s.pending / 10000).toFixed(0)}만</span></div>
+                        <div className="flex justify-between"><span className="text-gray-400">매출</span><span className="text-gray-900">{s.rv.toLocaleString()}원</span></div>
+                        <div className="flex justify-between"><span className="text-gray-400">정산완료</span><span className="text-emerald-700 font-medium">{s.settled.toLocaleString()}원</span></div>
+                        <div className="flex justify-between"><span className="text-gray-400">정산 예정</span><span className="text-amber-600 font-medium">{s.pending.toLocaleString()}원</span></div>
                       </div>
                     </div>
                   ))}
