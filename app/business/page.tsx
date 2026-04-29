@@ -412,6 +412,30 @@ export default function BusinessApp() {
   const totalRevenue = bookings.filter(b => b.status === "완료" || b.status === "확정").reduce((s, b) => s + b.price, 0);
   const pendingAmount = bookings.filter(b => b.status === "확정").reduce((s, b) => s + b.price, 0);
 
+  // 실적 대시보드 — 기간 필터 (dashStart ~ dashEnd) 적용
+  const dashStartMs = dashStart ? new Date(`${dashStart}T00:00:00+09:00`).getTime() : -Infinity;
+  const dashEndMs = dashEnd ? new Date(`${dashEnd}T23:59:59+09:00`).getTime() : Infinity;
+  const periodBookings = bookings.filter(b => {
+    const t = new Date(2026, b.month - 1, b.date).getTime();
+    return t >= dashStartMs && t <= dashEndMs;
+  });
+  const periodRevenue = periodBookings.filter(b => b.status === "완료" || b.status === "확정").reduce((s, b) => s + b.price, 0);
+  const periodCancelCount = periodBookings.filter(b => b.status === "예약 취소 중").length;
+  const periodMonthlyStats = (() => {
+    const groups: Record<string, { bk: number; rv: number }> = {};
+    periodBookings.forEach(b => {
+      if (b.status !== "완료" && b.status !== "확정") return;
+      const key = `2026.${String(b.month).padStart(2, "0")}`;
+      if (!groups[key]) groups[key] = { bk: 0, rv: 0 };
+      groups[key].bk++;
+      groups[key].rv += b.price;
+    });
+    const ratingMap: Record<string, number> = { "2026.05": 4.8, "2026.04": 4.7, "2026.03": 4.6, "2026.02": 4.7, "2026.01": 4.6 };
+    return Object.entries(groups)
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([m, g]) => ({ m, bk: g.bk, rv: g.rv, rating: ratingMap[m] ?? 4.5 }));
+  })();
+
   const handleBookingAction = (id: number, action: "accept" | "reject") => {
     setBookings(prev => prev.map(b => b.id === id ? { ...b, status: action === "accept" ? "확정" : "취소완료" } : b));
     setScreen("bookings");
@@ -935,59 +959,49 @@ export default function BusinessApp() {
                       }`}>{p.label}</button>
                   ))}
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <input
-                    type="date"
-                    value={dashStart}
-                    onChange={e => { setDashStart(e.target.value); setDashboardPeriod("custom"); }}
-                    className="flex-1 bg-gray-50 rounded-lg px-2 py-1.5 text-[11px] border border-gray-100 outline-none focus:border-primary"
-                  />
-                  <span className="text-[10px] text-gray-400">~</span>
-                  <input
-                    type="date"
-                    value={dashEnd}
-                    onChange={e => { setDashEnd(e.target.value); setDashboardPeriod("custom"); }}
-                    className="flex-1 bg-gray-50 rounded-lg px-2 py-1.5 text-[11px] border border-gray-100 outline-none focus:border-primary"
-                  />
-                </div>
-                <p className="text-[10px] text-gray-400 mt-1.5">조회 기간: <span className="text-gray-700 font-medium">{dashStart || "—"} ~ {dashEnd || "—"}</span></p>
+                {dashboardPeriod === "custom" && (
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="date"
+                      value={dashStart}
+                      onChange={e => setDashStart(e.target.value)}
+                      className="flex-1 bg-gray-50 rounded-lg px-2 py-1.5 text-[11px] border border-gray-100 outline-none focus:border-primary"
+                    />
+                    <span className="text-[10px] text-gray-400">~</span>
+                    <input
+                      type="date"
+                      value={dashEnd}
+                      onChange={e => setDashEnd(e.target.value)}
+                      className="flex-1 bg-gray-50 rounded-lg px-2 py-1.5 text-[11px] border border-gray-100 outline-none focus:border-primary"
+                    />
+                  </div>
+                )}
               </div>
 
-              {/* 적용 수수료율 안내 */}
-              <div className="mb-4 flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5">
-                <div>
-                  <p className="text-[10px] text-gray-500">스튜디오 적용 수수료율</p>
-                  <p className="text-sm font-bold text-primary">
-                    {myFee.rate}%
-                    {myFee.isOverride && <span className="ml-1.5 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">개별</span>}
-                    {!myFee.isOverride && <span className="ml-1.5 text-[10px] text-gray-400">(기본값)</span>}
-                  </p>
-                </div>
-                <p className="text-[10px] text-gray-400 text-right">수수료율 변경은<br/>어드민 문의</p>
-              </div>
-
-              {/* Summary */}
+              {/* Summary — 기간 필터 적용 */}
               <div className="grid grid-cols-3 gap-2 mb-5">
                 <div className="bg-primary/5 rounded-2xl p-3 border border-primary/10 text-center">
-                  <p className="text-[10px] text-gray-500 mb-1">오늘 예약</p>
-                  <p className="text-xl font-bold text-primary">{todayBookings.length}<span className="text-[10px] font-normal ml-0.5">건</span></p>
+                  <p className="text-[10px] text-gray-500 mb-1">기간 내 예약</p>
+                  <p className="text-xl font-bold text-primary">{periodBookings.length}<span className="text-[10px] font-normal ml-0.5">건</span></p>
                 </div>
                 <div className="bg-green-50 rounded-2xl p-3 border border-green-100 text-center overflow-hidden">
-                  <p className="text-[10px] text-gray-500 mb-1">이번 달</p>
-                  <p className="text-sm font-bold text-green-600 truncate">₩{(totalRevenue / 10000).toFixed(0)}<span className="text-[10px] font-normal">만원</span></p>
+                  <p className="text-[10px] text-gray-500 mb-1">기간 매출</p>
+                  <p className="text-sm font-bold text-green-600 truncate">₩{(periodRevenue / 10000).toFixed(0)}<span className="text-[10px] font-normal">만원</span></p>
                 </div>
                 <button onClick={() => { navigate("bookings"); setBookingFilter("예약 취소 중"); }}
                   className="bg-red-50 rounded-2xl p-3 border border-red-100 text-center">
-                  <p className="text-[10px] text-gray-500 mb-1">취소 요청</p>
-                  <p className="text-xl font-bold text-red-500">{bookings.filter(b => b.status === "예약 취소 중").length}<span className="text-[10px] font-normal ml-0.5">건</span></p>
+                  <p className="text-[10px] text-gray-500 mb-1">기간 내 취소</p>
+                  <p className="text-xl font-bold text-red-500">{periodCancelCount}<span className="text-[10px] font-normal ml-0.5">건</span></p>
                 </button>
               </div>
 
-              {/* 월별 통계 */}
+              {/* 월별 통계 — 기간 내 월만 노출 */}
               <div className="bg-gray-50 rounded-xl p-4 mb-4">
                 <p className="text-xs font-bold mb-3">월별 실적</p>
                 <div className="space-y-2">
-                  {[{m: "2026.05", bk: 12, rv: 1400000, rating: 4.8}, {m: "2026.04", bk: 18, rv: 2200000, rating: 4.7}, {m: "2026.03", bk: 15, rv: 1800000, rating: 4.6}].map((s, i) => (
+                  {periodMonthlyStats.length === 0 ? (
+                    <p className="text-xs text-gray-400 text-center py-3">선택한 기간 내 실적이 없습니다.</p>
+                  ) : periodMonthlyStats.map((s, i) => (
                     <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
                       <span className="text-xs text-gray-500">{s.m}</span>
                       <div className="flex items-center gap-3 text-xs">
@@ -1003,20 +1017,23 @@ export default function BusinessApp() {
               <h3 className="font-bold text-sm mb-3">오늘의 예약</h3>
               {todayBookings.length === 0 ? (
                 <div className="text-center py-8 bg-gray-50 rounded-xl mb-4"><p className="text-sm text-gray-400">오늘 예약이 없습니다</p></div>
-              ) : todayBookings.map(b => (
-                <button key={b.id} onClick={() => { setSelectedBooking(b); navigate("bookingDetail"); }}
-                  className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl mb-2 text-left">
-                  <div className="w-11 h-11 bg-primary/10 rounded-full flex items-center justify-center text-primary"><Camera size={18} strokeWidth={1.5} /></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{b.name}</p>
-                    <p className="text-xs text-gray-400">{b.cat} · {b.time}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className={`text-[10px] px-2 py-1 rounded-full font-medium ${b.status === "예약 취소 중" ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700"}`}>{b.status}</span>
-                    <p className="text-xs font-bold mt-1">₩{b.price.toLocaleString()}</p>
-                  </div>
-                </button>
-              ))}
+              ) : todayBookings.map(b => {
+                const CatIcon = getCatIcon(b.cat);
+                return (
+                  <button key={b.id} onClick={() => { setSelectedBooking(b); navigate("bookingDetail"); }}
+                    className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-xl mb-2 text-left">
+                    <div className="w-11 h-11 bg-primary/10 rounded-full flex items-center justify-center text-primary"><CatIcon size={18} strokeWidth={1.5} /></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{b.name}</p>
+                      <p className="text-xs text-gray-400">{b.cat} · {b.time}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className={`text-[10px] px-2 py-1 rounded-full font-medium ${b.status === "예약 취소 중" ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700"}`}>{b.status}</span>
+                      <p className="text-xs font-bold mt-1">₩{b.price.toLocaleString()}</p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
 
