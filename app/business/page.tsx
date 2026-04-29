@@ -213,8 +213,8 @@ export default function BusinessApp() {
   const [selectedStudio, setSelectedStudio] = useState(STUDIOS[0]);
   const [categoryCat, setCategoryCat] = useState("전체");
   // 실적 대시보드 조회 기간 (프리셋 + 직접 설정)
-  const [dashboardPeriod, setDashboardPeriod] = useState<"1m" | "3m" | "6m" | "1y" | "custom">("3m");
-  const [dashStart, setDashStart] = useState<string>(() => { const d = new Date(); d.setMonth(d.getMonth() - 3); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; });
+  const [dashboardPeriod, setDashboardPeriod] = useState<"1m" | "3m" | "6m" | "1y" | "custom">("1m");
+  const [dashStart, setDashStart] = useState<string>(() => { const d = new Date(); d.setMonth(d.getMonth() - 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; });
   const [dashEnd, setDashEnd] = useState<string>(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; });
   const historyStack = useRef<{ s: Screen; t: Tab }[]>([]);
   const touchStartX = useRef(0);
@@ -959,40 +959,42 @@ export default function BusinessApp() {
                       }`}>{p.label}</button>
                   ))}
                 </div>
-                {dashboardPeriod === "custom" && (
-                  <div className="flex items-center gap-1.5">
-                    <input
-                      type="date"
-                      value={dashStart}
-                      onChange={e => setDashStart(e.target.value)}
-                      className="flex-1 bg-gray-50 rounded-lg px-2 py-1.5 text-[11px] border border-gray-100 outline-none focus:border-primary"
-                    />
-                    <span className="text-[10px] text-gray-400">~</span>
-                    <input
-                      type="date"
-                      value={dashEnd}
-                      onChange={e => setDashEnd(e.target.value)}
-                      className="flex-1 bg-gray-50 rounded-lg px-2 py-1.5 text-[11px] border border-gray-100 outline-none focus:border-primary"
-                    />
-                  </div>
-                )}
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="date"
+                    value={dashStart}
+                    onChange={e => { setDashStart(e.target.value); setDashboardPeriod("custom"); }}
+                    className="flex-1 bg-gray-50 rounded-lg px-2 py-1.5 text-[11px] border border-gray-100 outline-none focus:border-primary"
+                  />
+                  <span className="text-[10px] text-gray-400">~</span>
+                  <input
+                    type="date"
+                    value={dashEnd}
+                    onChange={e => { setDashEnd(e.target.value); setDashboardPeriod("custom"); }}
+                    className="flex-1 bg-gray-50 rounded-lg px-2 py-1.5 text-[11px] border border-gray-100 outline-none focus:border-primary"
+                  />
+                </div>
               </div>
 
-              {/* Summary — 기간 필터 적용 */}
+              {/* Summary — 기간 필터 적용 (옵션 A: 미니멀 정렬 카드) */}
               <div className="grid grid-cols-3 gap-2 mb-5">
-                <div className="bg-primary/5 rounded-2xl p-3 border border-primary/10 text-center">
-                  <p className="text-[10px] text-gray-500 mb-1">기간 내 예약</p>
-                  <p className="text-xl font-bold text-primary">{periodBookings.length}<span className="text-[10px] font-normal ml-0.5">건</span></p>
-                </div>
-                <div className="bg-green-50 rounded-2xl p-3 border border-green-100 text-center overflow-hidden">
-                  <p className="text-[10px] text-gray-500 mb-1">기간 매출</p>
-                  <p className="text-sm font-bold text-green-600 truncate">₩{(periodRevenue / 10000).toFixed(0)}<span className="text-[10px] font-normal">만원</span></p>
-                </div>
-                <button onClick={() => { navigate("bookings"); setBookingFilter("예약 취소 중"); }}
-                  className="bg-red-50 rounded-2xl p-3 border border-red-100 text-center">
-                  <p className="text-[10px] text-gray-500 mb-1">기간 내 취소</p>
-                  <p className="text-xl font-bold text-red-500">{periodCancelCount}<span className="text-[10px] font-normal ml-0.5">건</span></p>
-                </button>
+                {[
+                  { label: "기간 내 예약", value: periodBookings.length.toString(), unit: "건", barColor: "bg-primary", onClick: undefined as (() => void) | undefined },
+                  { label: "기간 매출", value: (periodRevenue / 10000).toFixed(0), unit: "만원", barColor: "bg-emerald-500", onClick: undefined as (() => void) | undefined },
+                  { label: "기간 내 취소", value: periodCancelCount.toString(), unit: "건", barColor: "bg-red-500", onClick: () => { navigate("bookings"); setBookingFilter("예약 취소 중"); } },
+                ].map((card, i) => {
+                  const Tag = card.onClick ? "button" : "div";
+                  return (
+                    <Tag key={i} onClick={card.onClick} className="relative bg-white rounded-xl border border-gray-200 p-3 overflow-hidden text-left w-full">
+                      <div className={`absolute left-0 top-0 bottom-0 w-1 ${card.barColor}`} />
+                      <p className="text-[10px] text-gray-500 mb-1.5 ml-1">{card.label}</p>
+                      <div className="flex items-baseline gap-0.5 ml-1">
+                        <span className="text-2xl font-bold leading-none text-gray-900">{card.value}</span>
+                        <span className="text-[11px] text-gray-400">{card.unit}</span>
+                      </div>
+                    </Tag>
+                  );
+                })}
               </div>
 
               {/* 월별 통계 — 기간 내 월만 노출 */}
