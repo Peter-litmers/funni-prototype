@@ -849,13 +849,6 @@ export default function AdminWeb() {
               </button>
             </div>
 
-            <div className="policy-area p-4 mb-6">
-              <PolicyBadge label="광고 정책 반영" />
-              <p className="text-[10px] text-gray-500 mt-1">• 추천 슬롯: 카테고리당 최대 2개 (총 카테고리수 × 2)</p>
-              <p className="text-[10px] text-gray-500">• 노출 기간: 월간(기본), 시작일/종료일 상세 설정 가능</p>
-              <p className="text-[10px] text-gray-500">• 노출 순서: 카테고리 내 ▲▼로 어드민 직접 조정</p>
-            </div>
-
             {/* 광고 노출 기간 단위 설정 */}
             <div className="bg-white rounded-xl p-4 shadow-sm mb-6">
               <div className="flex items-center justify-between mb-3">
