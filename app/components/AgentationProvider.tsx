@@ -1,64 +1,26 @@
 "use client";
-import { useRef } from "react";
-import { Agentation } from "agentation";
-import { usePathname } from "next/navigation";
 
+import { EnhancedAgentation } from "@litmers-dev/agentation-kit";
+
+const submitEndpoint =
+  process.env.NEXT_PUBLIC_AGENTATION_SUBMIT_ENDPOINT ?? "/api/agentation/submit";
+
+const webhookUrl = process.env.NEXT_PUBLIC_AGENTATION_WEBHOOK_URL;
+
+const projectLabel =
+  process.env.NEXT_PUBLIC_AGENTATION_PROJECT_LABEL ?? "funni-prototype";
+
+const agentationEnabled =
+  process.env.NEXT_PUBLIC_AGENTATION_ENABLED === "1" ||
+  process.env.NEXT_PUBLIC_AGENTATION_ENABLED === "true";
 
 export default function AgentationProvider() {
-  const pathname = usePathname();
-  // Agentation annotation id → 우리 feedback id 매핑
-  const idMapRef = useRef<Map<string, string>>(new Map());
-
-  const handleAnnotationAdd = async (annotation: {
-    id?: string;
-    x?: number;
-    y?: number;
-    comment?: string;
-    element?: string;
-    elementPath?: string;
-    nearbyText?: string;
-    boundingBox?: { x: number; y: number; width: number; height: number };
-    [key: string]: unknown;
-  }) => {
-    try {
-      const res = await fetch("/api/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pageUrl: pathname?.replace("/", "") || "main",
-          x: annotation.x ?? annotation.boundingBox?.x ?? 0,
-          y: annotation.y ?? annotation.boundingBox?.y ?? 0,
-          title: annotation.comment ? annotation.comment.slice(0, 30) : (annotation.element || "요소"),
-          comment: annotation.comment || "",
-          author: "고객사 (Agentation)",
-          nearbyText: annotation.elementPath || "",
-        }),
-      });
-      const data = await res.json();
-      if (data.ok && data.item?.id && annotation.id) {
-        idMapRef.current.set(annotation.id, data.item.id);
-      }
-    } catch (e) {
-      console.error("Failed to sync annotation:", e);
-    }
-  };
-
-  const handleAnnotationDelete = async (annotation: { id?: string; [key: string]: unknown }) => {
-    if (!annotation.id) return;
-    const feedbackId = idMapRef.current.get(annotation.id);
-    if (!feedbackId) return;
-    try {
-      await fetch(`/api/feedback?id=${encodeURIComponent(feedbackId)}`, { method: "DELETE" });
-      idMapRef.current.delete(annotation.id);
-    } catch (e) {
-      console.error("Failed to delete feedback:", e);
-    }
-  };
-
+  if (!agentationEnabled) return null;
   return (
-    <Agentation
-      onAnnotationAdd={handleAnnotationAdd}
-      onAnnotationDelete={handleAnnotationDelete}
+    <EnhancedAgentation
+      submitEndpoint={submitEndpoint}
+      webhookUrl={webhookUrl}
+      extraContext={{ projectLabel }}
     />
   );
 }
