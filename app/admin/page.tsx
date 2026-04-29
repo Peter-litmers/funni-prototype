@@ -25,8 +25,6 @@ import {
   useFeaturedPackages,
   useStudioPackages,
   resolveStudioPackages,
-  useStudioDeposits,
-  describeDeposit,
   PACKAGE_LABELS,
   countNoShowsFor,
   REFUND_PERIOD_LABELS,
@@ -87,7 +85,6 @@ export default function AdminWeb() {
   const [ads, setAds] = useAds();
   const [featuredPackages, setFeaturedPackage] = useFeaturedPackages();
   const [studioPackages] = useStudioPackages();
-  const [studioDeposits] = useStudioDeposits();
   const [banners, setBanners] = useBanners();
   const [blockedMembers, blockMember, unblockMember] = useBlockedMembers();
   const [hiddenReviews, hideReview, unhideReview] = useHiddenReviews();
@@ -950,7 +947,6 @@ export default function AdminWeb() {
                                 <td className="px-3 py-2.5 font-medium align-middle">
                                   <div className="flex items-center gap-1.5 flex-wrap">
                                     <span className="truncate">{a.studio}</span>
-                                    <span className="text-[9px] font-normal text-amber-700 bg-amber-50 border border-amber-200 px-1 py-0.5 rounded shrink-0">예약금 {describeDeposit(studioDeposits[a.studio])}</span>
                                   </div>
                                   <div className="mt-1 flex flex-wrap items-center gap-1">
                                     <span className="text-[9px] text-gray-400 shrink-0">노출 패키지</span>
@@ -1034,7 +1030,6 @@ export default function AdminWeb() {
                                 <td className="px-3 py-2.5 font-medium align-middle">
                                   <div className="flex items-center gap-1.5 flex-wrap">
                                     <span className="truncate">{a.studio}</span>
-                                    <span className="text-[9px] font-normal text-amber-700 bg-amber-50 border border-amber-200 px-1 py-0.5 rounded shrink-0">예약금 {describeDeposit(studioDeposits[a.studio])}</span>
                                   </div>
                                   <div className="mt-1 flex flex-wrap items-center gap-1">
                                     <span className="text-[9px] text-gray-400 shrink-0">노출 패키지</span>
