@@ -2046,6 +2046,52 @@ export default function BusinessApp() {
                 <div><p className="text-xs text-gray-500 mb-1">연락처</p><input type="tel" placeholder="02-0000-0000" className="w-full bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-200" /></div>
               </div>
 
+              {/* 정산 계좌 — KB 대량이체(KB ME) 송금에 사용 */}
+              <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 mb-4">
+                <p className="text-xs font-bold text-emerald-800 mb-1">정산 입금 계좌</p>
+                <p className="text-[10px] text-emerald-700 mb-3">포토팟이 매월 정산금을 입금할 계좌입니다. 본인 명의 또는 사업자 명의 계좌로 등록해주세요.</p>
+                <div className="space-y-2.5">
+                  <div>
+                    <p className="text-[11px] text-gray-500 mb-1">은행</p>
+                    <select className="w-full bg-white rounded-lg px-3 py-2 text-sm outline-none border border-gray-200 focus:border-emerald-400">
+                      <option value="">은행 선택</option>
+                      <option value="국민">국민</option>
+                      <option value="신한">신한</option>
+                      <option value="우리">우리</option>
+                      <option value="KEB하나">KEB하나</option>
+                      <option value="농협">농협</option>
+                      <option value="기업">기업</option>
+                      <option value="카카오뱅크">카카오뱅크</option>
+                      <option value="토스뱅크">토스뱅크</option>
+                      <option value="케이뱅크">케이뱅크</option>
+                      <option value="새마을금고">새마을금고</option>
+                      <option value="우체국">우체국</option>
+                      <option value="씨티">씨티</option>
+                      <option value="SC">SC</option>
+                      <option value="부산">부산</option>
+                      <option value="경남">경남</option>
+                      <option value="광주">광주</option>
+                      <option value="대구">대구</option>
+                      <option value="제주">제주</option>
+                      <option value="전북">전북</option>
+                      <option value="수협">수협</option>
+                      <option value="신협">신협</option>
+                      <option value="저축">저축</option>
+                      <option value="산업">산업</option>
+                      <option value="HSBC">HSBC</option>
+                    </select>
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-gray-500 mb-1">입금계좌번호</p>
+                    <input type="text" inputMode="numeric" placeholder="'-' 없이 숫자만 입력" className="w-full bg-white rounded-lg px-3 py-2 text-sm outline-none border border-gray-200 focus:border-emerald-400" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-gray-500 mb-1">예금주</p>
+                    <input type="text" placeholder="홍길동 (띄어쓰기 없이)" className="w-full bg-white rounded-lg px-3 py-2 text-sm outline-none border border-gray-200 focus:border-emerald-400" />
+                  </div>
+                </div>
+              </div>
+
               <div className="mb-4">
                 <p className="text-xs text-gray-500 mb-2">포트폴리오 사진 업로드 (최대 30장)</p>
                 <div className="grid grid-cols-4 gap-2">

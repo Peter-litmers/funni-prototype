@@ -127,7 +127,7 @@ function KbDashboard({
   const [bankCodesOpen, setBankCodesOpen] = useState(false);
   const [exportStart, setExportStart] = useState<string>(""); // YYYY-MM-DD; "" = 제한없음
   const [exportEnd, setExportEnd] = useState<string>("");
-  const [exportScope, setExportScope] = useState<"정산 완료만" | "미정산만" | "전체">("정산 완료만");
+  // KB 송금은 항상 미정산 건만 대상 (대상 선택 UI 제거)
   const fmtYmd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   const setPreset = (preset: "이번달" | "지난달" | "최근7일" | "전체") => {
     if (preset === "전체") { setExportStart(""); setExportEnd(""); return; }
@@ -175,12 +175,9 @@ function KbDashboard({
   const filteredRows = SETTLEMENT_ROWS.filter(s => {
     const id = settlementRowId(s);
     const settled = Boolean(s.settledAt) || id in settledRowIds;
-    if (exportScope === "정산 완료만" && !settled) return false;
-    if (exportScope === "미정산만" && settled) return false;
-    const refTime = exportScope === "정산 완료만"
-      ? (settledRowIds[id] ?? s.settledAt ?? s.requestedAt)
-      : s.requestedAt;
-    if (refTime < startMs || refTime > endMs) return false;
+    // 미정산 고정 — 송금 안된 건만
+    if (settled) return false;
+    if (s.requestedAt < startMs || s.requestedAt > endMs) return false;
     return true;
   });
   const totalAmount = filteredRows.reduce((sum, s) => {
@@ -252,12 +249,9 @@ function KbDashboard({
           </div>
           <div className="md:col-span-4">
             <label className="text-[11px] text-gray-500 block mb-1">대상</label>
-            <select value={exportScope} onChange={e => setExportScope(e.target.value as typeof exportScope)}
-              className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200 outline-none focus:border-emerald-400">
-              <option value="정산 완료만">정산 완료만 (KB 송금 후 기록용)</option>
-              <option value="미정산만">미정산만 (지금 송금할 건)</option>
-              <option value="전체">전체</option>
-            </select>
+            <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200 text-gray-700">
+              미정산 <span className="text-[10px] text-gray-400 ml-2">(KB 송금할 건만)</span>
+            </div>
           </div>
           <div className="md:col-span-3 flex items-end">
             <button onClick={downloadKbExcel}
@@ -1051,13 +1045,16 @@ export default function AdminWeb() {
               const pendingCount = SETTLEMENT_ROWS.filter(s => !isSettled(s)).length;
               const completedCount = SETTLEMENT_ROWS.filter(s => isSettled(s)).length;
               const downloadCSV = () => {
-                const header = ["업체 (아이디-스튜디오)", "카테고리", "기간", "예약건수", "촬영", "옵션", "총액", "수수료율(%)", "정산액", "요청 시각", "정산 시각", "은행", "계좌번호", "예금주"];
+                // 컬럼 순서를 대시보드 표와 동일하게
+                const header = ["업체 (아이디-스튜디오)", "카테고리", "기간", "예약건수", "총액 (촬영+옵션)", "수수료율", "정산액", "요청 시각", "처리", "대표 순수익"];
                 const rows = visibleRows.map(s => {
                   const total = s.base + s.options;
                   const { rate } = getFeeForBusiness(s.studio, feeRate, bizFees);
                   const net = Math.round(total * (1 - rate / 100));
                   const settledAtTime = settledRowIds[settlementRowId(s)] ?? s.settledAt;
-                  return [`${s.account} - ${s.studio}`, s.category, s.period, `${s.count}건`, s.base, s.options, total, rate, net, new Date(s.requestedAt).toLocaleString("ko-KR"), settledAtTime ? new Date(settledAtTime).toLocaleString("ko-KR") : "", s.bankName ?? "", s.accountNumber ?? "", s.ownerName ?? ""];
+                  const totalText = `₩${total.toLocaleString()} (촬영 ₩${s.base.toLocaleString()} + 옵션 ₩${s.options.toLocaleString()})`;
+                  const handlingText = settledAtTime ? `정산 완료 (${formatShortKR(settledAtTime)})` : "정산 전";
+                  return [`${s.account} - ${s.studio}`, s.category, s.period, `${s.count}건`, totalText, `${rate}%`, `₩${net.toLocaleString()}`, formatShortKR(s.requestedAt), handlingText, `₩${(total - net).toLocaleString()}`];
                 });
                 const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
                 const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
@@ -1094,11 +1091,13 @@ export default function AdminWeb() {
                         className="text-[10px] text-gray-500 bg-gray-100 px-2 py-1 rounded hover:bg-gray-200">
                         초기화
                       </button>
-                      <button
-                        onClick={downloadCSV}
-                        className="text-[10px] text-white bg-emerald-600 px-2 py-1 rounded hover:bg-emerald-700 font-medium">
-                        해당 기간 엑셀로 다운로드
-                      </button>
+                      {settlementFilter === "정산 완료" && (
+                        <button
+                          onClick={downloadCSV}
+                          className="text-[10px] text-white bg-emerald-600 px-2 py-1 rounded hover:bg-emerald-700 font-medium">
+                          해당 기간 엑셀로 다운로드
+                        </button>
+                      )}
                     </div>
                   </div>
 
