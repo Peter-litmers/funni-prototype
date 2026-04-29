@@ -114,8 +114,27 @@ function KbDashboard({
 }) {
   const [guideOpen, setGuideOpen] = useState(false);
   const [bankCodesOpen, setBankCodesOpen] = useState(false);
-  const [exportPeriod, setExportPeriod] = useState<string>("전체");
+  const [exportStart, setExportStart] = useState<string>(""); // YYYY-MM-DD; "" = 제한없음
+  const [exportEnd, setExportEnd] = useState<string>("");
   const [exportScope, setExportScope] = useState<"정산 완료만" | "미정산만" | "전체">("정산 완료만");
+  const fmtYmd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const setPreset = (preset: "이번달" | "지난달" | "최근7일" | "전체") => {
+    if (preset === "전체") { setExportStart(""); setExportEnd(""); return; }
+    const now = new Date();
+    let s: Date; let e: Date;
+    if (preset === "이번달") {
+      s = new Date(now.getFullYear(), now.getMonth(), 1);
+      e = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    } else if (preset === "지난달") {
+      s = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      e = new Date(now.getFullYear(), now.getMonth(), 0);
+    } else {
+      e = new Date(now);
+      s = new Date(now); s.setDate(s.getDate() - 6);
+    }
+    setExportStart(fmtYmd(s));
+    setExportEnd(fmtYmd(e));
+  };
   const COLUMNS: { col: string; name: string; desc: string; required: boolean }[] = [
     { col: "A열", name: "은행명 또는 은행코드", desc: "셀서식을 텍스트로 지정한 후 은행(기관) 코드 숫자 3자리 입력 또는 한글명 입력", required: true },
     { col: "B열", name: "입금계좌번호", desc: "셀서식을 텍스트로 지정한 후 입금하실 계좌번호 입력 ('-' 생략가능)", required: true },
@@ -139,13 +158,18 @@ function KbDashboard({
   ];
 
   // KB ME 양식 다운로드 — 정산 데이터를 KB 대량이체 11열 양식으로 변환
-  const periodOptions = ["전체", ...Array.from(new Set(SETTLEMENT_ROWS.map(r => r.period)))];
+  // 기간 필터 기준: 정산 완료만이면 settledAt(=송금 처리 시각), 그 외엔 requestedAt(=업체 요청 시각)
+  const startMs = exportStart ? new Date(`${exportStart}T00:00:00+09:00`).getTime() : -Infinity;
+  const endMs = exportEnd ? new Date(`${exportEnd}T23:59:59+09:00`).getTime() : Infinity;
   const filteredRows = SETTLEMENT_ROWS.filter(s => {
     const id = settlementRowId(s);
     const settled = Boolean(s.settledAt) || id in settledRowIds;
     if (exportScope === "정산 완료만" && !settled) return false;
     if (exportScope === "미정산만" && settled) return false;
-    if (exportPeriod !== "전체" && s.period !== exportPeriod) return false;
+    const refTime = exportScope === "정산 완료만"
+      ? (settledRowIds[id] ?? s.settledAt ?? s.requestedAt)
+      : s.requestedAt;
+    if (refTime < startMs || refTime > endMs) return false;
     return true;
   });
   const totalAmount = filteredRows.reduce((sum, s) => {
@@ -187,7 +211,7 @@ function KbDashboard({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     const today = new Date().toISOString().slice(0, 10);
-    const periodPart = exportPeriod === "전체" ? "전체" : exportPeriod.replace(/[년월\s]/g, "");
+    const periodPart = exportStart || exportEnd ? `${exportStart || "처음"}~${exportEnd || "끝"}` : "전체";
     a.href = url;
     a.download = `KB_대량이체_${periodPart}_${today}.csv`;
     a.click();
@@ -204,15 +228,18 @@ function KbDashboard({
             <p className="text-xs text-gray-500 mt-0.5">정산 데이터를 국민은행 인터넷뱅킹 대량이체(KB ME) 양식으로 변환하여 내보냅니다.</p>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-          <div>
-            <label className="text-[11px] text-gray-500 block mb-1">기간</label>
-            <select value={exportPeriod} onChange={e => setExportPeriod(e.target.value)}
-              className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200 outline-none focus:border-emerald-400">
-              {periodOptions.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 mb-3">
+          <div className="md:col-span-5">
+            <label className="text-[11px] text-gray-500 block mb-1">기간 (요청·정산 시각 기준)</label>
+            <div className="flex items-center gap-1.5">
+              <input type="date" value={exportStart} onChange={e => setExportStart(e.target.value)}
+                className="flex-1 bg-gray-50 rounded-lg px-2 py-2 text-xs border border-gray-200 outline-none focus:border-emerald-400" />
+              <span className="text-[10px] text-gray-400">~</span>
+              <input type="date" value={exportEnd} onChange={e => setExportEnd(e.target.value)}
+                className="flex-1 bg-gray-50 rounded-lg px-2 py-2 text-xs border border-gray-200 outline-none focus:border-emerald-400" />
+            </div>
           </div>
-          <div>
+          <div className="md:col-span-4">
             <label className="text-[11px] text-gray-500 block mb-1">대상</label>
             <select value={exportScope} onChange={e => setExportScope(e.target.value as typeof exportScope)}
               className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200 outline-none focus:border-emerald-400">
@@ -221,19 +248,79 @@ function KbDashboard({
               <option value="전체">전체</option>
             </select>
           </div>
-          <div className="flex items-end">
+          <div className="md:col-span-3 flex items-end">
             <button onClick={downloadKbExcel}
-              className="w-full bg-emerald-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400"
+              className="w-full bg-emerald-600 text-white rounded-lg px-3 py-2 text-xs font-medium hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400"
               disabled={filteredRows.length === 0}>
-              KB 양식으로 다운로드 ({filteredRows.length}건 / ₩{totalAmount.toLocaleString()})
+              KB 양식으로 다운로드<br/>({filteredRows.length}건 / ₩{totalAmount.toLocaleString()})
             </button>
           </div>
         </div>
+        <div className="flex items-center gap-1.5 flex-wrap mb-4">
+          <span className="text-[10px] text-gray-400">빠른 선택</span>
+          <button onClick={() => setPreset("이번달")} className="text-[10px] bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">이번 달</button>
+          <button onClick={() => setPreset("지난달")} className="text-[10px] bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">지난 달</button>
+          <button onClick={() => setPreset("최근7일")} className="text-[10px] bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">최근 7일</button>
+          <button onClick={() => setPreset("전체")} className="text-[10px] bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">전체</button>
+        </div>
+
         <div className="bg-emerald-50 rounded p-3 text-[11px] text-emerald-900 leading-relaxed">
           <p className="font-medium mb-1">⚙ 자동 매핑 규칙</p>
           <p>• A열: 업체 등록 은행 코드 (3자리 숫자)  • B열: 업체 입금계좌  • C열: 정산액(=총액×(1−수수료율))</p>
           <p>• D열: 예금주명  • E열: &ldquo;포토팟정산&rdquo; (10자 제한)  • F열: &ldquo;포토팟-{`{아이디}`}&rdquo; (14자 제한)  • J열: 0 (송금자 부담)  • K열: 기간 라벨</p>
           <p>• G·H·I열(CMS): 비워둠 (당행 입금 시에만 사용)</p>
+        </div>
+
+        {/* 변환 미리보기 — 다운로드될 KB ME 11열 그대로 */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-xs font-bold text-gray-700">변환 미리보기 ({filteredRows.length}건)</h4>
+            <span className="text-[10px] text-gray-400">아래 표가 다운로드될 KB ME 양식의 실제 행입니다.</span>
+          </div>
+          <div className="overflow-x-auto border border-gray-200 rounded-lg">
+            <table className="w-full text-[11px]">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="p-2 text-left font-medium text-gray-500 whitespace-nowrap">A 은행</th>
+                  <th className="p-2 text-left font-medium text-gray-500 whitespace-nowrap">B 입금계좌</th>
+                  <th className="p-2 text-right font-medium text-gray-500 whitespace-nowrap">C 이체금액</th>
+                  <th className="p-2 text-left font-medium text-gray-500 whitespace-nowrap">D 예금주</th>
+                  <th className="p-2 text-left font-medium text-gray-500 whitespace-nowrap">E 입금메모</th>
+                  <th className="p-2 text-left font-medium text-gray-500 whitespace-nowrap">F 출금메모</th>
+                  <th className="p-2 text-center font-medium text-gray-500 whitespace-nowrap">G·H·I CMS</th>
+                  <th className="p-2 text-center font-medium text-gray-500 whitespace-nowrap">J 부담</th>
+                  <th className="p-2 text-left font-medium text-gray-500 whitespace-nowrap">K 메모</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRows.length === 0 ? (
+                  <tr><td colSpan={9} className="p-4 text-center text-gray-400">선택한 조건에 해당하는 정산 건이 없습니다.</td></tr>
+                ) : filteredRows.map((s, i) => {
+                  const total = s.base + s.options;
+                  const { rate } = getFeeForBusiness(s.studio, feeRate, bizFees);
+                  const net = Math.round(total * (1 - rate / 100));
+                  const periodMemo = s.period.replace("년 ", ".").replace("월", "정산").slice(0, 10);
+                  const fMemo = `포토팟-${s.account}`.slice(0, 14);
+                  return (
+                    <tr key={i} className="border-t border-gray-100">
+                      <td className="p-2 whitespace-nowrap">
+                        <span className="font-mono">{s.bankCode ?? ""}</span>
+                        {s.bankName && <span className="ml-1 text-gray-400">({s.bankName})</span>}
+                      </td>
+                      <td className="p-2 font-mono whitespace-nowrap">{s.accountNumber}</td>
+                      <td className="p-2 font-medium text-right whitespace-nowrap">₩{net.toLocaleString()}</td>
+                      <td className="p-2 whitespace-nowrap">{s.ownerName}</td>
+                      <td className="p-2 whitespace-nowrap">포토팟정산</td>
+                      <td className="p-2 whitespace-nowrap">{fMemo}</td>
+                      <td className="p-2 text-center text-gray-300">—</td>
+                      <td className="p-2 text-center font-mono">0</td>
+                      <td className="p-2 whitespace-nowrap">{periodMemo}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
