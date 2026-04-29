@@ -1120,11 +1120,12 @@ export default function AdminWeb() {
                           <th className="p-3 text-left font-medium text-gray-500 text-xs whitespace-nowrap">정산액</th>
                           <th className="p-3 text-left font-medium text-gray-500 text-xs whitespace-nowrap">요청 시각</th>
                           <th className="p-3 text-left font-medium text-gray-500 text-xs whitespace-nowrap">처리</th>
+                          <th className="p-3 text-left font-medium text-gray-500 text-xs whitespace-nowrap">대표 순수익</th>
                         </tr>
                       </thead>
                       <tbody>
                         {visibleRows.length === 0 ? (
-                          <tr><td colSpan={9} className="p-6 text-center text-xs text-gray-400">
+                          <tr><td colSpan={10} className="p-6 text-center text-xs text-gray-400">
                             {settlementFilter === "미정산" ? "정산할 건이 없습니다." : "정산 완료된 건이 없습니다."}
                           </td></tr>
                         ) : visibleRows.map((s) => {
@@ -1174,6 +1175,10 @@ export default function AdminWeb() {
                                     정산 완료 처리
                                   </button>
                                 )}
+                              </td>
+                              <td className="p-3 whitespace-nowrap">
+                                <p className="text-primary font-bold">₩{(total - net).toLocaleString()}</p>
+                                <p className="text-[9px] text-gray-400 mt-0.5">수수료 {rate}%</p>
                               </td>
                             </tr>
                           );

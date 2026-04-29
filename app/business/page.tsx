@@ -109,6 +109,22 @@ const ALL_BOOKINGS: { id: number; month: number; date: number; name: string; cat
   { id: 11, month: 4, date: 5, name: "송예진", cat: "프로필", time: "10:00~12:00", price: 100000, status: "완료" },
   { id: 12, month: 4, date: 12, name: "류현우", cat: "바디프로필", time: "14:00~16:00", price: 160000, status: "완료" },
   { id: 13, month: 4, date: 18, name: "장미래", cat: "웨딩", time: "10:00~14:00", price: 400000, status: "완료" },
+  // 3월
+  { id: 14, month: 3, date: 3, name: "최영준", cat: "프로필", time: "11:00~13:00", price: 100000, status: "완료" },
+  { id: 15, month: 3, date: 8, name: "유나리", cat: "바디프로필", time: "14:00~17:00", price: 240000, status: "완료" },
+  { id: 16, month: 3, date: 15, name: "조혜원", cat: "웨딩", time: "10:00~14:00", price: 400000, status: "완료" },
+  { id: 17, month: 3, date: 22, name: "백승호", cat: "프로필", time: "16:00~18:00", price: 100000, status: "완료" },
+  { id: 18, month: 3, date: 27, name: "권다은", cat: "바디프로필", time: "13:00~15:00", price: 160000, status: "완료" },
+  // 2월
+  { id: 19, month: 2, date: 5, name: "이태호", cat: "프로필", time: "10:00~12:00", price: 100000, status: "완료" },
+  { id: 20, month: 2, date: 13, name: "남수연", cat: "웨딩", time: "11:00~15:00", price: 400000, status: "완료" },
+  { id: 21, month: 2, date: 20, name: "강민준", cat: "바디프로필", time: "14:00~16:00", price: 160000, status: "완료" },
+  { id: 22, month: 2, date: 26, name: "오시현", cat: "프로필", time: "17:00~19:00", price: 100000, status: "완료" },
+  // 1월
+  { id: 23, month: 1, date: 8, name: "안채린", cat: "프로필", time: "10:00~12:00", price: 100000, status: "완료" },
+  { id: 24, month: 1, date: 16, name: "박재현", cat: "바디프로필", time: "13:00~16:00", price: 240000, status: "완료" },
+  { id: 25, month: 1, date: 22, name: "심예린", cat: "웨딩", time: "10:00~14:00", price: 400000, status: "완료" },
+  { id: 26, month: 1, date: 28, name: "정우석", cat: "프로필", time: "15:00~17:00", price: 100000, status: "완료" },
 ];
 
 const NOTIFICATIONS: { id: number; type: string; text: string; time: string; action?: { screen: Screen; filter?: BookingFilter } }[] = [
@@ -422,18 +438,27 @@ export default function BusinessApp() {
   const periodRevenue = periodBookings.filter(b => b.status === "완료" || b.status === "확정").reduce((s, b) => s + b.price, 0);
   const periodCancelCount = periodBookings.filter(b => b.status === "예약 취소 중").length;
   const periodMonthlyStats = (() => {
-    const groups: Record<string, { bk: number; rv: number }> = {};
+    const groups: Record<string, { bk: number; rv: number; month: number }> = {};
     periodBookings.forEach(b => {
       if (b.status !== "완료" && b.status !== "확정") return;
       const key = `2026.${String(b.month).padStart(2, "0")}`;
-      if (!groups[key]) groups[key] = { bk: 0, rv: 0 };
+      if (!groups[key]) groups[key] = { bk: 0, rv: 0, month: b.month };
       groups[key].bk++;
       groups[key].rv += b.price;
     });
     const ratingMap: Record<string, number> = { "2026.05": 4.8, "2026.04": 4.7, "2026.03": 4.6, "2026.02": 4.7, "2026.01": 4.6 };
+    // 정산 정책: 현재 달 50%, 이전 달 100%, 미래 달 0%
+    const today = new Date();
+    const currentMonth = today.getMonth() + 1;
     return Object.entries(groups)
       .sort((a, b) => b[0].localeCompare(a[0]))
-      .map(([m, g]) => ({ m, bk: g.bk, rv: g.rv, rating: ratingMap[m] ?? 4.5 }));
+      .map(([m, g]) => {
+        const totalNet = Math.round((g.rv * (100 - myFee.rate)) / 100);
+        const settledRatio = g.month < currentMonth ? 1.0 : g.month === currentMonth ? 0.5 : 0;
+        const settled = Math.round(totalNet * settledRatio);
+        const pending = totalNet - settled;
+        return { m, bk: g.bk, rv: g.rv, net: totalNet, settled, pending, rating: ratingMap[m] ?? 4.5 };
+      });
   })();
 
   const handleBookingAction = (id: number, action: "accept" | "reject") => {
@@ -997,19 +1022,26 @@ export default function BusinessApp() {
                 })}
               </div>
 
-              {/* 월별 통계 — 기간 내 월만 노출 */}
+              {/* 월별 실적 — 기간 내 월만 노출, 예약/매출/정산/예정 표시 */}
               <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                <p className="text-xs font-bold mb-3">월별 실적</p>
-                <div className="space-y-2">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-bold">월별 실적</p>
+                  <p className="text-[10px] text-gray-400">수수료 {myFee.rate}% 적용</p>
+                </div>
+                <div className="space-y-2.5">
                   {periodMonthlyStats.length === 0 ? (
                     <p className="text-xs text-gray-400 text-center py-3">선택한 기간 내 실적이 없습니다.</p>
                   ) : periodMonthlyStats.map((s, i) => (
-                    <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
-                      <span className="text-xs text-gray-500">{s.m}</span>
-                      <div className="flex items-center gap-3 text-xs">
-                        <span>{s.bk}건</span>
-                        <span className="font-bold">₩{(s.rv / 10000).toFixed(0)}만</span>
-                        <span className="text-yellow-500">★ {s.rating}</span>
+                    <div key={i} className="bg-white rounded-lg p-3 border border-gray-100">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-gray-700">{s.m}</span>
+                        <span className="text-[11px] text-yellow-500">★ {s.rating}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
+                        <div className="flex justify-between"><span className="text-gray-400">예약</span><span className="text-gray-900">{s.bk}건</span></div>
+                        <div className="flex justify-between"><span className="text-gray-400">매출</span><span className="text-gray-900">₩{(s.rv / 10000).toFixed(0)}만</span></div>
+                        <div className="flex justify-between"><span className="text-gray-400">정산</span><span className="text-emerald-700 font-medium">₩{(s.settled / 10000).toFixed(0)}만</span></div>
+                        <div className="flex justify-between"><span className="text-gray-400">예정</span><span className="text-amber-600 font-medium">₩{(s.pending / 10000).toFixed(0)}만</span></div>
                       </div>
                     </div>
                   ))}
