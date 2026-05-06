@@ -2,3 +2,7 @@ node_modules
 .next
 .vercel
 *.tsbuildinfo
+.omx/
+.expo/
+dist/
+coverage/

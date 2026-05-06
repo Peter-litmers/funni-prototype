@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "Funni",
+    "slug": "funni-mobile",
+    "scheme": "funni",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "plugins": ["expo-router"],
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

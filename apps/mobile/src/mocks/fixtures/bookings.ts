@@ -1,0 +1,43 @@
+import type { Booking } from "@funni/domain";
+
+export const bookingsFixture: Booking[] = [
+  {
+    id: "booking-1",
+    studioId: "studio-lumiere",
+    studioName: "루미에르 스튜디오",
+    userName: "김포토",
+    category: "프로필",
+    date: "2026-05-10",
+    time: "14:00",
+    amount: 70000,
+    depositAmount: 14000,
+    balanceAmount: 56000,
+    status: "confirmed",
+  },
+  {
+    id: "booking-2",
+    studioId: "studio-sunset",
+    studioName: "선셋 포토랩",
+    userName: "김포토",
+    category: "바디프로필",
+    date: "2026-05-13",
+    time: "15:00",
+    amount: 112000,
+    depositAmount: 30000,
+    balanceAmount: 82000,
+    status: "pending",
+  },
+  {
+    id: "booking-3",
+    studioId: "studio-bloom",
+    studioName: "블룸 웨딩 스튜디오",
+    userName: "이예비",
+    category: "웨딩",
+    date: "2026-05-18",
+    time: "11:00",
+    amount: 280000,
+    depositAmount: 84000,
+    balanceAmount: 196000,
+    status: "cancelRequested",
+  },
+];
