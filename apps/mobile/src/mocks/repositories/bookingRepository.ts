@@ -53,6 +53,8 @@ export const bookingRepository = {
       amount: payment.amount,
       depositAmount: payment.depositAmount,
       balanceAmount: payment.balanceAmount,
+      balanceDueDate: `${input.date} 23:59`,
+      balancePaid: payment.balanceAmount === 0,
       status: "confirmed",
     };
 
@@ -78,11 +80,23 @@ export const bookingRepository = {
     return nextBooking;
   },
 
-  async requestCancel(id: string) {
+  async requestCancel(
+    id: string,
+    reason = "예약하신 스튜디오와 포토팟이 확인합니다. 구체적으로 작성 부탁드립니다.",
+    refund?: { rate: number; amount: number },
+  ) {
     updateMockState((current) => ({
       ...current,
       bookings: current.bookings.map((booking) =>
-        booking.id === id ? { ...booking, status: "cancelRequested" } : booking,
+        booking.id === id
+          ? {
+              ...booking,
+              status: "cancelRequested",
+              cancelReason: reason,
+              refundRate: refund?.rate ?? 50,
+              expectedRefundAmount: refund?.amount ?? Math.round(booking.amount * 0.5),
+            }
+          : booking,
       ),
       notifications: [
         {
@@ -95,6 +109,121 @@ export const bookingRepository = {
           read: false,
           bookingId: id,
           route: `/biz/bookings/${id}`,
+        },
+        ...current.notifications,
+      ],
+    }));
+  },
+
+  async acceptCancelRequest(id: string) {
+    updateMockState((current) => ({
+      ...current,
+      bookings: current.bookings.map((booking) =>
+        booking.id === id
+          ? {
+              ...booking,
+              status: "cancelled",
+              refundRate: booking.refundRate ?? 100,
+              expectedRefundAmount: booking.expectedRefundAmount ?? booking.amount,
+            }
+          : booking,
+      ),
+      notifications: [
+        {
+          id: `notification-${Date.now()}`,
+          role: "consumer",
+          type: "cancel",
+          title: "예약 취소가 승인되었어요",
+          body: "업체가 취소 요청을 승인했습니다. 환불 내역을 확인해 주세요.",
+          timeLabel: "방금 전",
+          read: false,
+          bookingId: id,
+          route: "/bookings",
+        },
+        ...current.notifications,
+      ],
+    }));
+  },
+
+  async rejectCancelRequest(id: string) {
+    updateMockState((current) => ({
+      ...current,
+      bookings: current.bookings.map((booking) =>
+        booking.id === id
+          ? {
+              ...booking,
+              status: "confirmed",
+              cancelReason: undefined,
+              refundRate: undefined,
+              expectedRefundAmount: undefined,
+            }
+          : booking,
+      ),
+      notifications: [
+        {
+          id: `notification-${Date.now()}`,
+          role: "consumer",
+          type: "booking",
+          title: "예약 취소 요청이 거절되었어요",
+          body: "업체가 예약 유지를 안내했습니다. 예약 상세를 확인해 주세요.",
+          timeLabel: "방금 전",
+          read: false,
+          bookingId: id,
+          route: "/bookings",
+        },
+        ...current.notifications,
+      ],
+    }));
+  },
+
+  async cancelByBusiness(id: string) {
+    updateMockState((current) => ({
+      ...current,
+      bookings: current.bookings.map((booking) =>
+        booking.id === id
+          ? {
+              ...booking,
+              status: "cancelled",
+              cancelReason: "업체 사유로 예약 취소",
+              refundRate: 100,
+              expectedRefundAmount: booking.amount,
+            }
+          : booking,
+      ),
+      notifications: [
+        {
+          id: `notification-${Date.now()}`,
+          role: "consumer",
+          type: "cancel",
+          title: "업체 사유로 예약이 취소되었어요",
+          body: "결제 금액은 100% 환불 처리됩니다.",
+          timeLabel: "방금 전",
+          read: false,
+          bookingId: id,
+          route: "/bookings",
+        },
+        ...current.notifications,
+      ],
+    }));
+  },
+
+  async payBalance(id: string) {
+    updateMockState((current) => ({
+      ...current,
+      bookings: current.bookings.map((booking) =>
+        booking.id === id ? { ...booking, balancePaid: true } : booking,
+      ),
+      notifications: [
+        {
+          id: `notification-${Date.now()}`,
+          role: "consumer",
+          type: "booking",
+          title: "잔금 결제가 완료되었어요",
+          body: "촬영 전 결제가 완료되었습니다.",
+          timeLabel: "방금 전",
+          read: false,
+          bookingId: id,
+          route: "/bookings",
         },
         ...current.notifications,
       ],

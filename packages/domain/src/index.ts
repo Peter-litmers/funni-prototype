@@ -7,4 +7,5 @@ export * from "./settlement";
 export * from "./studio";
 export * from "./calculators/deposit";
 export * from "./calculators/pricing";
+export * from "./calculators/ranking";
 export * from "./calculators/refund";

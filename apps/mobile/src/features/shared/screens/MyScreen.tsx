@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import type { UserRole } from "@funni/domain";
 import { formatWon } from "@funni/domain";
 import { Button } from "@/components/ui/Button";
@@ -18,6 +19,8 @@ export function MyScreen() {
   const [role, setRole] = useRole();
   const studios = useStudios();
   const promotedStudios = studios.slice(0, 4);
+  const [profileName, setProfileName] = useState("김포토");
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   if (role === "business") {
     const quickMenus = [
@@ -142,10 +145,29 @@ export function MyScreen() {
           </View>
         </View>
         <View className="flex-1">
-          <View className="flex-row items-center gap-2">
-            <Text className="font-bold text-gray-900">김포토</Text>
-            <Ionicons name="pencil-outline" size={12} color="#9ca3af" />
-          </View>
+          {isEditingProfile ? (
+            <View className="flex-row items-center gap-2">
+              <TextInput
+                value={profileName}
+                onChangeText={setProfileName}
+                autoFocus
+                className="w-24 border-b border-brand-500 px-0 py-0 text-sm font-bold text-gray-900"
+              />
+              <Pressable
+                className="rounded bg-brand-50 px-2 py-1"
+                onPress={() => setIsEditingProfile(false)}
+              >
+                <Text className="text-[10px] font-medium text-brand-500">완료</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <View className="flex-row items-center gap-2">
+              <Text className="font-bold text-gray-900">{profileName}</Text>
+              <Pressable onPress={() => setIsEditingProfile(true)}>
+                <Ionicons name="pencil-outline" size={12} color="#9ca3af" />
+              </Pressable>
+            </View>
+          )}
         </View>
       </View>
 
@@ -197,9 +219,10 @@ export function MyScreen() {
 
       <View>
         {[
+          { label: "정보 수정", onPress: () => router.push("/profile-edit") },
           { label: "예약 내역", onPress: () => router.push("/bookings") },
-          { label: "리뷰 관리", onPress: () => router.push({ pathname: "/bookings", params: { filter: "완료" } }) },
-          { label: "결제 내역", onPress: () => router.push("/bookings") },
+          { label: "리뷰 관리", onPress: () => router.push("/reviews") },
+          { label: "결제 내역", onPress: () => router.push("/payments") },
           { label: "고객센터", onPress: () => router.push("/notifications") },
         ].map((item) => (
           <Pressable
@@ -230,6 +253,110 @@ export function MyScreen() {
             router.replace("/biz/dashboard");
           }}
         />
+      </View>
+    </Screen>
+  );
+}
+
+export function ProfileEditScreen() {
+  const router = useRouter();
+  const [name, setName] = useState("김포토");
+  const [nickname, setNickname] = useState("포토팟유저");
+  const [email, setEmail] = useState("kim.photo@example.com");
+  const [phone, setPhone] = useState("010-1234-5678");
+  const [birth, setBirth] = useState("1995-06-12");
+  const [gender, setGender] = useState<"여성" | "남성" | "비공개">("여성");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
+  const passwordMismatch = !!newPassword && !!newPasswordConfirm && newPassword !== newPasswordConfirm;
+  const canSave =
+    name.trim().length > 0 &&
+    nickname.trim().length > 0 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
+    phone.replace(/\D/g, "").length >= 10 &&
+    !passwordMismatch;
+
+  const Field = ({
+    label,
+    value,
+    onChangeText,
+    placeholder,
+    secure = false,
+  }: {
+    label: string;
+    value: string;
+    onChangeText: (value: string) => void;
+    placeholder: string;
+    secure?: boolean;
+  }) => (
+    <View>
+      <Text className="mb-1 text-xs text-gray-500">{label}</Text>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        secureTextEntry={secure}
+        placeholder={placeholder}
+        placeholderTextColor="#9ca3af"
+        className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900"
+      />
+    </View>
+  );
+
+  return (
+    <Screen>
+      <Pressable className="mb-4 self-start" onPress={() => router.back()}>
+        <Text className="text-sm text-gray-400">← 돌아가기</Text>
+      </Pressable>
+      <Text className="text-lg font-bold text-gray-900">정보 수정</Text>
+      <Text className="mb-6 mt-1 text-xs leading-5 text-gray-400">
+        연락처·이메일은 예약 알림과 환불 안내에 사용됩니다.
+      </Text>
+      <View className="gap-3">
+        <Field label="이름" value={name} onChangeText={setName} placeholder="김포토" />
+        <Field label="닉네임 (리뷰에 표시)" value={nickname} onChangeText={setNickname} placeholder="포토팟유저" />
+        <Field label="이메일" value={email} onChangeText={setEmail} placeholder="email@example.com" />
+        <Field label="연락처" value={phone} onChangeText={setPhone} placeholder="010-0000-0000" />
+        <Field label="생년월일" value={birth} onChangeText={setBirth} placeholder="1995-06-12" />
+      </View>
+
+      <Text className="mb-2 mt-4 text-xs text-gray-500">성별</Text>
+      <View className="flex-row gap-2">
+        {(["여성", "남성", "비공개"] as const).map((item) => (
+          <Pressable
+            key={item}
+            className={`flex-1 rounded-xl border py-2 ${gender === item ? "border-brand-500 bg-brand-50" : "border-gray-200 bg-white"}`}
+            onPress={() => setGender(item)}
+          >
+            <Text className={`text-center text-xs font-medium ${gender === item ? "text-brand-500" : "text-gray-500"}`}>
+              {item}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      <View className="mt-5 gap-3 rounded-xl bg-gray-50 p-4">
+        <Text className="text-xs font-bold text-gray-700">비밀번호 변경</Text>
+        <Text className="text-[10px] text-gray-400">변경하지 않으려면 빈칸으로 두세요.</Text>
+        <Field label="현재 비밀번호" value={currentPassword} onChangeText={setCurrentPassword} placeholder="현재 비밀번호" secure />
+        <Field label="새 비밀번호" value={newPassword} onChangeText={setNewPassword} placeholder="8자 이상 + 영문·숫자" secure />
+        <Field label="새 비밀번호 확인" value={newPasswordConfirm} onChangeText={setNewPasswordConfirm} placeholder="새 비밀번호 확인" secure />
+        {passwordMismatch ? (
+          <Text className="text-[10px] text-red-500">새 비밀번호가 일치하지 않습니다.</Text>
+        ) : null}
+      </View>
+
+      <View className="mt-6 flex-row gap-2">
+        <Pressable className="flex-1 items-center rounded-xl bg-gray-100 py-3" onPress={() => router.back()}>
+          <Text className="text-sm font-medium text-gray-600">취소</Text>
+        </Pressable>
+        <Pressable
+          className={`flex-1 items-center rounded-xl py-3 ${canSave ? "bg-brand-500" : "bg-gray-200"}`}
+          disabled={!canSave}
+          onPress={() => router.back()}
+        >
+          <Text className={`text-sm font-bold ${canSave ? "text-white" : "text-gray-400"}`}>저장</Text>
+        </Pressable>
       </View>
     </Screen>
   );

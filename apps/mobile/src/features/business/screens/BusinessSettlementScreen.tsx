@@ -72,7 +72,10 @@ export function BusinessSettlementScreen() {
       {requested ? (
         <View className="mb-3 rounded-xl border border-warning-200 bg-warning-50 py-3">
           <Text className="text-center text-sm font-medium text-warning-500">
-            {periodLabel} 정산 요청 접수 완료 · 어드민 검토 대기
+            ⏳ {periodLabel} 정산 요청 접수 완료 · 어드민 검토 대기
+          </Text>
+          <Text className="mt-1 text-center text-[10px] leading-4 text-gray-500">
+            요청 금액 {formatWon(totalExpectedNet)} · 영업일 기준 3~5일 내 지정 계좌로 입금됩니다
           </Text>
         </View>
       ) : (

@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { formatWon, type Booking } from "@funni/domain";
-import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Screen } from "@/components/ui/Screen";
 import { TopBar } from "@/components/ui/TopBar";
 import { useBookings } from "@/features/shared/hooks/useBookings";
@@ -45,6 +45,20 @@ function statusLabel(status: Booking["status"]) {
   return "취소완료";
 }
 
+function statusClasses(status: Booking["status"]) {
+  if (status === "cancelRequested") return "bg-amber-100 text-amber-700";
+  if (status === "completed" || status === "cancelled") return "bg-gray-200 text-gray-500";
+  return "bg-green-100 text-green-700";
+}
+
+function categoryIconName(category: string) {
+  if (category === "바디프로필") return "barbell-outline";
+  if (category === "웨딩") return "sparkles-outline";
+  if (category === "가족") return "gift-outline";
+  if (category === "비즈니스") return "briefcase-outline";
+  return "camera-outline";
+}
+
 export function BusinessDashboardScreen() {
   const router = useRouter();
   const { currentRoleBookings } = useBookings();
@@ -72,12 +86,11 @@ export function BusinessDashboardScreen() {
     const grouped = new Map<string, { month: string; bookingCount: number; revenue: number }>();
 
     periodBookings.forEach((booking) => {
+      if (booking.status !== "confirmed" && booking.status !== "completed") return;
       const month = booking.date.slice(0, 7);
       const current = grouped.get(month) ?? { month, bookingCount: 0, revenue: 0 };
       current.bookingCount += 1;
-      if (booking.status === "confirmed" || booking.status === "completed") {
-        current.revenue += booking.amount;
-      }
+      current.revenue += booking.amount;
       grouped.set(month, current);
     });
 
@@ -182,7 +195,9 @@ export function BusinessDashboardScreen() {
                 <Text className="text-xs text-gray-500">{stat.month.replace("-", ".")}</Text>
                 <View className="flex-row items-center gap-3">
                   <Text className="text-xs text-gray-900">{stat.bookingCount}건</Text>
-                  <Text className="text-xs font-bold text-gray-900">{formatWon(stat.revenue)}</Text>
+                  <Text className="text-xs font-bold text-gray-900">
+                    ₩{(stat.revenue / 10000).toFixed(0)}만
+                  </Text>
                   <Text className="text-xs text-yellow-500">★ 4.9</Text>
                 </View>
               </View>
@@ -205,7 +220,7 @@ export function BusinessDashboardScreen() {
               onPress={() => router.push(`/biz/bookings/${booking.id}`)}
             >
               <View className="h-11 w-11 items-center justify-center rounded-full bg-brand-50">
-                <Text className="text-lg">📷</Text>
+                <Ionicons name={categoryIconName(booking.category)} size={18} color="#ec4899" />
               </View>
               <View className="flex-1">
                 <Text className="text-sm font-medium text-gray-900">{booking.userName}</Text>
@@ -214,17 +229,15 @@ export function BusinessDashboardScreen() {
                 </Text>
               </View>
               <View className="items-end">
-                <StatusBadge status={booking.status} />
+                <Text className={`rounded-full px-2 py-1 text-[10px] font-medium ${statusClasses(booking.status)}`}>
+                  {statusLabel(booking.status)}
+                </Text>
                 <Text className="mt-1 text-xs font-bold text-gray-900">{formatWon(booking.amount)}</Text>
               </View>
             </Pressable>
           ))}
         </View>
       )}
-
-      <Pressable className="items-center rounded-xl bg-brand-500 py-3.5" onPress={() => router.push("/biz/bookings")}>
-        <Text className="text-sm font-bold text-white">예약 관리 보기</Text>
-      </Pressable>
     </Screen>
   );
 }

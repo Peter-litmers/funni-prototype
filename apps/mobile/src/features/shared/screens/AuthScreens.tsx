@@ -153,18 +153,43 @@ export function BusinessSignupScreen() {
   const router = useRouter();
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
+  const [agreeAge, setAgreeAge] = useState(false);
+  const [agreeMarketing, setAgreeMarketing] = useState(false);
+  const requiredAgreed = agreeTerms && agreePrivacy && agreeAge;
+  const allAgreed = requiredAgreed && agreeMarketing;
+  const toggleAll = () => {
+    const next = !allAgreed;
+    setAgreeTerms(next);
+    setAgreePrivacy(next);
+    setAgreeAge(next);
+    setAgreeMarketing(next);
+  };
 
   return (
     <Screen>
       <TopBar title="업체 회원가입" showBack />
       <Text className="mb-6 text-xs text-gray-400">사업자 계정 · 승인 후 이용 가능</Text>
       <View className="gap-3">
-        <Field label="업체명" placeholder="스튜디오명" />
-        <Field label="대표자명" placeholder="홍길동" />
-        <Field label="사업자등록번호" placeholder="000-00-00000" />
-        <Field label="연락처" placeholder="02-0000-0000" />
         <Field label="이메일" placeholder="biz@example.com" />
-        <Field label="비밀번호" placeholder="8자 이상" secure />
+        <Field label="비밀번호" placeholder="8자 이상 + 영문·숫자" secure />
+        <Field label="비밀번호 확인" placeholder="비밀번호 재입력" secure />
+        <Field label="사업자등록번호" placeholder="000-00-00000" />
+        <Field label="대표자명" placeholder="홍길동" />
+        <Field label="사업장 주소" placeholder="주소 검색을 눌러 도로명 주소를 선택하세요" />
+        <Field label="상세 주소" placeholder="상세 주소 (동/호수, 선택)" />
+        <Field label="연락처" placeholder="02-0000-0000" />
+      </View>
+
+      <View className="my-4 rounded-xl border border-emerald-100 bg-emerald-50 p-3">
+        <Text className="mb-1 text-xs font-bold text-emerald-800">정산 입금 계좌</Text>
+        <Text className="mb-3 text-[10px] leading-5 text-emerald-700">
+          포토팟이 매월 정산금을 입금할 계좌입니다. 본인 명의 또는 사업자 명의 계좌로 등록해주세요.
+        </Text>
+        <View className="gap-2.5">
+        <Field label="정산 은행" placeholder="예: 국민은행" />
+        <Field label="정산 계좌번호" placeholder="정산금을 입금받을 계좌" />
+        <Field label="예금주명" placeholder="사업자명 또는 대표자명" />
+        </View>
       </View>
 
       <View className="my-4">
@@ -181,11 +206,24 @@ export function BusinessSignupScreen() {
       </View>
 
       <View className="mb-4 gap-2 rounded-xl bg-gray-50 p-3">
+        <Pressable className="mb-1 flex-row items-center gap-2 border-b border-gray-200 pb-2" onPress={toggleAll}>
+          <View className={`h-4 w-4 items-center justify-center rounded border ${allAgreed ? "border-brand-500 bg-brand-500" : "border-gray-300 bg-white"}`}>
+            {allAgreed ? <Ionicons name="checkmark" size={11} color="#fff" /> : null}
+          </View>
+          <Text className="flex-1 text-xs font-bold text-gray-800">모두 동의 (선택 항목 포함)</Text>
+        </Pressable>
         <AgreementRow label="서비스 이용약관 동의" checked={agreeTerms} onPress={() => setAgreeTerms((value) => !value)} showView={false} />
         <AgreementRow label="개인정보 처리방침 동의" checked={agreePrivacy} onPress={() => setAgreePrivacy((value) => !value)} showView={false} />
+        <AgreementRow label="만 14세 이상 확인" checked={agreeAge} onPress={() => setAgreeAge((value) => !value)} showView={false} />
+        <Pressable className="flex-row items-center gap-2" onPress={() => setAgreeMarketing((value) => !value)}>
+          <View className={`h-4 w-4 items-center justify-center rounded border ${agreeMarketing ? "border-brand-500 bg-brand-500" : "border-gray-300 bg-white"}`}>
+            {agreeMarketing ? <Ionicons name="checkmark" size={11} color="#fff" /> : null}
+          </View>
+          <Text className="flex-1 text-xs text-gray-700">마케팅 정보 수신 동의 (선택)</Text>
+        </Pressable>
       </View>
 
-      <Button label="가입 신청" disabled={!(agreeTerms && agreePrivacy)} onPress={() => router.replace("/login")} />
+      <Button label="가입 신청" disabled={!requiredAgreed} onPress={() => router.replace("/approval-waiting")} />
       <View className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
         <Text className="mb-1 text-xs font-bold text-amber-700">승인 안내</Text>
         <Text className="text-[10px] leading-5 text-amber-600">심사는 2~3일 소요될 수 있습니다.</Text>
@@ -208,6 +246,32 @@ export function ForgotPasswordScreen() {
         <Button label="비밀번호 재설정 링크 발송" onPress={() => router.back()} />
       </View>
       <Text className="mt-4 text-center text-[10px] text-gray-400">입력한 이메일로 비밀번호 재설정 링크가 전송됩니다</Text>
+    </Screen>
+  );
+}
+
+export function ApprovalWaitingScreen() {
+  const router = useRouter();
+
+  return (
+    <Screen>
+      <View className="min-h-[450px] items-center justify-center px-2">
+        <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-amber-50">
+          <Text className="text-4xl">⏳</Text>
+        </View>
+        <Text className="mb-2 text-lg font-bold text-gray-900">승인 대기 중</Text>
+        <Text className="mb-6 text-center text-sm text-gray-500">제출하신 정보를 검토 중입니다</Text>
+
+        <View className="mb-6 w-full rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <Text className="mb-2 text-xs font-bold text-amber-700">심사 안내</Text>
+          <Text className="text-[10px] leading-5 text-amber-600">• 사업자등록번호 및 포트폴리오를 검토합니다</Text>
+          <Text className="text-[10px] leading-5 text-amber-600">• 영업일 기준 1~3일 소요됩니다</Text>
+          <Text className="text-[10px] leading-5 text-amber-600">• 결과는 등록하신 이메일로 안내됩니다</Text>
+          <Text className="text-[10px] leading-5 text-amber-600">• 승인 완료 후 스튜디오 등록이 가능합니다</Text>
+        </View>
+
+        <Button label="홈으로 돌아가기" onPress={() => router.replace("/(tabs)/home")} />
+      </View>
     </Screen>
   );
 }

@@ -8,6 +8,7 @@ module.exports = {
         brand: {
           50: "#fff4f8",
           100: "#fce3ec",
+          200: "#f9bfd5",
           500: "#e85d93",
           700: "#c43c74"
         },
@@ -22,14 +23,17 @@ module.exports = {
         },
         success: {
           50: "#ecfdf5",
+          100: "#d1fae5",
           500: "#10b981"
         },
         warning: {
           50: "#fffbeb",
+          200: "#fde68a",
           500: "#f59e0b"
         },
         danger: {
           50: "#fef2f2",
+          100: "#fee2e2",
           500: "#ef4444"
         }
       },

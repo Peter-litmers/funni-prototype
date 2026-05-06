@@ -11,5 +11,10 @@ export type Booking = {
   amount: number;
   depositAmount: number;
   balanceAmount: number;
+  balanceDueDate?: string;
+  balancePaid?: boolean;
+  cancelReason?: string;
+  refundRate?: number;
+  expectedRefundAmount?: number;
   status: BookingStatus;
 };

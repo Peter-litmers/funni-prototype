@@ -6,7 +6,7 @@ import { Screen } from "@/components/ui/Screen";
 import { TopBar } from "@/components/ui/TopBar";
 import { useBookings } from "@/features/shared/hooks/useBookings";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Linking, Pressable, Text, View } from "react-native";
 
 type Props = {
   booking: Booking | null;
@@ -26,11 +26,33 @@ function statusClasses(status: Booking["status"]) {
   return "bg-green-100 text-green-700";
 }
 
+function safePhoneNumber(seed: string) {
+  let hash = 0;
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = (hash * 31 + seed.charCodeAt(index)) >>> 0;
+  }
+  const mid = String(7000 + (hash % 3000)).padStart(4, "0");
+  const tail = String(1000 + ((hash >>> 8) % 9000)).padStart(4, "0");
+  return `050-${mid}-${tail}`;
+}
+
+function noShowCountFor(name: string, reported: boolean) {
+  const baseCounts: Record<string, number> = {
+    김포토: 1,
+    이예비: 0,
+  };
+  return (baseCounts[name] ?? 0) + (reported ? 1 : 0);
+}
+
 export function BusinessBookingDetailScreen({ booking }: Props) {
-  const { confirmBooking, markCompleted } = useBookings();
-  const [cancelDecision, setCancelDecision] = useState<"accepted" | "rejected" | null>(null);
+  const {
+    acceptCancelRequest,
+    cancelByBusiness,
+    confirmBooking,
+    markCompleted,
+    rejectCancelRequest,
+  } = useBookings();
   const [noShowReported, setNoShowReported] = useState(false);
-  const [businessCancelRequested, setBusinessCancelRequested] = useState(false);
 
   if (!booking) {
     return (
@@ -40,6 +62,9 @@ export function BusinessBookingDetailScreen({ booking }: Props) {
       </Screen>
     );
   }
+
+  const safeNumber = safePhoneNumber(booking.id);
+  const noShowCount = noShowCountFor(booking.userName, noShowReported);
 
   return (
     <Screen>
@@ -55,6 +80,15 @@ export function BusinessBookingDetailScreen({ booking }: Props) {
           </View>
         </View>
         <View className="gap-2">
+          <View className="flex-row items-center justify-between gap-4">
+            <Text className="text-sm text-gray-500">안심번호</Text>
+            <Pressable className="flex-row items-center gap-1" onPress={() => Linking.openURL(`tel:${safeNumber}`)}>
+              <Text className="text-sm font-medium text-brand-500">☎ {safeNumber}</Text>
+            </Pressable>
+          </View>
+          <Text className="rounded-lg border border-gray-100 bg-white p-2 text-[10px] leading-4 text-gray-400">
+            통신사 안심번호로 연결됩니다. 실 전화번호는 양측 모두에 공개되지 않으며, 촬영 종료 후 14일까지 유효합니다.
+          </Text>
           <View className="flex-row justify-between gap-4">
             <Text className="text-sm text-gray-500">촬영 종류</Text>
             <Text className="text-sm font-medium text-gray-900">{booking.category}</Text>
@@ -94,28 +128,27 @@ export function BusinessBookingDetailScreen({ booking }: Props) {
             <Text className="mb-2 text-sm font-medium text-amber-700">고객이 예약 취소를 요청 중입니다</Text>
             <View className="mb-2 rounded-lg border border-amber-100 bg-white p-2.5">
               <Text className="mb-0.5 text-[10px] font-medium text-gray-500">취소 사유</Text>
-              <Text className="text-xs text-gray-700">일정 변경이 생겨서 취소 부탁드립니다.</Text>
-            </View>
-            {cancelDecision ? (
-              <Text className="text-xs font-medium text-amber-700">
-                {cancelDecision === "accepted" ? "취소 요청을 수락했습니다." : "취소 요청을 거절했습니다."}
+              <Text className="text-xs leading-5 text-gray-700">
+                {booking.cancelReason ?? "일정 변경이 생겨서 취소 부탁드립니다."}
               </Text>
-            ) : (
-              <View className="mt-2 flex-row gap-2">
-                <Pressable
-                  className="flex-1 items-center rounded-xl border border-amber-100 bg-white py-2.5"
-                  onPress={() => setCancelDecision("rejected")}
-                >
-                  <Text className="text-sm font-medium text-gray-600">거절</Text>
-                </Pressable>
-                <Pressable
-                  className="flex-1 items-center rounded-xl bg-red-500 py-2.5"
-                  onPress={() => setCancelDecision("accepted")}
-                >
-                  <Text className="text-sm font-medium text-white">취소 수락</Text>
-                </Pressable>
-              </View>
-            )}
+              <Text className="mt-1 text-[10px] leading-4 text-amber-700">
+                환불율 {booking.refundRate ?? 50}% · 예상 환불 {formatWon(booking.expectedRefundAmount ?? Math.round(booking.amount * 0.5))}
+              </Text>
+            </View>
+            <View className="mt-2 flex-row gap-2">
+              <Pressable
+                className="flex-1 items-center rounded-xl border border-amber-100 bg-white py-2.5"
+                onPress={() => rejectCancelRequest(booking.id)}
+              >
+                <Text className="text-sm font-medium text-gray-600">거절</Text>
+              </Pressable>
+              <Pressable
+                className="flex-1 items-center rounded-xl bg-red-500 py-2.5"
+                onPress={() => acceptCancelRequest(booking.id)}
+              >
+                <Text className="text-sm font-medium text-white">취소 수락</Text>
+              </Pressable>
+            </View>
           </View>
         ) : null}
         {(booking.status === "confirmed" || booking.status === "completed") ? (
@@ -135,6 +168,9 @@ export function BusinessBookingDetailScreen({ booking }: Props) {
             )}
             <Text className="mt-1.5 text-[10px] text-gray-400">
               노쇼 누적은 소비자 이용제한 정책에 반영될 수 있습니다
+              {noShowCount > 0 ? (
+                <Text className="font-medium text-amber-700"> · 현재 {booking.userName}님 누적 {noShowCount}회</Text>
+              ) : null}
             </Text>
           </View>
         ) : null}
@@ -151,7 +187,7 @@ export function BusinessBookingDetailScreen({ booking }: Props) {
           <View className="rounded-2xl bg-success-50 p-4">
             <Text className="text-sm font-semibold text-success-500">작업 완료</Text>
             <Text className="mt-2 text-sm leading-6 text-gray-600">
-              소비자에게 완료 알림이 발송되고, 다음 리뷰 유도 단계로 이어집니다.
+              소비자에게 완료 알림이 발송되고, 사진 수령 후 리뷰 작성 단계로 이어집니다.
             </Text>
           </View>
         ) : null}
@@ -159,18 +195,23 @@ export function BusinessBookingDetailScreen({ booking }: Props) {
           <View className="rounded-2xl border border-red-100 bg-red-50 p-3">
             <Text className="mb-1 text-xs font-medium text-red-700">부득이한 업체 사유로 취소</Text>
             <Text className="mb-2 text-[10px] leading-5 text-gray-500">
-              고객 100% 환불 처리됩니다. 누적 5회 이상 시 이용정지 검토 대상이 됩니다.
+              고객 100% 환불 처리됩니다. 페널티 1회가 누적되며 누적 5회 이상 시 이용정지 검토 대상이 됩니다.
             </Text>
-            {businessCancelRequested ? (
-              <Text className="text-xs font-medium text-red-600">업체 취소 처리되었습니다. 어드민에 자동 보고됩니다.</Text>
-            ) : (
-              <Pressable
-                className="items-center rounded-xl border border-red-200 bg-white py-2"
-                onPress={() => setBusinessCancelRequested(true)}
-              >
-                <Text className="text-xs font-medium text-red-600">업체 사유로 예약 취소</Text>
-              </Pressable>
-            )}
+            <Pressable
+              className="items-center rounded-xl border border-red-200 bg-white py-2"
+              onPress={() => cancelByBusiness(booking.id)}
+            >
+              <Text className="text-xs font-medium text-red-600">업체 사유로 예약 취소</Text>
+            </Pressable>
+          </View>
+        ) : null}
+        {booking.status === "cancelled" ? (
+          <View className="rounded-2xl bg-gray-50 p-4">
+            <Text className="text-sm font-semibold text-gray-700">취소완료</Text>
+            <Text className="mt-2 text-sm leading-6 text-gray-600">
+              고객에게 취소 및 환불 안내가 발송되었습니다.
+              {booking.expectedRefundAmount ? ` 예상 환불 금액은 ${formatWon(booking.expectedRefundAmount)}입니다.` : ""}
+            </Text>
           </View>
         ) : null}
       </View>

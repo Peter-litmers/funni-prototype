@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useState } from "react";
+import { sortByStudioRanking } from "@funni/domain";
 import { Chip } from "@/components/ui/Chip";
 import { Screen } from "@/components/ui/Screen";
 import { useNotifications } from "@/features/shared/hooks/useNotifications";
@@ -123,10 +124,7 @@ export function ConsumerHomeScreen() {
   const studios = useStudios();
   const { currentRoleNotifications } = useNotifications();
   const [searchInput, setSearchInput] = useState("");
-  const hotStudios = studios
-    .slice()
-    .sort((left, right) => right.paymentCount - left.paymentCount)
-    .slice(0, 4);
+  const hotStudios = sortByStudioRanking(studios).slice(0, 4);
   const promotedStudios = studios.slice(0, 4);
   const hasUnread = currentRoleNotifications.some((item) => !item.read);
   const runSearch = () => {
